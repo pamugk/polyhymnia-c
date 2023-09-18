@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=polyhymnia
+Exec=polyhymnia
+Icon=com.github.pamugk.polyhymnia
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaWindow" parent="AdwApplicationWindow">
+    <property name="content">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwHeaderBar" id="header_bar">
+            <child type="start">
+              <object class="GtkButton">
+                <property name="action-name">app.scan</property>
+                <property name="action-target">"library"</property>
+                <property name="icon-name">update-symbolic</property>
+              </object>
+            </child>
+            <child type="title">
+              <object class="AdwViewSwitcher">
+                <property name="stack">content_stack</property>
+                <property name="policy">wide</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="menu-model">primary_menu</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="search">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">edit-find-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Search</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSearchBar" id="searchbar">
+            <child>
+	      <object class="GtkSearchEntry">
+                <property name="placeholder-text" translatable="yes">Search…</property>
+	      </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStack" id="content_stack">
+            <property name="vexpand">true</property>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="icon-name">library-music-symbolic</property>
+                <property name="name">library_page</property>
+                <property name="title" translatable="yes">Library</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkStackSidebar">
+                        <property name="stack">library_stack</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStack" id="library_stack">
+                        <property name="hexpand">true</property>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">recent_page</property>
+                            <property name="title" translatable="yes">Recently Added</property>
+                            <property name="child">
+                              <object class="AdwStatusPage">
+                                <property name="description" translatable="yes">Recently played songs will be placed here</property>
+                                <property name="icon-name">list-symbolic</property>
+                                <property name="title" translatable="yes">No recently played songs</property>
+                              </object>
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">12</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label" translatable="yes">Artists</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="title-1"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow" id="artists_scrolled_window">
+                                    <property name="vexpand">true</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="name">artists_page</property>
+                            <property name="title" translatable="yes">Artists</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">12</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label" translatable="yes">Albums</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="title-1"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow" id="albums_scrolled_window">
+                                    <property name="vexpand">true</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="name">albums_page</property>
+                            <property name="title" translatable="yes">Albums</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">12</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label" translatable="yes">Songs</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="title-1"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow" id="tracks_scrolled_window">
+                                    <property name="vexpand">true</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="name">songs_page</property>
+                            <property name="title" translatable="yes">Songs</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">12</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label" translatable="yes">Genres</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="title-1"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow" id="genres_scrolled_window">
+                                    <property name="vexpand">true</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="name">genres_page</property>
+                            <property name="title" translatable="yes">Genres</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="icon-name">audio-radio-symbolic</property>
+                <property name="name">radio_page</property>
+                <property name="title" translatable="yes">Radio</property>
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="description" translatable="yes">Check your Internet connection and try again</property>
+                    <property name="icon-name">offline-globe-symbolic</property>
+                    <property name="title" translatable="yes">No Internet connection</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkActionBar">
+            <child type="start">
+	      <object class="GtkButton">
+                <property name="icon-name">media-skip-backward</property>
+                <property name="sensitive">false</property>
+	      </object>
+            </child>
+            <child type="start">
+	      <object class="GtkButton">
+                <property name="icon-name">media-playback-start</property>
+                <property name="sensitive">false</property>
+	      </object>
+            </child>
+            <child type="start">
+	      <object class="GtkButton">
+                <property name="icon-name">media-skip-forward</property>
+                <property name="sensitive">false</property>
+	      </object>
+            </child>
+            <child type="start">
+	      <object class="GtkScale">
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="value">100</property>
+                    <property name="lower">0</property>
+                    <property name="upper">100</property>
+                    <property name="step-increment">5</property>
+                  </object>
+                </property>
+                <property name="orientation">horizontal</property>
+                <property name="sensitive">false</property>
+	      </object>
+            </child>
+            <child type="center">
+	      <object class="GtkScale">
+                <property name="hexpand">true</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="value">100</property>
+                    <property name="lower">0</property>
+                    <property name="upper">100</property>
+                    <property name="step-increment">5</property>
+                  </object>
+                </property>
+                <property name="orientation">horizontal</property>
+                <property name="sensitive">false</property>
+	      </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+  <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
+        <attribute name="action">win.show-help-overlay</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_About Polyhymnia</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

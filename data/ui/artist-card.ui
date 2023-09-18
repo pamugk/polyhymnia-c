@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="PolyhymniaArtistCard" parent="GtkBox">
+    <child>
+      <object class="AdwAvatar" id="avatar">
+        <property name="icon-name">music-artist-symbolic</property>
+        <property name="show-initials">false</property>
+        <property name="size">100</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="name_label">
+        <style>
+          <class name="heading"/>
+        </style>
+        <property name="ellipsize">end</property>
+      </object>
+    </child>
+  </template>
+</interface>

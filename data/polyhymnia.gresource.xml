@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/github/pamugk/polyhymnia">
+    <file preprocess="xml-stripblanks">ui/album-card.ui</file>
+    <file preprocess="xml-stripblanks">ui/artist-card.ui</file>
+    <file preprocess="xml-stripblanks">ui/genre-card.ui</file>
+    <file preprocess="xml-stripblanks">ui/track-row.ui</file>
+
+    <file preprocess="xml-stripblanks">ui/polyhymnia-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/preferences-window.ui</file>
+
+    <file alias="gtk/help-overlay.ui" preprocess="xml-stripblanks">ui/gtk/help-overlay.ui</file>
+  </gresource>
+  <gresource prefix="/com/github/pamugk/polyhymnia/icons/scalable/actions">
+    <file alias="cd-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/cd-symbolic.svg</file>
+    <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
+    <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>
+    <file alias="library-music-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/library-music-symbolic.svg</file>
+    <file alias="list-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/list-symbolic.svg</file>
+    <file alias="month-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/month-symbolic.svg</file>
+    <file alias="music-artist-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-artist-symbolic.svg</file>
+    <file alias="music-note-single-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-note-single-symbolic.svg</file>
+    <file alias="offline-globe-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/offline-globe-symbolic.svg</file>
+    <file alias="preferences-system-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/preferences-system-symbolic.svg</file>
+    <file alias="update-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/update-symbolic.svg</file>
+    <file alias="user-trash-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/user-trash-symbolic.svg</file>
+  </gresource>
+</gresources>
