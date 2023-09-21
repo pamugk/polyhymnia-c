@@ -1,7 +1,7 @@
 data/com.github.pamugk.polyhymnia.desktop.in
 data/com.github.pamugk.polyhymnia.appdata.xml.in
 data/com.github.pamugk.polyhymnia.gschema.xml
+data/ui/polyhymnia-preferences-window.ui
 data/ui/polyhymnia-window.ui
-data/ui/preferences-window.ui
 src/main.c
 src/polyhymnia-window.c

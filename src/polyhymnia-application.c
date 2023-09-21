@@ -2,7 +2,7 @@
 #include "config.h"
 
 #include "polyhymnia-application.h"
-#include "preferences-window.h"
+#include "polyhymnia-preferences-window.h"
 #include "polyhymnia-window.h"
 
 struct _PolyhymniaApplication
