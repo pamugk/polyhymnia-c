@@ -5,9 +5,13 @@
 #include "polyhymnia-preferences-window.h"
 #include "polyhymnia-window.h"
 
+#include <mpd/connection.h>
+
 struct _PolyhymniaApplication
 {
   AdwApplication parent_instance;
+
+  struct mpd_connection   *mpd_connection;
 };
 
 G_DEFINE_TYPE (PolyhymniaApplication, polyhymnia_application, ADW_TYPE_APPLICATION)
@@ -42,11 +46,51 @@ polyhymnia_application_activate (GApplication *app)
 }
 
 static void
+polyhymnia_application_shutdown (GApplication *app)
+{
+  g_assert (POLYHYMNIA_IS_APPLICATION (app));
+
+  PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  if (self->mpd_connection != NULL)
+  {
+    mpd_connection_free(self->mpd_connection);
+  }
+
+  G_APPLICATION_CLASS (polyhymnia_application_parent_class)->shutdown (app);
+}
+
+static void
+polyhymnia_application_startup (GApplication *app)
+{
+  G_APPLICATION_CLASS (polyhymnia_application_parent_class)->startup (app);
+  g_assert (POLYHYMNIA_IS_APPLICATION (app));
+
+  PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  self->mpd_connection = mpd_connection_new(NULL, 0, 0);
+
+  if (self->mpd_connection != NULL)
+  {
+    if (mpd_connection_get_error(self->mpd_connection) == MPD_ERROR_SUCCESS)
+    {
+      const unsigned *mpd_version = mpd_connection_get_server_version (self->mpd_connection);
+      g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
+    }
+    else
+    {
+      g_warning("An error occurred on MPD connection initialization: %s\n",
+              mpd_connection_get_error_message(self->mpd_connection));
+    }
+  }
+}
+
+static void
 polyhymnia_application_class_init (PolyhymniaApplicationClass *klass)
 {
   GApplicationClass *app_class = G_APPLICATION_CLASS (klass);
 
   app_class->activate = polyhymnia_application_activate;
+  app_class->shutdown = polyhymnia_application_shutdown;
+  app_class->startup = polyhymnia_application_startup;
 }
 
 static void

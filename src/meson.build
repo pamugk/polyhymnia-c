@@ -12,6 +12,7 @@ polyhymnia_sources = [
 polyhymnia_deps = [
   dependency('gtk4'),
   dependency('libadwaita-1', version: '>= 1.3'),
+  dependency('libmpdclient', version: '>= 2.20'),
 ]
 
 executable('polyhymnia', polyhymnia_sources + resources,
