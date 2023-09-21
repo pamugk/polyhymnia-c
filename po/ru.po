@@ -1,0 +1,176 @@
+# Russian translations for polyhymnia package.
+# Copyright (C) 2023 THE polyhymnia'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the polyhymnia package.
+# Automatically generated, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: polyhymnia\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-17 15:41+0500\n"
+"PO-Revision-Date: 2023-09-17 15:37+0500\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: data/com.github.pamugk.polyhymnia.desktop.in:3
+msgid "Polyhymnia"
+msgstr ""
+
+#: data/com.github.pamugk.polyhymnia.appdata.xml.in:7
+msgid "No description"
+msgstr "Без описания"
+
+#: data/ui/polyhymnia-preferences-window.ui:8
+msgid "System"
+msgstr "Система"
+
+#: data/ui/polyhymnia-preferences-window.ui:19
+msgid "Resume media playback on application startup"
+msgstr "Возобновление воспроизведения при запуске приложения"
+
+#: data/ui/polyhymnia-preferences-window.ui:20
+msgid "Resume on Startup"
+msgstr "Начать воспроизведение при запуске"
+
+#: data/ui/polyhymnia-preferences-window.ui:25
+msgid "Page opened on application startup"
+msgstr "Страница, открываемая при запуске приложения"
+
+#: data/ui/polyhymnia-preferences-window.ui:26
+msgid "Start Page"
+msgstr "Начальная страница"
+
+#: data/ui/polyhymnia-preferences-window.ui:37
+msgid "Common application settings"
+msgstr "Общие настройки приложения"
+
+#: data/ui/polyhymnia-preferences-window.ui:38
+msgid "Common"
+msgstr "Общие"
+
+#: data/ui/polyhymnia-preferences-window.ui:47
+#: data/ui/polyhymnia-window.ui:55 data/ui/polyhymnia-preferences-window.ui:30
+msgid "Library"
+msgstr "Библиотека"
+
+#: data/ui/polyhymnia-preferences-window.ui:52
+msgid "Album information that can be found in external sources"
+msgstr "Информация об альбомах, доступная во внешних источниках"
+
+#: data/ui/polyhymnia-preferences-window.ui:53
+#: data/ui/polyhymnia-window.ui:114 data/ui/polyhymnia-window.ui:129
+msgid "Albums"
+msgstr "Альбомы"
+
+#: data/ui/polyhymnia-preferences-window.ui:58
+msgid "Artist information that can be found in external sources"
+msgstr "Информация об исполнителях, доступная во внешних источниках"
+
+#: data/ui/polyhymnia-preferences-window.ui:59
+#: data/ui/polyhymnia-window.ui:88 data/ui/polyhymnia-window.ui:103
+msgid "Artists"
+msgstr "Исполнители"
+
+#: data/ui/polyhymnia-preferences-window.ui:64
+msgid "Song information that can be found in external sources"
+msgstr "Информация о песнях, доступная во внешних источниках"
+
+#: data/ui/polyhymnia-preferences-window.ui:65
+#: data/ui/polyhymnia-window.ui:140 data/ui/polyhymnia-window.ui:155
+msgid "Songs"
+msgstr "Песни"
+
+#: data/ui/polyhymnia-preferences-window.ui:68
+msgid "Additional information that can be found on music from your library"
+msgstr "Дополнительные сведения, которые могут быть найдены о музыке из вашей библиотеки"
+
+#: data/ui/polyhymnia-preferences-window.ui:69
+msgid "Additional Information"
+msgstr "Дополнительная информация"
+
+#: data/ui/polyhymnia-preferences-window.ui:82
+msgid "Play Explicit Songs"
+msgstr "Воспроизводить непристойные песни"
+
+#: data/ui/polyhymnia-preferences-window.ui:93
+msgid "Show Explicit Album Covers"
+msgstr "Отображать непристойные обложки альбомов"
+
+#: data/ui/polyhymnia-preferences-window.ui:96
+msgid "The ways to control undesirable content"
+msgstr "Способы контроля нежелательного содержимого"
+
+#: data/ui/polyhymnia-preferences-window.ui:97
+msgid "Explicit Content"
+msgstr "Непристойное содержимое"
+
+#: data/ui/polyhymnia-preferences-window.ui:110
+msgid "Scan sources for new songs on application startup"
+msgstr "Выполнять поиск новых песен при запуске приложения"
+
+#: data/ui/polyhymnia-preferences-window.ui:111
+msgid "Scan on Startup"
+msgstr "Искать при запуске"
+
+#: data/ui/polyhymnia-preferences-window.ui:142
+msgid "Library update configuration"
+msgstr "Настройка обновления библиотеки"
+
+#: data/ui/polyhymnia-preferences-window.ui:143
+msgid "Scan"
+msgstr "Поиск"
+
+#: data/ui/polyhymnia-preferences-window.ui:152
+#: data/ui/polyhymnia-window.ui:194 data/ui/polyhymnia-preferences-window.ui:31
+msgid "Radio"
+msgstr "Радио"
+
+#: data/ui/polyhymnia-window.ui:34
+msgid "Search"
+msgstr "Искать"
+
+#: data/ui/polyhymnia-window.ui:43
+msgid "Search…"
+msgstr "Искать…"
+
+#: data/ui/polyhymnia-window.ui:70
+msgid "Recently Added"
+msgstr "Недавно добавленное"
+
+#: data/ui/polyhymnia-window.ui:73
+msgid "Recently played songs will be placed here"
+msgstr "Здесь будут размещены недавно воспроизведённые песни"
+
+#: data/ui/polyhymnia-window.ui:75
+msgid "No recently played songs"
+msgstr "Нет недавно воспроизведённых песен"
+
+#: data/ui/polyhymnia-window.ui:166 data/ui/polyhymnia-window.ui:181
+msgid "Genres"
+msgstr "Жанры"
+
+#: data/ui/polyhymnia-window.ui:197
+msgid "Check your Internet connection and try again"
+msgstr "Проверьте соединение с Интернетом и попробуйте ещё раз"
+
+#: data/ui/polyhymnia-window.ui:199
+msgid "No Internet connection"
+msgstr "Нет соединения с Интернетом"
+
+#: data/ui/polyhymnia-window.ui:263
+msgid "_Preferences"
+msgstr "_Настройки"
+
+#: data/ui/polyhymnia-window.ui:267
+msgid "_Keyboard Shortcuts"
+msgstr "_Комбинации клавиш"
+
+#: data/ui/polyhymnia-window.ui:271
+msgid "_About Polyhymnia"
+msgstr "_О Polyhymnia"
