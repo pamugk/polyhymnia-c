@@ -8,6 +8,9 @@
 	  <key name="app-library-explicit-songs" type="b">
       <default>false</default>
     </key>
+	  <key name="app-library-scan-startup" type="b">
+      <default>false</default>
+    </key>
 	  <key name="app-system-resume-playback" type="b">
       <default>false</default>
     </key>

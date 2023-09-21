@@ -111,34 +111,6 @@
                 <property name="title" translatable="yes">Scan on Startup</property>
               </object>
             </child>
-            <child>
-              <object class="AdwComboRow">
-                <property name="subtitle" translatable="yes">The way to search for new songs</property>
-                <property name="title" translatable="yes">Scanning algorithm</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>Magic</item>
-                    </items>
-                  </object>
-                </property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwExpanderRow" id="scan_sources_expander_row">
-                <child type="action">
-                  <object class="GtkButton" id="scan_sources_add_button">
-                    <property name="icon-name">list-add-symbolic</property>
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="flat"/>
-                    </style>
-                  </object>
-                </child>
-                <property name="subtitle" translatable="yes">Places where your music is stored</property>
-                <property name="title" translatable="yes">Sources</property>
-              </object>
-            </child>
             <property name="description" translatable="yes">Library update configuration</property>
             <property name="title" translatable="yes">Scan</property>
           </object>

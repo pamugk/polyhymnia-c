@@ -1,7 +1,7 @@
 project('polyhymnia', 'c',
           version: '0.1.0',
     meson_version: '>= 0.62.0',
-  default_options: [ 'warning_level=2', 'werror=false', 'c_std=gnu11', ],
+  default_options: [ 'warning_level=2', 'werror=false', 'c_std=c2x', ],
 )
 
 i18n = import('i18n')
@@ -15,7 +15,8 @@ config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('lo
 configure_file(output: 'config.h', configuration: config_h)
 add_project_arguments(['-I' + meson.project_build_root()], language: 'c')
 
-project_c_args = []
+project_c_args = [
+]
 test_c_args = [
   '-Wcast-align',
   '-Wdeclaration-after-statement',

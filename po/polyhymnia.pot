@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: data/com.github.pamugk.polyhymnia.desktop.in:3
-msgid "polyhymnia"
+msgid "Polyhymnia"
 msgstr ""
 
 #: data/com.github.pamugk.polyhymnia.appdata.xml.in:7
@@ -164,22 +164,6 @@ msgstr ""
 
 #: data/ui/preferences-window.ui:111
 msgid "Scan on Startup"
-msgstr ""
-
-#: data/ui/preferences-window.ui:116
-msgid "The way to search for new songs"
-msgstr ""
-
-#: data/ui/preferences-window.ui:117
-msgid "Scanning algorithm"
-msgstr ""
-
-#: data/ui/preferences-window.ui:138
-msgid "Places where your music is stored"
-msgstr ""
-
-#: data/ui/preferences-window.ui:139
-msgid "Sources"
 msgstr ""
 
 #: data/ui/preferences-window.ui:142

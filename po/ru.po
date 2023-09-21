@@ -19,7 +19,7 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: data/com.github.pamugk.polyhymnia.desktop.in:3
-msgid "polyhymnia"
+msgid "Polyhymnia"
 msgstr ""
 
 #: data/com.github.pamugk.polyhymnia.appdata.xml.in:7
@@ -166,22 +166,6 @@ msgstr "Выполнять поиск новых песен при запуск�
 #: data/ui/preferences-window.ui:111
 msgid "Scan on Startup"
 msgstr "Искать при запуске"
-
-#: data/ui/preferences-window.ui:116
-msgid "The way to search for new songs"
-msgstr "Способ поиска новых песен"
-
-#: data/ui/preferences-window.ui:117
-msgid "Scanning algorithm"
-msgstr "Алгоритм поиска"
-
-#: data/ui/preferences-window.ui:138
-msgid "Places where your music is stored"
-msgstr "Места, где хранится ваша музыка"
-
-#: data/ui/preferences-window.ui:139
-msgid "Sources"
-msgstr "Источники"
 
 #: data/ui/preferences-window.ui:142
 msgid "Library update configuration"
