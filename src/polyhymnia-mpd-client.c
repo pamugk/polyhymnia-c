@@ -12,11 +12,16 @@ struct _PolyhymniaMpdClient
 
 G_DEFINE_FINAL_TYPE (PolyhymniaMpdClient, polyhymnia_mpd_client, G_TYPE_OBJECT)
 
+static void
+polyhymnia_mpd_client_constructed (GObject *obj)
+{
+  G_OBJECT_CLASS (polyhymnia_mpd_client_parent_class)->constructed (obj);
+}
 
 static void
 polyhymnia_mpd_client_finalize (GObject *gobject)
 {
-  PolyhymniaWindow *self = POLYHYMNIA_MPD_CLIENT (gobject);
+  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (gobject);
   if (self->mpd_connection != NULL)
   {
     mpd_connection_free(self->mpd_connection);
@@ -30,6 +35,7 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+  gobject_class->constructed = polyhymnia_mpd_client_constructed;
   gobject_class->finalize = polyhymnia_mpd_client_finalize;
 }
 

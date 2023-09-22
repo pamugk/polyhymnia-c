@@ -2,12 +2,15 @@
 #include "config.h"
 
 #include "polyhymnia-application.h"
+#include "polyhymnia-mpd-client.h"
 #include "polyhymnia-preferences-window.h"
 #include "polyhymnia-window.h"
 
 struct _PolyhymniaApplication
 {
   AdwApplication parent_instance;
+
+  PolyhymniaMpdClient *mpd_client;
 };
 
 G_DEFINE_TYPE (PolyhymniaApplication, polyhymnia_application, ADW_TYPE_APPLICATION)
@@ -47,6 +50,7 @@ polyhymnia_application_shutdown (GApplication *app)
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
   PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  g_clear_object (&self->mpd_client);
 
   G_APPLICATION_CLASS (polyhymnia_application_parent_class)->shutdown (app);
 }
@@ -58,6 +62,7 @@ polyhymnia_application_startup (GApplication *app)
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
   PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  self->mpd_client = g_object_new (POLYHYMNIA_TYPE_MPD_CLIENT, NULL);
 }
 
 static void

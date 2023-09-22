@@ -4,6 +4,7 @@ polyhymnia_sources = [
   'polyhymnia-application.c',
   'polyhymnia-artist-card.c',
   'polyhymnia-genre-card.c',
+  'polyhymnia-mpd-client.c',
   'polyhymnia-preferences-window.c',
   'polyhymnia-track-row.c',
   'polyhymnia-window.c',
