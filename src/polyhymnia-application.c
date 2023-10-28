@@ -132,10 +132,21 @@ polyhymnia_application_quit_action (GSimpleAction *action,
   g_application_quit (G_APPLICATION (self));
 }
 
+static void
+polyhymnia_application_scan_action (GSimpleAction *action,
+                                    GVariant      *parameter,
+                                    gpointer       user_data)
+{
+  PolyhymniaApplication *self = user_data;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+}
+
 static const GActionEntry app_actions[] = {
   { "about", polyhymnia_application_about_action },
-  { "quit", polyhymnia_application_quit_action },
   { "preferences", polyhymnia_application_preferences_action },
+  { "quit", polyhymnia_application_quit_action },
+  { "scan", polyhymnia_application_scan_action, "s" },
 };
 
 static void

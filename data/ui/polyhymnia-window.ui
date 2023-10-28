@@ -9,7 +9,7 @@
         <child>
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
-              <object class="GtkButton">
+              <object class="GtkButton" id="scan_button">
                 <property name="action-name">app.scan</property>
                 <property name="action-target">"library"</property>
                 <property name="icon-name">update-symbolic</property>
@@ -28,7 +28,7 @@
               </object>
             </child>
             <child type="end">
-              <object class="GtkToggleButton" id="search">
+              <object class="GtkToggleButton">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">edit-find-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
