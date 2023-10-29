@@ -171,7 +171,7 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
       g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "MPD error - %s",
+                 "%s",
                  mpd_connection_get_error_message(mpd_connection));
       mpd_connection_free (mpd_connection);
       mpd_connection = NULL;
@@ -207,7 +207,280 @@ polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "MPD error - %s",
+                 "%s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+GArray *
+polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
+                                    GError              **error)
+{
+  struct mpd_pair *pair;
+  GArray * results;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+  if (!mpd_search_db_tags (self->mpd_connection, MPD_TAG_ALBUM))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+  if (!mpd_search_commit (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+
+  results = g_array_new (FALSE, FALSE, sizeof (gchar *));
+  while ((pair = mpd_recv_pair_tag(self->mpd_connection,
+				    MPD_TAG_ALBUM)) != NULL)
+  {
+    if (pair->value != NULL && !g_str_equal (pair->value, ""))
+    {
+      gchar *album = g_strdup (pair->value);
+      g_array_append_val (results, album);
+    }
+    mpd_return_pair(self->mpd_connection, pair);
+  }
+
+  if (mpd_connection_get_error(self->mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->mpd_connection))
+  {
+    if (results != NULL)
+    {
+      for (guint i = 0; i < results->len; i++)
+      {
+        g_free(g_array_index (results, gchar *, i));
+      }
+      g_array_free (results, TRUE);
+      results = NULL;
+    }
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+
+  return results;
+}
+
+GArray *
+polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
+                                      GError              **error)
+{
+  struct mpd_pair *pair;
+  GArray * results;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+  if (!mpd_search_db_tags (self->mpd_connection, MPD_TAG_ALBUM_ARTIST))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+  if (!mpd_search_commit (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+
+  results = g_array_new (FALSE, FALSE, sizeof (gchar *));
+  while ((pair = mpd_recv_pair_tag(self->mpd_connection,
+				    MPD_TAG_ALBUM_ARTIST)) != NULL)
+  {
+    if (pair->value != NULL && !g_str_equal (pair->value, ""))
+    {
+      gchar *artist = g_strdup (pair->value);
+      g_array_append_val (results, artist);
+    }
+    mpd_return_pair(self->mpd_connection, pair);
+  }
+
+  if (mpd_connection_get_error(self->mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->mpd_connection))
+  {
+    if (results != NULL)
+    {
+      for (guint i = 0; i < results->len; i++)
+      {
+        g_free(g_array_index (results, gchar *, i));
+      }
+      g_array_free (results, TRUE);
+      results = NULL;
+    }
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+
+  return results;
+}
+
+GArray *
+polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
+                                    GError              **error)
+{
+  struct mpd_pair *pair;
+  GArray * results;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+  if (!mpd_search_db_tags (self->mpd_connection, MPD_TAG_GENRE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+  if (!mpd_search_commit (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return NULL;
+  }
+
+  results = g_array_new (FALSE, FALSE, sizeof (gchar *));
+  while ((pair = mpd_recv_pair_tag(self->mpd_connection,
+				    MPD_TAG_GENRE)) != NULL)
+  {
+    if (pair->value != NULL && !g_str_equal (pair->value, ""))
+    {
+      gchar *genre = g_strdup (pair->value);
+      g_array_append_val (results, genre);
+    }
+    mpd_return_pair(self->mpd_connection, pair);
+  }
+
+  if (mpd_connection_get_error(self->mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->mpd_connection))
+  {
+    if (results != NULL)
+    {
+      for (guint i = 0; i < results->len; i++)
+      {
+        g_free(g_array_index (results, gchar *, i));
+      }
+      g_array_free (results, TRUE);
+      results = NULL;
+    }
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+
+  return results;
+}
+
+void
+polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
+                                    const gchar         *query,
+                                    GError              **error)
+{
+  struct mpd_song *song;
+
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  if (!mpd_search_db_songs (self->mpd_connection, FALSE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_add_tag_constraint (self->mpd_connection,
+                                      MPD_OPERATOR_DEFAULT,
+                                      MPD_TAG_TITLE,
+                                      query))
+  {
+    mpd_search_cancel (self->mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search filter failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_add_sort_tag (self->mpd_connection, MPD_TAG_TITLE, FALSE))
+  {
+    mpd_search_cancel (self->mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search sort failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_add_window (self->mpd_connection, 0, 20))
+  {
+    mpd_search_cancel (self->mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search limit failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_commit (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+
+  while ((song = mpd_recv_song(self->mpd_connection)) != NULL)
+  {
+    // TODO: copy song into function ouput
+    g_debug ("Received a song: %s (%s) - %s - %d",
+             mpd_song_get_tag (song, MPD_TAG_TITLE, 0),
+             mpd_song_get_tag (song, MPD_TAG_ALBUM, 0),
+             mpd_song_get_tag (song, MPD_TAG_ARTIST, 0),
+             mpd_song_get_duration (song));
+    mpd_song_free(song);
+  }
+
+  if (mpd_connection_get_error(self->mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
                  mpd_connection_get_error_message(self->mpd_connection));
   }
 }

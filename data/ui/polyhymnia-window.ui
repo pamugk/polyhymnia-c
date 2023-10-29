@@ -64,7 +64,7 @@
                     <child>
                       <object class="GtkStack" id="library_stack">
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="recent_stack_page">
                             <property name="name">recent_page</property>
                             <property name="title" translatable="yes">Recently Added</property>
                             <property name="child">
@@ -77,7 +77,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="artists_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -103,7 +103,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="albums_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -129,7 +129,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="tracks_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -155,7 +155,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="genres_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>

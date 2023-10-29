@@ -24,4 +24,21 @@ void polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
 void polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
                                 GError              **error);
 
+GArray *
+polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
+                                    GError              **error);
+
+GArray *
+polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
+                                      GError              **error);
+
+GArray *
+polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
+                                    GError              **error);
+
+void
+polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
+                                    const gchar         *query,
+                                    GError              **error);
+
 G_END_DECLS

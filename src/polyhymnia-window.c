@@ -4,6 +4,8 @@
 #include "polyhymnia-mpd-client.h"
 #include "polyhymnia-window.h"
 
+#include "polyhymnia-genre-card.h"
+
 struct _PolyhymniaWindow
 {
   AdwApplicationWindow  parent_instance;
@@ -15,9 +17,20 @@ struct _PolyhymniaWindow
   /* Template widgets */
   GtkButton           *scan_button;
   GtkButton           *search_button;
+
   GtkStackSidebar     *library_stack_sidebar;
   GtkStack            *library_stack;
+  GtkStackPage        *recent_stack_page;
+  GtkStackPage        *artists_stack_page;
+  GtkScrolledWindow   *artists_scrolled_window;
+  GtkStackPage        *albums_stack_page;
+  GtkScrolledWindow   *albums_scrolled_window;
+  GtkStackPage        *tracks_stack_page;
+  GtkScrolledWindow   *tracks_scrolled_window;
+  GtkStackPage        *genres_stack_page;
+  GtkScrolledWindow   *genres_scrolled_window;
   AdwStatusPage       *no_library_connection_page;
+
   GtkActionBar        *player_bar;
   GtkButton           *previous_track_button;
   GtkButton           *playback_button;
@@ -51,15 +64,111 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, scan_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_button);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_stack_sidebar);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_stack);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, recent_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_stack_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_library_connection_page);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player_bar);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, previous_track_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, playback_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, next_track_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_position_scale);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, volume_scale);
+}
+
+static void
+polyhymnia_window_content_init (PolyhymniaWindow *self)
+{
+  gboolean mpd_initialized = FALSE;
+  GError *error = NULL;
+
+  GArray *albums;
+  GArray *artists;
+  GArray *genres;
+
+  g_object_get (self->mpd_client, "initialized", &mpd_initialized, NULL);
+  if (!mpd_initialized)
+  {
+    return;
+  }
+
+  artists = polyhymnia_mpd_client_search_artists (self->mpd_client, &error);
+  if (error != NULL)
+  {
+    g_warning("Search for artists failed: %s\n",
+              error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    if (artists != NULL)
+    {
+      for (guint i = 0; i < artists->len; i++)
+      {
+        gchar * artist = g_array_index (artists, gchar *, i);
+        g_free(artist);
+      }
+      g_array_free (artists, TRUE);
+    }
+  }
+
+  albums = polyhymnia_mpd_client_search_albums (self->mpd_client, &error);
+  if (error != NULL)
+  {
+    g_warning("Search for albums failed: %s\n",
+              error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    if (albums != NULL)
+    {
+      for (guint i = 0; i < albums->len; i++)
+      {
+        gchar *album = g_array_index (albums, gchar *, i);
+        g_free(album);
+      }
+      g_array_free (albums, TRUE);
+    }
+  }
+
+  polyhymnia_mpd_client_search_tracks (self->mpd_client, "", &error);
+  if (error != NULL)
+  {
+    g_warning("Search for tracks failed: %s\n",
+              error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+
+  genres = polyhymnia_mpd_client_search_genres (self->mpd_client, &error);
+  if (error != NULL)
+  {
+    g_warning("Search for genres failed: %s\n",
+              error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    if (genres != NULL)
+    {
+      for (guint i = 0; i < genres->len; i++)
+      {
+        gchar *genre = g_array_index (genres, gchar *, i);
+        g_free(genre);
+      }
+      g_array_free (genres, TRUE);
+    }
+  }
 }
 
 static void
@@ -110,4 +219,6 @@ polyhymnia_window_init (PolyhymniaWindow *self)
   g_settings_bind (self->settings, "window-fullscreened",
                     self, "fullscreened",
                     G_SETTINGS_BIND_DEFAULT);
+
+  polyhymnia_window_content_init(self);
 }
