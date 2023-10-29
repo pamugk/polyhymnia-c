@@ -28,7 +28,7 @@
               </object>
             </child>
             <child type="end">
-              <object class="GtkToggleButton">
+              <object class="GtkToggleButton" id="search_button">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">edit-find-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
@@ -57,13 +57,12 @@
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkStackSidebar">
+                      <object class="GtkStackSidebar" id="library_stack_sidebar">
                         <property name="stack">library_stack</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkStack" id="library_stack">
-                        <property name="hexpand">true</property>
                         <child>
                           <object class="GtkStackPage">
                             <property name="name">recent_page</property>
@@ -183,6 +182,20 @@
                         </child>
                       </object>
                     </child>
+                    <child>
+                      <object class="AdwStatusPage" id="no_library_connection_page">
+                        <property name="description" translatable="yes">Check your MPD setup and try again</property>
+                        <property name="icon-name">offline-globe-symbolic</property>
+                        <property name="title" translatable="yes">No MPD connection</property>
+                        <property name="child">
+                          <object class="GtkButton" id="reconnect_button">
+                            <property name="action-name">app.reconnect</property>
+                            <property name="halign">GTK_ALIGN_CENTER</property>
+                            <property name="label" translatable="yes">Try again</property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
                   </object>
                 </property>
               </object>
@@ -204,27 +217,27 @@
           </object>
         </child>
         <child>
-          <object class="GtkActionBar">
+          <object class="GtkActionBar" id="player_bar">
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="previous_track_button">
                 <property name="icon-name">media-skip-backward</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="playback_button">
                 <property name="icon-name">media-playback-start</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="next_track_button">
                 <property name="icon-name">media-skip-forward</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkScale">
+	      <object class="GtkScale" id="track_position_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
                     <property name="value">100</property>
@@ -233,13 +246,13 @@
                     <property name="step-increment">5</property>
                   </object>
                 </property>
+                <property name="hexpand">true</property>
                 <property name="orientation">horizontal</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="center">
-	      <object class="GtkScale">
-                <property name="hexpand">true</property>
+	      <object class="GtkScale" id="volume_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
                     <property name="value">100</property>

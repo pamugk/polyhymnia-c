@@ -141,6 +141,25 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
 }
 
 static void
+polyhymnia_application_reconnect_action (GSimpleAction *action,
+                                     GVariant      *parameter,
+                                     gpointer       user_data)
+{
+  GError *error = NULL;
+  PolyhymniaApplication *self = user_data;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  polyhymnia_mpd_client_connect (self->mpd_client, &error);
+  if (error != NULL)
+  {
+    g_warning("MPD client failed to reconnect: %s\n",
+              error->message);
+    g_error_free (error);
+  }
+}
+
+static void
 polyhymnia_application_scan_action (GSimpleAction *action,
                                     GVariant      *parameter,
                                     gpointer       user_data)
@@ -168,6 +187,7 @@ static const GActionEntry app_actions[] = {
   { "about", polyhymnia_application_about_action },
   { "preferences", polyhymnia_application_preferences_action },
   { "quit", polyhymnia_application_quit_action },
+  { "reconnect", polyhymnia_application_reconnect_action },
   { "scan", polyhymnia_application_scan_action, "s" },
 };
 

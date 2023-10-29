@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-17 15:41+0500\n"
+"POT-Creation-Date: 2023-10-29 18:44+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,6 +45,17 @@ msgstr ""
 msgid "Start Page"
 msgstr ""
 
+#: data/ui/polyhymnia-preferences-window.ui:30
+#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:55
+msgid "Library"
+msgstr ""
+
+#: data/ui/polyhymnia-preferences-window.ui:31
+#: data/ui/polyhymnia-preferences-window.ui:124
+#: data/ui/polyhymnia-window.ui:207
+msgid "Radio"
+msgstr ""
+
 #: data/ui/polyhymnia-preferences-window.ui:37
 msgid "Common application settings"
 msgstr ""
@@ -53,17 +64,12 @@ msgstr ""
 msgid "Common"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:47
-#: data/ui/polyhymnia-window.ui:55 data/ui/polyhymnia-preferences-window.ui:30
-msgid "Library"
-msgstr ""
-
 #: data/ui/polyhymnia-preferences-window.ui:52
 msgid "Album information that can be found in external sources"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:53
-#: data/ui/polyhymnia-window.ui:114 data/ui/polyhymnia-window.ui:129
+#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:113
+#: data/ui/polyhymnia-window.ui:128
 msgid "Albums"
 msgstr ""
 
@@ -71,8 +77,8 @@ msgstr ""
 msgid "Artist information that can be found in external sources"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:59
-#: data/ui/polyhymnia-window.ui:88 data/ui/polyhymnia-window.ui:103
+#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:87
+#: data/ui/polyhymnia-window.ui:102
 msgid "Artists"
 msgstr ""
 
@@ -80,8 +86,8 @@ msgstr ""
 msgid "Song information that can be found in external sources"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:65
-#: data/ui/polyhymnia-window.ui:140 data/ui/polyhymnia-window.ui:155
+#: data/ui/polyhymnia-preferences-window.ui:65 data/ui/polyhymnia-window.ui:139
+#: data/ui/polyhymnia-window.ui:154
 msgid "Songs"
 msgstr ""
 
@@ -117,17 +123,12 @@ msgstr ""
 msgid "Scan on Startup"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:142
+#: data/ui/polyhymnia-preferences-window.ui:114
 msgid "Library update configuration"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:143
+#: data/ui/polyhymnia-preferences-window.ui:115
 msgid "Scan"
-msgstr ""
-
-#: data/ui/polyhymnia-preferences-window.ui:152
-#: data/ui/polyhymnia-window.ui:194 data/ui/polyhymnia-preferences-window.ui:31
-msgid "Radio"
 msgstr ""
 
 #: data/ui/polyhymnia-window.ui:34
@@ -138,38 +139,50 @@ msgstr ""
 msgid "Search…"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:70
+#: data/ui/polyhymnia-window.ui:69
 msgid "Recently Added"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:73
+#: data/ui/polyhymnia-window.ui:72
 msgid "Recently played songs will be placed here"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:75
+#: data/ui/polyhymnia-window.ui:74
 msgid "No recently played songs"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:166 data/ui/polyhymnia-window.ui:181
+#: data/ui/polyhymnia-window.ui:165 data/ui/polyhymnia-window.ui:180
 msgid "Genres"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:197
+#: data/ui/polyhymnia-window.ui:187
+msgid "Check your MPD setup and try again"
+msgstr ""
+
+#: data/ui/polyhymnia-window.ui:189
+msgid "No MPD connection"
+msgstr ""
+
+#: data/ui/polyhymnia-window.ui:194
+msgid "Try again"
+msgstr ""
+
+#: data/ui/polyhymnia-window.ui:210
 msgid "Check your Internet connection and try again"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:199
+#: data/ui/polyhymnia-window.ui:212
 msgid "No Internet connection"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:263
+#: data/ui/polyhymnia-window.ui:276
 msgid "_Preferences"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:267
+#: data/ui/polyhymnia-window.ui:280
 msgid "_Keyboard Shortcuts"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:271
+#: data/ui/polyhymnia-window.ui:284
 msgid "_About Polyhymnia"
 msgstr ""

@@ -11,11 +11,15 @@ G_DECLARE_FINAL_TYPE (PolyhymniaMpdClient, polyhymnia_mpd_client, POLYHYMNIA, MP
 
 typedef enum
 {
-  POLYHYMNIA_MPD_CLIENT_ERROR_SCAN_FAILED,
+  POLYHYMNIA_MPD_CLIENT_ERROR_OOM,
+  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
 } PolyhymniaMpdClientError;
 #define POLYHYMNIA_MPD_CLIENT_ERROR polyhymnia_mpd_client_error_quark ()
 
 GQuark polyhymnia_mpd_client_error_quark(void);
+
+void polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
+                                    GError             **error);
 
 void polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
                                 GError              **error);

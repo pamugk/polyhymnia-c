@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-17 15:41+0500\n"
+"POT-Creation-Date: 2023-10-29 18:44+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -46,6 +46,17 @@ msgstr "Страница, открываемая при запуске прил�
 msgid "Start Page"
 msgstr "Начальная страница"
 
+#: data/ui/polyhymnia-preferences-window.ui:30
+#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:55
+msgid "Library"
+msgstr "Библиотека"
+
+#: data/ui/polyhymnia-preferences-window.ui:31
+#: data/ui/polyhymnia-preferences-window.ui:124
+#: data/ui/polyhymnia-window.ui:207
+msgid "Radio"
+msgstr "Радио"
+
 #: data/ui/polyhymnia-preferences-window.ui:37
 msgid "Common application settings"
 msgstr "Общие настройки приложения"
@@ -54,17 +65,12 @@ msgstr "Общие настройки приложения"
 msgid "Common"
 msgstr "Общие"
 
-#: data/ui/polyhymnia-preferences-window.ui:47
-#: data/ui/polyhymnia-window.ui:55 data/ui/polyhymnia-preferences-window.ui:30
-msgid "Library"
-msgstr "Библиотека"
-
 #: data/ui/polyhymnia-preferences-window.ui:52
 msgid "Album information that can be found in external sources"
 msgstr "Информация об альбомах, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:53
-#: data/ui/polyhymnia-window.ui:114 data/ui/polyhymnia-window.ui:129
+#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:113
+#: data/ui/polyhymnia-window.ui:128
 msgid "Albums"
 msgstr "Альбомы"
 
@@ -72,8 +78,8 @@ msgstr "Альбомы"
 msgid "Artist information that can be found in external sources"
 msgstr "Информация об исполнителях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:59
-#: data/ui/polyhymnia-window.ui:88 data/ui/polyhymnia-window.ui:103
+#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:87
+#: data/ui/polyhymnia-window.ui:102
 msgid "Artists"
 msgstr "Исполнители"
 
@@ -81,14 +87,16 @@ msgstr "Исполнители"
 msgid "Song information that can be found in external sources"
 msgstr "Информация о песнях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:65
-#: data/ui/polyhymnia-window.ui:140 data/ui/polyhymnia-window.ui:155
+#: data/ui/polyhymnia-preferences-window.ui:65 data/ui/polyhymnia-window.ui:139
+#: data/ui/polyhymnia-window.ui:154
 msgid "Songs"
 msgstr "Песни"
 
 #: data/ui/polyhymnia-preferences-window.ui:68
 msgid "Additional information that can be found on music from your library"
-msgstr "Дополнительные сведения, которые могут быть найдены о музыке из вашей библиотеки"
+msgstr ""
+"Дополнительные сведения, которые могут быть найдены о музыке из вашей "
+"библиотеки"
 
 #: data/ui/polyhymnia-preferences-window.ui:69
 msgid "Additional Information"
@@ -118,18 +126,13 @@ msgstr "Выполнять поиск новых песен при запуск�
 msgid "Scan on Startup"
 msgstr "Искать при запуске"
 
-#: data/ui/polyhymnia-preferences-window.ui:142
+#: data/ui/polyhymnia-preferences-window.ui:114
 msgid "Library update configuration"
 msgstr "Настройка обновления библиотеки"
 
-#: data/ui/polyhymnia-preferences-window.ui:143
+#: data/ui/polyhymnia-preferences-window.ui:115
 msgid "Scan"
 msgstr "Поиск"
-
-#: data/ui/polyhymnia-preferences-window.ui:152
-#: data/ui/polyhymnia-window.ui:194 data/ui/polyhymnia-preferences-window.ui:31
-msgid "Radio"
-msgstr "Радио"
 
 #: data/ui/polyhymnia-window.ui:34
 msgid "Search"
@@ -139,38 +142,50 @@ msgstr "Искать"
 msgid "Search…"
 msgstr "Искать…"
 
-#: data/ui/polyhymnia-window.ui:70
+#: data/ui/polyhymnia-window.ui:69
 msgid "Recently Added"
 msgstr "Недавно добавленное"
 
-#: data/ui/polyhymnia-window.ui:73
+#: data/ui/polyhymnia-window.ui:72
 msgid "Recently played songs will be placed here"
 msgstr "Здесь будут размещены недавно воспроизведённые песни"
 
-#: data/ui/polyhymnia-window.ui:75
+#: data/ui/polyhymnia-window.ui:74
 msgid "No recently played songs"
 msgstr "Нет недавно воспроизведённых песен"
 
-#: data/ui/polyhymnia-window.ui:166 data/ui/polyhymnia-window.ui:181
+#: data/ui/polyhymnia-window.ui:165 data/ui/polyhymnia-window.ui:180
 msgid "Genres"
 msgstr "Жанры"
 
-#: data/ui/polyhymnia-window.ui:197
+#: data/ui/polyhymnia-window.ui:187
+msgid "Check your MPD setup and try again"
+msgstr "Проверьте настройки MPD и попробуйте ещё раз"
+
+#: data/ui/polyhymnia-window.ui:189
+msgid "No MPD connection"
+msgstr "Нет соединения с MPD"
+
+#: data/ui/polyhymnia-window.ui:194
+msgid "Try again"
+msgstr "Повторить попытку"
+
+#: data/ui/polyhymnia-window.ui:210
 msgid "Check your Internet connection and try again"
 msgstr "Проверьте соединение с Интернетом и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:199
+#: data/ui/polyhymnia-window.ui:212
 msgid "No Internet connection"
 msgstr "Нет соединения с Интернетом"
 
-#: data/ui/polyhymnia-window.ui:263
+#: data/ui/polyhymnia-window.ui:276
 msgid "_Preferences"
 msgstr "_Настройки"
 
-#: data/ui/polyhymnia-window.ui:267
+#: data/ui/polyhymnia-window.ui:280
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбинации клавиш"
 
-#: data/ui/polyhymnia-window.ui:271
+#: data/ui/polyhymnia-window.ui:284
 msgid "_About Polyhymnia"
 msgstr "_О Polyhymnia"

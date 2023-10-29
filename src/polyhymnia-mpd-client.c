@@ -129,27 +129,65 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
 static void
 polyhymnia_mpd_client_init (PolyhymniaMpdClient *self)
 {
-  self->mpd_connection = mpd_connection_new(NULL, 0, 0);
+  GError *error = NULL;
+  polyhymnia_mpd_client_connect (self, &error);
+  if (error != NULL)
+  {
+    g_warning("MPD client initialization error: %s\n",
+              error->message);
+    g_error_free (error);
+  }
+}
+
+/* Instance methods */
+void
+polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
+                              GError              **error)
+{
+  struct mpd_connection *mpd_connection;
+  enum mpd_error mpd_initialization_error;
+
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
 
   if (self->mpd_connection != NULL)
   {
-    if (mpd_connection_get_error(self->mpd_connection) == MPD_ERROR_SUCCESS)
+    return;
+  }
+
+  mpd_connection = mpd_connection_new(NULL, 0, 0);
+
+  if (mpd_connection != NULL)
+  {
+    mpd_initialization_error = mpd_connection_get_error(mpd_connection);
+    if (mpd_initialization_error == MPD_ERROR_SUCCESS)
     {
-      const unsigned *mpd_version = mpd_connection_get_server_version (self->mpd_connection);
+      const unsigned *mpd_version = mpd_connection_get_server_version (mpd_connection);
       g_object_set(G_OBJECT (self), "initialized", TRUE, NULL);
       g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
     }
     else
     {
-      g_warning("An error occurred on MPD connection initialization: %s\n",
-              mpd_connection_get_error_message(self->mpd_connection));
-      mpd_connection_free (self->mpd_connection);
-      self->mpd_connection = NULL;
+      g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "MPD error - %s",
+                 mpd_connection_get_error_message(mpd_connection));
+      mpd_connection_free (mpd_connection);
+      mpd_connection = NULL;
     }
   }
+  else
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_OOM,
+                 "Out of memory");
+  }
+
+  self->mpd_connection = mpd_connection;
 }
 
-/* Instance methods */
 void
 polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
                            GError              **error)
@@ -168,7 +206,7 @@ polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_SCAN_FAILED,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "MPD error - %s",
                  mpd_connection_get_error_message(self->mpd_connection));
   }
