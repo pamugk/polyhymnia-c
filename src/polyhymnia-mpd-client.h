@@ -9,4 +9,15 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaMpdClient, polyhymnia_mpd_client, POLYHYMNIA, MPD_CLIENT, GObject)
 
+typedef enum
+{
+  POLYHYMNIA_MPD_CLIENT_ERROR_SCAN_FAILED,
+} PolyhymniaMpdClientError;
+#define POLYHYMNIA_MPD_CLIENT_ERROR polyhymnia_mpd_client_error_quark ()
+
+GQuark polyhymnia_mpd_client_error_quark(void);
+
+void polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
+                                GError              **error);
+
 G_END_DECLS

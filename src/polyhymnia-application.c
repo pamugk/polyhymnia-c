@@ -27,6 +27,7 @@ polyhymnia_application_new (const char        *application_id,
 	                NULL);
 }
 
+/* Class stuff - startup & shutdown callbacks, etc */
 static void
 polyhymnia_application_activate (GApplication *app)
 {
@@ -37,9 +38,11 @@ polyhymnia_application_activate (GApplication *app)
   window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
   if (window == NULL)
+  {
     window = g_object_new (POLYHYMNIA_TYPE_WINDOW,
 		            "application", app,
 		            NULL);
+  }
 
   gtk_window_present (window);
 }
@@ -47,9 +50,11 @@ polyhymnia_application_activate (GApplication *app)
 static void
 polyhymnia_application_shutdown (GApplication *app)
 {
+  PolyhymniaApplication *self;
+
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
-  PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  self = POLYHYMNIA_APPLICATION (app);
   g_clear_object (&self->mpd_client);
 
   G_APPLICATION_CLASS (polyhymnia_application_parent_class)->shutdown (app);
@@ -58,10 +63,12 @@ polyhymnia_application_shutdown (GApplication *app)
 static void
 polyhymnia_application_startup (GApplication *app)
 {
+  PolyhymniaApplication *self;
+
   G_APPLICATION_CLASS (polyhymnia_application_parent_class)->startup (app);
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
-  PolyhymniaApplication *self = POLYHYMNIA_APPLICATION (app);
+  self = POLYHYMNIA_APPLICATION (app);
   self->mpd_client = g_object_new (POLYHYMNIA_TYPE_MPD_CLIENT, NULL);
 }
 
@@ -75,6 +82,7 @@ polyhymnia_application_class_init (PolyhymniaApplicationClass *klass)
   app_class->startup = polyhymnia_application_startup;
 }
 
+/* Actions */
 static void
 polyhymnia_application_about_action (GSimpleAction *action,
                                      GVariant      *parameter,
@@ -96,6 +104,18 @@ polyhymnia_application_about_action (GSimpleAction *action,
 	                  "developers", developers,
 	                  "copyright", "© 2023 pamugk",
 	                  NULL);
+}
+
+static void
+polyhymnia_application_quit_action (GSimpleAction *action,
+                                    GVariant      *parameter,
+                                    gpointer       user_data)
+{
+  PolyhymniaApplication *self = user_data;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  g_application_quit (G_APPLICATION (self));
 }
 
 static void
@@ -121,25 +141,27 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
 }
 
 static void
-polyhymnia_application_quit_action (GSimpleAction *action,
-                                    GVariant      *parameter,
-                                    gpointer       user_data)
-{
-  PolyhymniaApplication *self = user_data;
-
-  g_assert (POLYHYMNIA_IS_APPLICATION (self));
-
-  g_application_quit (G_APPLICATION (self));
-}
-
-static void
 polyhymnia_application_scan_action (GSimpleAction *action,
                                     GVariant      *parameter,
                                     gpointer       user_data)
 {
+  gsize parameter_length;
+  const gchar * parameter_value;
   PolyhymniaApplication *self = user_data;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  parameter_value = g_variant_get_string (parameter, &parameter_length);
+  if (g_str_equal (parameter_value, "library"))
+  {
+    GError *error = NULL;
+    polyhymnia_mpd_client_scan (self->mpd_client, &error);
+    if (error != NULL)
+    {
+      g_warning("An error occurred on library scan request: %s\n", error->message);
+      g_error_free (error);
+    }
+  }
 }
 
 static const GActionEntry app_actions[] = {
