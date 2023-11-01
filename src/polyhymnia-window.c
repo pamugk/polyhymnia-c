@@ -4,7 +4,10 @@
 #include "polyhymnia-mpd-client.h"
 #include "polyhymnia-window.h"
 
+#include "polyhymnia-album-card.h"
+#include "polyhymnia-artist-card.h"
 #include "polyhymnia-genre-card.h"
+#include "polyhymnia-track-row.h"
 
 struct _PolyhymniaWindow
 {
@@ -23,12 +26,16 @@ struct _PolyhymniaWindow
   GtkStackPage        *recent_stack_page;
   GtkStackPage        *artists_stack_page;
   GtkScrolledWindow   *artists_scrolled_window;
+  GtkFlowBox          *artists_scrolled_window_content;
   GtkStackPage        *albums_stack_page;
   GtkScrolledWindow   *albums_scrolled_window;
+  GtkFlowBox          *albums_scrolled_window_content;
   GtkStackPage        *tracks_stack_page;
   GtkScrolledWindow   *tracks_scrolled_window;
+  GtkBox              *tracks_scrolled_window_content;
   GtkStackPage        *genres_stack_page;
   GtkScrolledWindow   *genres_scrolled_window;
+  GtkFlowBox          *genres_scrolled_window_content;
   AdwStatusPage       *no_library_connection_page;
 
   GtkActionBar        *player_bar;
@@ -40,6 +47,16 @@ struct _PolyhymniaWindow
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaWindow, polyhymnia_window, ADW_TYPE_APPLICATION_WINDOW)
+
+static void
+polyhymnia_window_dispose(GObject *gobject)
+{
+  PolyhymniaWindow *self = POLYHYMNIA_WINDOW (gobject);
+
+  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_WINDOW);
+
+  G_OBJECT_CLASS (polyhymnia_window_parent_class)->dispose (gobject);
+}
 
 static void
 polyhymnia_window_finalize(GObject *gobject)
@@ -58,6 +75,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+  gobject_class->dispose = polyhymnia_window_dispose;
   gobject_class->finalize = polyhymnia_window_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-window.ui");
@@ -69,9 +87,17 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_stack);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, recent_stack_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_scrolled_window);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_scrolled_window_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_scrolled_window);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_scrolled_window_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_scrolled_window);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_scrolled_window_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_stack_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_scrolled_window);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_scrolled_window_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_library_connection_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player_bar);
@@ -113,6 +139,14 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
       for (guint i = 0; i < artists->len; i++)
       {
         gchar * artist = g_array_index (artists, gchar *, i);
+        PolyhymniaArtistCard *card = g_object_new (POLYHYMNIA_TYPE_ARTIST_CARD,
+                                                  "artist", artist,
+                                                  NULL);
+        if (card != NULL)
+        {
+          gtk_flow_box_append(self->artists_scrolled_window_content,
+                              GTK_WIDGET (card));
+        }
         g_free(artist);
       }
       g_array_free (artists, TRUE);
@@ -134,6 +168,14 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
       for (guint i = 0; i < albums->len; i++)
       {
         gchar *album = g_array_index (albums, gchar *, i);
+        PolyhymniaAlbumCard *card = g_object_new (POLYHYMNIA_TYPE_ALBUM_CARD,
+                                                  "album", album,
+                                                  NULL);
+        if (card != NULL)
+        {
+          gtk_flow_box_append(self->albums_scrolled_window_content,
+                              GTK_WIDGET (card));
+        }
         g_free(album);
       }
       g_array_free (albums, TRUE);
@@ -164,6 +206,14 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
       for (guint i = 0; i < genres->len; i++)
       {
         gchar *genre = g_array_index (genres, gchar *, i);
+        PolyhymniaGenreCard *card = g_object_new (POLYHYMNIA_TYPE_GENRE_CARD,
+                                                  "genre", genre,
+                                                  NULL);
+        if (card != NULL)
+        {
+          gtk_flow_box_append(self->genres_scrolled_window_content,
+                              GTK_WIDGET (card));
+        }
         g_free(genre);
       }
       g_array_free (genres, TRUE);

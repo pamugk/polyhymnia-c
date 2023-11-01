@@ -93,6 +93,12 @@
                                 </child>
                                 <child>
                                   <object class="GtkScrolledWindow" id="artists_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkFlowBox" id="artists_scrolled_window_content">
+                                        <property name="column-spacing">20</property>
+                                        <property name="row-spacing">20</property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -119,6 +125,12 @@
                                 </child>
                                 <child>
                                   <object class="GtkScrolledWindow" id="albums_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkFlowBox" id="albums_scrolled_window_content">
+                                        <property name="column-spacing">20</property>
+                                        <property name="row-spacing">20</property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -145,6 +157,11 @@
                                 </child>
                                 <child>
                                   <object class="GtkScrolledWindow" id="tracks_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkBox" id="tracks_scrolled_window_content">
+                                        <property name="orientation">vertical</property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -171,6 +188,12 @@
                                 </child>
                                 <child>
                                   <object class="GtkScrolledWindow" id="genres_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkFlowBox" id="genres_scrolled_window_content">
+                                        <property name="column-spacing">20</property>
+                                        <property name="row-spacing">20</property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>

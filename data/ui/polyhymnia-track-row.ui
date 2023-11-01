@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <template class="PolyhymniaTrackRow" parent="GtkWidget">
-    <child class="GtkGrid">
+    <child class="GtkGrid" id="container">
       <property name="column-spacing">4</property>
       <property name="row-spacing">2</property>
       <child>
