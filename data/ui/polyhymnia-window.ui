@@ -68,16 +68,20 @@
                             <property name="name">recent_page</property>
                             <property name="title" translatable="yes">Recently Added</property>
                             <property name="child">
-                              <object class="AdwStatusPage">
-                                <property name="description" translatable="yes">Recently played songs will be placed here</property>
-                                <property name="icon-name">list-symbolic</property>
-                                <property name="title" translatable="yes">No recently played songs</property>
+                              <object class="GtkListBox">
+                                <child type="placeholder">
+                                  <object class="AdwStatusPage">
+                                    <property name="description" translatable="yes">Recently played songs will be placed here</property>
+                                    <property name="icon-name">list-symbolic</property>
+                                    <property name="title" translatable="yes">No recently played songs</property>
+                                  </object>
+                                </child>
                               </object>
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="artists_stack_page">
+                          <object class="GtkStackPage" id="artist_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -92,11 +96,19 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="artists_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="artist_scrolled_window">
                                     <property name="child">
-                                      <object class="GtkFlowBox" id="artists_scrolled_window_content">
-                                        <property name="column-spacing">20</property>
-                                        <property name="row-spacing">20</property>
+                                      <object class="GtkGridView" id="artist_grid_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-grid-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkSingleSelection" id="artist_selection_model">
+                                            <property name="autoselect">false</property>
+                                          </object>
+                                        </property>
                                       </object>
                                     </property>
                                     <property name="vexpand">true</property>
@@ -109,7 +121,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="albums_stack_page">
+                          <object class="GtkStackPage" id="album_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -124,11 +136,9 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="albums_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="album_scrolled_window">
                                     <property name="child">
-                                      <object class="GtkFlowBox" id="albums_scrolled_window_content">
-                                        <property name="column-spacing">20</property>
-                                        <property name="row-spacing">20</property>
+                                      <object class="GtkGridView" id="album_grid_view">
                                       </object>
                                     </property>
                                     <property name="vexpand">true</property>
@@ -141,7 +151,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="tracks_stack_page">
+                          <object class="GtkStackPage" id="track_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -156,10 +166,9 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="tracks_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="track_scrolled_window">
                                     <property name="child">
-                                      <object class="GtkBox" id="tracks_scrolled_window_content">
-                                        <property name="orientation">vertical</property>
+                                      <object class="GtkListView" id="track_list_view">
                                       </object>
                                     </property>
                                     <property name="vexpand">true</property>
@@ -172,7 +181,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="genres_stack_page">
+                          <object class="GtkStackPage" id="genre_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -187,14 +196,26 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="genres_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="genre_scrolled_window">
                                     <property name="child">
-                                      <object class="GtkFlowBox" id="genres_scrolled_window_content">
-                                        <property name="column-spacing">20</property>
-                                        <property name="row-spacing">20</property>
+                                      <object class="GtkGridView" id="genre_grid_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkSingleSelection" id="genre_selection_model">
+                                            <property name="autoselect">false</property>
+                                            <property name="model">
+                                              <object class="GtkStringList" id="genre_model">
+                                              </object>
+                                            </property>
+                                          </object>
+                                        </property>
                                       </object>
-                                    </property>
-                                    <property name="vexpand">true</property>
+		                    </property>
+		                    <property name="vexpand">true</property>
                                   </object>
                                 </child>
                               </object>
@@ -293,6 +314,7 @@
       </object>
     </property>
   </template>
+
   <menu id="primary_menu">
     <section>
       <item>

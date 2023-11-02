@@ -3,6 +3,9 @@
 
 #include <glib-object.h>
 
+#include "polyhymnia-artist.h"
+#include "polyhymnia-track.h"
+
 G_BEGIN_DECLS
 
 #define POLYHYMNIA_TYPE_MPD_CLIENT (polyhymnia_mpd_client_get_type())
@@ -24,19 +27,19 @@ void polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
 void polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
                                 GError              **error);
 
-GArray *
+GPtrArray *
 polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
                                     GError              **error);
 
-GArray *
+GPtrArray *
 polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
                                       GError              **error);
 
-GArray *
+GPtrArray *
 polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
                                     GError              **error);
 
-void
+GPtrArray *
 polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
                                     const gchar         *query,
                                     GError              **error);

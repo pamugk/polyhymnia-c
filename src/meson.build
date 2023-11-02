@@ -1,12 +1,10 @@
 polyhymnia_sources = [
   'main.c',
-  'polyhymnia-album-card.c',
+  'polyhymnia-artist.c',
   'polyhymnia-application.c',
-  'polyhymnia-artist-card.c',
-  'polyhymnia-genre-card.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-preferences-window.c',
-  'polyhymnia-track-row.c',
+  'polyhymnia-track.c',
   'polyhymnia-window.c',
 ]
 
