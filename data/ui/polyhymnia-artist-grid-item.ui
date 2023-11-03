@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="PolyhymniaArtistCard" parent="GtkWidget">
-    <child>
+  <template class="GtkListItem">
+    <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
@@ -11,10 +11,19 @@
 	    <property name="icon-name">music-artist-symbolic</property>
 	    <property name="show-initials">false</property>
 	    <property name="size">100</property>
+	    <property name="text"
+	    	bind-source="name_label"
+                bind-property="label"
+                bind-flags="sync-create" />
 	  </object>
 	</child>
 	<child>
 	  <object class="GtkLabel" id="name_label">
+	    <binding name="label">
+	      <lookup name="name" type="PolyhymniaArtist">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
 	    <style>
 	      <class name="heading"/>
 	    </style>
@@ -22,6 +31,6 @@
 	  </object>
 	</child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>

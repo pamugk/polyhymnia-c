@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="PolyhymniaGenreCard" parent="GtkWidget">
-    <child>
-      <object class="GtkBox">
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkBox" id="container">
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
@@ -14,6 +14,11 @@
         </child>
         <child>
           <object class="GtkLabel" id="name_label">
+	    <binding name="label">
+	      <lookup name="string" type="GtkStringObject">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
             <style>
               <class name="heading"/>
             </style>
@@ -21,6 +26,6 @@
           </object>
         </child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>

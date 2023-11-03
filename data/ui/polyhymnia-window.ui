@@ -9,7 +9,7 @@
         <child>
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
-              <object class="GtkButton">
+              <object class="GtkButton" id="scan_button">
                 <property name="action-name">app.scan</property>
                 <property name="action-target">"library"</property>
                 <property name="icon-name">update-symbolic</property>
@@ -28,7 +28,7 @@
               </object>
             </child>
             <child type="end">
-              <object class="GtkToggleButton" id="search">
+              <object class="GtkToggleButton" id="search_button">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">edit-find-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Search</property>
@@ -57,28 +57,31 @@
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkStackSidebar">
+                      <object class="GtkStackSidebar" id="library_stack_sidebar">
                         <property name="stack">library_stack</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkStack" id="library_stack">
-                        <property name="hexpand">true</property>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="recent_stack_page">
                             <property name="name">recent_page</property>
                             <property name="title" translatable="yes">Recently Added</property>
                             <property name="child">
-                              <object class="AdwStatusPage">
-                                <property name="description" translatable="yes">Recently played songs will be placed here</property>
-                                <property name="icon-name">list-symbolic</property>
-                                <property name="title" translatable="yes">No recently played songs</property>
+                              <object class="GtkListBox">
+                                <child type="placeholder">
+                                  <object class="AdwStatusPage">
+                                    <property name="description" translatable="yes">Recently played songs will be placed here</property>
+                                    <property name="icon-name">list-symbolic</property>
+                                    <property name="title" translatable="yes">No recently played songs</property>
+                                  </object>
+                                </child>
                               </object>
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="artist_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -93,7 +96,20 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="artists_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="artist_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkGridView" id="artist_grid_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-grid-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkNoSelection" id="artist_selection_model">
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -104,7 +120,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="album_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -119,7 +135,20 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="albums_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="album_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkGridView" id="album_grid_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkNoSelection" id="album_selection_model">
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -130,7 +159,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="track_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -145,7 +174,21 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="tracks_scrolled_window">
+                                  <object class="GtkScrolledWindow" id="track_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkListView" id="track_list_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkMultiSelection" id="track_selection_model">
+                                          </object>
+                                        </property>
+                                        <property name="show-separators">true</property>
+                                      </object>
+                                    </property>
                                     <property name="vexpand">true</property>
                                   </object>
                                 </child>
@@ -156,7 +199,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="GtkStackPage" id="genre_stack_page">
                             <property name="child">
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
@@ -171,8 +214,25 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="genres_scrolled_window">
-                                    <property name="vexpand">true</property>
+                                  <object class="GtkScrolledWindow" id="genre_scrolled_window">
+                                    <property name="child">
+                                      <object class="GtkGridView" id="genre_grid_view">
+                                        <property name="factory">
+                                          <object class="GtkBuilderListItemFactory">
+                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+                                          </object>
+                                        </property>
+                                        <property name="model">
+                                          <object class="GtkNoSelection" id="genre_selection_model">
+                                            <property name="model">
+                                              <object class="GtkStringList" id="genre_model">
+                                              </object>
+                                            </property>
+                                          </object>
+                                        </property>
+                                      </object>
+		                    </property>
+		                    <property name="vexpand">true</property>
                                   </object>
                                 </child>
                               </object>
@@ -181,6 +241,20 @@
                             <property name="title" translatable="yes">Genres</property>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwStatusPage" id="no_library_connection_page">
+                        <property name="description" translatable="yes">Check your MPD setup and try again</property>
+                        <property name="icon-name">offline-globe-symbolic</property>
+                        <property name="title" translatable="yes">No MPD connection</property>
+                        <property name="child">
+                          <object class="GtkButton" id="reconnect_button">
+                            <property name="action-name">app.reconnect</property>
+                            <property name="halign">GTK_ALIGN_CENTER</property>
+                            <property name="label" translatable="yes">Try again</property>
+                          </object>
+                        </property>
                       </object>
                     </child>
                   </object>
@@ -204,27 +278,27 @@
           </object>
         </child>
         <child>
-          <object class="GtkActionBar">
+          <object class="GtkActionBar" id="player_bar">
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="previous_track_button">
                 <property name="icon-name">media-skip-backward</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="playback_button">
                 <property name="icon-name">media-playback-start</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkButton">
+	      <object class="GtkButton" id="next_track_button">
                 <property name="icon-name">media-skip-forward</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="start">
-	      <object class="GtkScale">
+	      <object class="GtkScale" id="track_position_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
                     <property name="value">100</property>
@@ -233,13 +307,13 @@
                     <property name="step-increment">5</property>
                   </object>
                 </property>
+                <property name="hexpand">true</property>
                 <property name="orientation">horizontal</property>
                 <property name="sensitive">false</property>
 	      </object>
             </child>
             <child type="center">
-	      <object class="GtkScale">
-                <property name="hexpand">true</property>
+	      <object class="GtkScale" id="volume_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
                     <property name="value">100</property>
@@ -257,6 +331,7 @@
       </object>
     </property>
   </template>
+
   <menu id="primary_menu">
     <section>
       <item>

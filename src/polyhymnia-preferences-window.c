@@ -20,7 +20,17 @@ struct _PolyhymniaPreferencesWindow
 G_DEFINE_FINAL_TYPE (PolyhymniaPreferencesWindow, polyhymnia_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
 
 static void
-polyhymnia_preferenes_window_finalize(GObject *gobject)
+polyhymnia_preferences_window_dispose(GObject *gobject)
+{
+  PolyhymniaPreferencesWindow *self = POLYHYMNIA_PREFERENCES_WINDOW (gobject);
+
+  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PREFERENCES_WINDOW);
+
+  G_OBJECT_CLASS (polyhymnia_preferences_window_parent_class)->dispose (gobject);
+}
+
+static void
+polyhymnia_preferences_window_finalize(GObject *gobject)
 {
   PolyhymniaPreferencesWindow *self = POLYHYMNIA_PREFERENCES_WINDOW (gobject);
 
@@ -35,7 +45,8 @@ polyhymnia_preferences_window_class_init (PolyhymniaPreferencesWindowClass *klas
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class->finalize = polyhymnia_preferenes_window_finalize;
+  gobject_class->dispose = polyhymnia_preferences_window_dispose;
+  gobject_class->finalize = polyhymnia_preferences_window_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-preferences-window.ui");
 
