@@ -3,10 +3,16 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="PolyhymniaWindow" parent="AdwApplicationWindow">
+    <child>
+      <object class="AdwBreakpoint">
+        <condition>max-width: 550sp</condition>
+        <setter object="switcher_bar" property="reveal">True</setter>
+        <setter object="header_bar" property="title-widget"/>
+      </object>
+    </child>
     <property name="content">
-      <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <child>
+      <object class="AdwToolbarView">
+        <child type="top">
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
               <object class="GtkButton" id="scan_button">
@@ -15,12 +21,12 @@
                 <property name="icon-name">update-symbolic</property>
               </object>
             </child>
-            <child type="title">
+            <property name="title-widget">
               <object class="AdwViewSwitcher">
                 <property name="stack">content_stack</property>
                 <property name="policy">wide</property>
               </object>
-            </child>
+            </property>
             <child type="end">
               <object class="GtkMenuButton">
                 <property name="icon-name">open-menu-symbolic</property>
@@ -36,7 +42,7 @@
             </child>
           </object>
         </child>
-        <child>
+        <child type="top">
           <object class="GtkSearchBar" id="searchbar">
             <child>
 	      <object class="GtkSearchEntry">
@@ -45,7 +51,7 @@
             </child>
           </object>
         </child>
-        <child>
+        <property name="content">
           <object class="AdwViewStack" id="content_stack">
             <property name="vexpand">true</property>
             <child>
@@ -99,15 +105,8 @@
                                   <object class="GtkScrolledWindow" id="artist_scrolled_window">
                                     <property name="child">
                                       <object class="GtkGridView" id="artist_grid_view">
-                                        <property name="factory">
-                                          <object class="GtkBuilderListItemFactory">
-                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-grid-item.ui</property>
-                                          </object>
-                                        </property>
-                                        <property name="model">
-                                          <object class="GtkNoSelection" id="artist_selection_model">
-                                          </object>
-                                        </property>
+                                        <property name="factory">artist_factory</property>
+                                        <property name="model">artist_selection_model</property>
                                       </object>
                                     </property>
                                     <property name="vexpand">true</property>
@@ -138,15 +137,8 @@
                                   <object class="GtkScrolledWindow" id="album_scrolled_window">
                                     <property name="child">
                                       <object class="GtkGridView" id="album_grid_view">
-                                        <property name="factory">
-                                          <object class="GtkBuilderListItemFactory">
-                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
-                                          </object>
-                                        </property>
-                                        <property name="model">
-                                          <object class="GtkNoSelection" id="album_selection_model">
-                                          </object>
-                                        </property>
+                                        <property name="factory">album_factory</property>
+                                        <property name="model">album_selection_model</property>
                                       </object>
                                     </property>
                                     <property name="vexpand">true</property>
@@ -177,15 +169,8 @@
                                   <object class="GtkScrolledWindow" id="track_scrolled_window">
                                     <property name="child">
                                       <object class="GtkListView" id="track_list_view">
-                                        <property name="factory">
-                                          <object class="GtkBuilderListItemFactory">
-                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
-                                          </object>
-                                        </property>
-                                        <property name="model">
-                                          <object class="GtkMultiSelection" id="track_selection_model">
-                                          </object>
-                                        </property>
+                                        <property name="factory">track_factory</property>
+                                        <property name="model">track_selection_model</property>
                                         <property name="show-separators">true</property>
                                       </object>
                                     </property>
@@ -217,19 +202,8 @@
                                   <object class="GtkScrolledWindow" id="genre_scrolled_window">
                                     <property name="child">
                                       <object class="GtkGridView" id="genre_grid_view">
-                                        <property name="factory">
-                                          <object class="GtkBuilderListItemFactory">
-                                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
-                                          </object>
-                                        </property>
-                                        <property name="model">
-                                          <object class="GtkNoSelection" id="genre_selection_model">
-                                            <property name="model">
-                                              <object class="GtkStringList" id="genre_model">
-                                              </object>
-                                            </property>
-                                          </object>
-                                        </property>
+                                        <property name="factory">genre_factory</property>
+                                        <property name="model">genre_selection_model</property>
                                       </object>
 		                    </property>
 		                    <property name="vexpand">true</property>
@@ -241,20 +215,6 @@
                             <property name="title" translatable="yes">Genres</property>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwStatusPage" id="no_library_connection_page">
-                        <property name="description" translatable="yes">Check your MPD setup and try again</property>
-                        <property name="icon-name">offline-globe-symbolic</property>
-                        <property name="title" translatable="yes">No MPD connection</property>
-                        <property name="child">
-                          <object class="GtkButton" id="reconnect_button">
-                            <property name="action-name">app.reconnect</property>
-                            <property name="halign">GTK_ALIGN_CENTER</property>
-                            <property name="label" translatable="yes">Try again</property>
-                          </object>
-                        </property>
                       </object>
                     </child>
                   </object>
@@ -276,8 +236,8 @@
               </object>
             </child>
           </object>
-        </child>
-        <child>
+        </property>
+        <child type="bottom">
           <object class="GtkActionBar" id="player_bar">
             <child type="start">
 	      <object class="GtkButton" id="previous_track_button">
@@ -328,6 +288,11 @@
             </child>
           </object>
         </child>
+        <child type="bottom">
+          <object class="AdwViewSwitcherBar" id="switcher_bar">
+            <property name="stack">content_stack</property>
+          </object>
+        </child>
       </object>
     </property>
   </template>
@@ -348,4 +313,42 @@
       </item>
     </section>
   </menu>
+
+  <object class="AdwStatusPage" id="no_library_connection_page">
+    <property name="description" translatable="yes">Check your MPD setup and try again</property>
+    <property name="icon-name">offline-globe-symbolic</property>
+    <property name="title" translatable="yes">No MPD connection</property>
+    <property name="child">
+      <object class="GtkButton" id="reconnect_button">
+        <property name="action-name">app.reconnect</property>
+        <property name="halign">GTK_ALIGN_CENTER</property>
+        <property name="label" translatable="yes">Try again</property>
+      </object>
+    </property>
+  </object>
+
+  <object class="GtkBuilderListItemFactory" id="album_factory">
+    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
+  </object>
+  <object class="GtkNoSelection" id="album_selection_model">
+  </object>
+  <object class="GtkBuilderListItemFactory" id="artist_factory">
+    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-grid-item.ui</property>
+  </object>
+  <object class="GtkNoSelection" id="artist_selection_model">
+  </object>
+  <object class="GtkBuilderListItemFactory" id="genre_factory">
+    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+  </object>
+  <object class="GtkNoSelection" id="genre_selection_model">
+    <property name="model">
+      <object class="GtkStringList" id="genre_model">
+      </object>
+    </property>
+  </object>
+  <object class="GtkBuilderListItemFactory" id="track_factory">
+    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+  </object>
+  <object class="GtkMultiSelection" id="track_selection_model">
+  </object>
 </interface>

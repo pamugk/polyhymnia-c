@@ -215,23 +215,6 @@ polyhymnia_window_init (PolyhymniaWindow *self)
                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
   g_object_bind_property(self->mpd_client, "initialized",
-                         self->library_stack_sidebar, "visible",
-                         G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
-  g_object_bind_property(self->mpd_client, "initialized",
-                         self->library_stack, "hexpand",
-                         G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
-  g_object_bind_property(self->mpd_client, "initialized",
-                         self->library_stack, "visible",
-                         G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
-
-  g_object_bind_property(self->mpd_client, "initialized",
-                         self->no_library_connection_page, "hexpand",
-                         G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE| G_BINDING_INVERT_BOOLEAN);
-  g_object_bind_property(self->mpd_client, "initialized",
-                         self->no_library_connection_page, "visible",
-                         G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
-
-  g_object_bind_property(self->mpd_client, "initialized",
                          self->player_bar, "visible",
                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 

@@ -9,13 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <child>
-              <object class="AdwActionRow">
-                <child type="suffix">
-                  <object class="GtkSwitch" id="resume_playback_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-                <property name="activatable-widget">resume_playback_switch</property>
+              <object class="AdwSwitchRow" id="resume_playback_switch">
                 <property name="subtitle" translatable="yes">Resume media playback on application startup</property>
                 <property name="title" translatable="yes">Resume on Startup</property>
               </object>
@@ -72,24 +66,12 @@
         <child>
           <object class="AdwPreferencesGroup">
             <child>
-              <object class="AdwActionRow">
-                <child type="suffix">
-                  <object class="GtkSwitch" id="play_explicit_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-                <property name="activatable-widget">play_explicit_switch</property>
+              <object class="AdwSwitchRow" id="play_explicit_switch">
                 <property name="title" translatable="yes">Play Explicit Songs</property>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <child type="suffix">
-                  <object class="GtkSwitch" id="show_explicit_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-                <property name="activatable-widget">show_explicit_switch</property>
+              <object class="AdwSwitchRow" id="show_explicit_switch">
                 <property name="title" translatable="yes">Show Explicit Album Covers</property>
               </object>
             </child>
@@ -100,13 +82,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <child>
-              <object class="AdwActionRow">
-                <child type="suffix">
-                  <object class="GtkSwitch" id="scan_startup_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-                <property name="activatable-widget">scan_startup_switch</property>
+              <object class="AdwSwitchRow" id="scan_startup_switch">
                 <property name="subtitle" translatable="yes">Scan sources for new songs on application startup</property>
                 <property name="title" translatable="yes">Scan on Startup</property>
               </object>
@@ -128,4 +104,8 @@
     <property name="icon-name">gtk-preferences</property>
     <property name="modal">True</property>
   </template>
+
+  <object class="GSettings" id="settings">
+    <property name="schema-id">com.github.pamugk.polyhymnia</property>
+  </object>
 </interface>

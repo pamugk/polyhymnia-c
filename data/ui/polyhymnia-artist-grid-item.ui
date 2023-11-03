@@ -10,7 +10,7 @@
 	  <object class="AdwAvatar" id="avatar">
 	    <property name="icon-name">music-artist-symbolic</property>
 	    <property name="show-initials">false</property>
-	    <property name="size">100</property>
+	    <property name="size">140</property>
 	    <property name="text"
 	    	bind-source="name_label"
                 bind-property="label"
@@ -30,6 +30,9 @@
 	    <property name="ellipsize">end</property>
 	  </object>
 	</child>
+        <style>
+          <class name="card"/>
+        </style>
       </object>
     </property>
   </template>

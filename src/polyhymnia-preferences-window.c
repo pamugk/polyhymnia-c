@@ -7,14 +7,15 @@ struct _PolyhymniaPreferencesWindow
 {
   AdwPreferencesWindow  parent_instance;
 
-  GSettings *settings;
-
   /* Template widgets */
-  GtkSwitch        *resume_playback_switch;
+  AdwSwitchRow        *resume_playback_switch;
 
-  GtkSwitch        *play_explicit_switch;
-  GtkSwitch        *show_explicit_switch;
-  GtkSwitch        *scan_startup_switch;
+  AdwSwitchRow        *play_explicit_switch;
+  AdwSwitchRow        *show_explicit_switch;
+  AdwSwitchRow        *scan_startup_switch;
+
+  /* Template objects */
+  GSettings *settings;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaPreferencesWindow, polyhymnia_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
@@ -32,10 +33,6 @@ polyhymnia_preferences_window_dispose(GObject *gobject)
 static void
 polyhymnia_preferences_window_finalize(GObject *gobject)
 {
-  PolyhymniaPreferencesWindow *self = POLYHYMNIA_PREFERENCES_WINDOW (gobject);
-
-  g_clear_object (&self->settings);
-
   G_OBJECT_CLASS (polyhymnia_preferences_window_parent_class)->finalize (gobject);
 }
 
@@ -54,14 +51,14 @@ polyhymnia_preferences_window_class_init (PolyhymniaPreferencesWindowClass *klas
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, play_explicit_switch);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, show_explicit_switch);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, scan_startup_switch);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, settings);
 }
 
 static void
 polyhymnia_preferences_window_init (PolyhymniaPreferencesWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
-
-  self->settings = g_settings_new ("com.github.pamugk.polyhymnia");
 
   g_settings_bind (self->settings, "app-system-resume-playback",
                   self->resume_playback_switch, "active",

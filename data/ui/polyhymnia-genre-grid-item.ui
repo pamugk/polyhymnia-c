@@ -9,7 +9,7 @@
         <child>
           <object class="GtkImage" id="image">
             <property name="icon-name">music-note-single-symbolic</property>
-            <property name="pixel-size">100</property>
+            <property name="pixel-size">140</property>
           </object>
         </child>
         <child>
@@ -25,6 +25,9 @@
             <property name="ellipsize">end</property>
           </object>
         </child>
+        <style>
+          <class name="card"/>
+        </style>
       </object>
     </property>
   </template>
