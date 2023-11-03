@@ -20,6 +20,16 @@ G_DEFINE_FINAL_TYPE (PolyhymniaArtist, polyhymnia_artist, G_TYPE_OBJECT)
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 static void
+polyhymnia_artist_finalize (GObject *gobject)
+{
+  PolyhymniaArtist *self = POLYHYMNIA_ARTIST (gobject);
+
+  g_free (self->name);
+
+  G_OBJECT_CLASS (polyhymnia_artist_parent_class)->finalize (gobject);
+}
+
+static void
 polyhymnia_artist_get_property (GObject    *object,
                                 guint       property_id,
                                 GValue     *value,
@@ -50,8 +60,7 @@ polyhymnia_artist_set_property (GObject      *object,
   switch ((PolyhymniaArtistProperty) property_id)
     {
     case PROP_NAME:
-      g_free (self->name);
-      self->name = g_strdup (g_value_get_string (value));
+      g_set_str (&(self->name), g_value_get_string (value));
       break;
 
     default:
@@ -65,6 +74,7 @@ polyhymnia_artist_class_init (PolyhymniaArtistClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+  gobject_class->finalize = polyhymnia_artist_finalize;
   gobject_class->get_property = polyhymnia_artist_get_property;
   gobject_class->set_property = polyhymnia_artist_set_property;
 

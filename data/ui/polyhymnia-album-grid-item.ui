@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="PolyhymniaAlbumCard" parent="GtkWidget">
-    <child>
-      <object class="GtkBox" id="container">
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkBox">
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
-          <object class="GtkImage" id="cover_image">
+          <object class="GtkImage">
             <property name="icon-name">cd-symbolic</property>
             <property name="pixel-size">100</property>
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="album_label">
+          <object class="GtkLabel">
+	    <binding name="label">
+	      <lookup name="title" type="PolyhymniaAlbum">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
             <style>
               <class name="heading"/>
             </style>
@@ -22,7 +27,12 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="artist_label">
+          <object class="GtkLabel">
+	    <binding name="label">
+	      <lookup name="artist" type="PolyhymniaAlbum">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
             <style>
               <class name="caption-heading"/>
             </style>
@@ -31,7 +41,12 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="date_label">
+          <object class="GtkLabel">
+	    <binding name="label">
+	      <lookup name="release-date" type="PolyhymniaAlbum">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
             <style>
               <class name="caption"/>
             </style>
@@ -40,6 +55,6 @@
           </object>
         </child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>

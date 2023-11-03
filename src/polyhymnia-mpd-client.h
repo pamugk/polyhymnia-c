@@ -3,6 +3,7 @@
 
 #include <glib-object.h>
 
+#include "polyhymnia-album.h"
 #include "polyhymnia-artist.h"
 #include "polyhymnia-track.h"
 

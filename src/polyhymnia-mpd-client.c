@@ -242,14 +242,17 @@ polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
   }
 
   results = g_ptr_array_new ();
-  g_ptr_array_set_free_func (results, g_free);
+  g_ptr_array_set_free_func (results, g_object_unref);
   while ((pair = mpd_recv_pair_tag(self->mpd_connection,
 				    MPD_TAG_ALBUM)) != NULL)
   {
     if (pair->value != NULL && !g_str_equal (pair->value, ""))
     {
       gchar *album = g_strdup (pair->value);
-      g_ptr_array_add (results, album);
+      GObject *album_object = g_object_new (POLYHYMNIA_TYPE_ALBUM,
+                                            "title", album,
+                                             NULL);
+      g_ptr_array_add (results, album_object);
     }
     mpd_return_pair(self->mpd_connection, pair);
   }
@@ -429,16 +432,6 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
                  mpd_connection_get_error_message(self->mpd_connection));
     return NULL;
   }
-  if (!mpd_search_add_window (self->mpd_connection, 0, 20))
-  {
-    mpd_search_cancel (self->mpd_connection);
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "search limit failed - %s",
-                 mpd_connection_get_error_message(self->mpd_connection));
-    return NULL;
-  }
   if (!mpd_search_commit (self->mpd_connection))
   {
     g_set_error (error,
@@ -454,15 +447,18 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
   while ((track = mpd_recv_song(self->mpd_connection)) != NULL)
   {
     gchar *title = g_strdup (mpd_song_get_tag (track, MPD_TAG_TITLE, 0));
-    gchar *album = g_strdup (mpd_song_get_tag (track, MPD_TAG_ALBUM, 0));
-    gchar *artist = g_strdup (mpd_song_get_tag (track, MPD_TAG_ARTIST, 0));
-    GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
-                                          "title", title,
-                                          "album", album,
-                                          "artist", artist,
-                                          "duration", mpd_song_get_duration (track),
-                                          NULL);
-    g_ptr_array_add(results, track_object);
+    if (title != NULL && !g_str_equal (title, ""))
+    {
+      gchar *album = g_strdup (mpd_song_get_tag (track, MPD_TAG_ALBUM, 0));
+      gchar *artist = g_strdup (mpd_song_get_tag (track, MPD_TAG_ARTIST, 0));
+      GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
+                                            "title", title,
+                                            "album", album,
+                                            "artist", artist,
+                                            "duration", mpd_song_get_duration (track),
+                                            NULL);
+      g_ptr_array_add(results, track_object);
+    }
     mpd_song_free(track);
   }
 

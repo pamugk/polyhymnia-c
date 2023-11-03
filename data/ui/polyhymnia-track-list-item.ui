@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="PolyhymniaTrackRow" parent="GtkWidget">
-    <child class="GtkGrid" id="container">
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkGrid">
       <property name="column-spacing">4</property>
       <property name="row-spacing">2</property>
       <child>
@@ -19,6 +20,11 @@
       </child>
       <child>
         <object class="GtkLabel" id="track_label">
+	  <binding name="label">
+	    <lookup name="title" type="PolyhymniaTrack">
+	      <lookup name="item">GtkListItem</lookup>
+	    </lookup>
+	  </binding>
           <layout>
             <property name="column">1</property>
             <property name="column-span">2</property>
@@ -34,6 +40,11 @@
       </child>
       <child>
         <object class="GtkLabel" id="artist_label">
+	  <binding name="label">
+	    <lookup name="artist" type="PolyhymniaTrack">
+	      <lookup name="item">GtkListItem</lookup>
+	    </lookup>
+	  </binding>
           <layout>
             <property name="column">1</property>
             <property name="row">1</property>
@@ -47,6 +58,11 @@
       </child>
       <child>
         <object class="GtkLabel" id="album_label">
+	  <binding name="label">
+	    <lookup name="album" type="PolyhymniaTrack">
+	      <lookup name="item">GtkListItem</lookup>
+	    </lookup>
+	  </binding>
           <layout>
             <property name="column">2</property>
             <property name="row">1</property>
@@ -61,6 +77,11 @@
       </child>
       <child>
         <object class="GtkLabel" id="duration_label">
+	  <binding name="label">
+	    <lookup name="duration-readable" type="PolyhymniaTrack">
+	      <lookup name="item">GtkListItem</lookup>
+	    </lookup>
+	  </binding>
           <layout>
             <property name="column">3</property>
             <property name="row">0</property>
@@ -73,6 +94,7 @@
           </style>
         </object>
       </child>
-    </child>
+      </object>
+    </property>
   </template>
 </interface>

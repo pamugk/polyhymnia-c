@@ -37,10 +37,14 @@ struct _PolyhymniaWindow
   GtkScale            *volume_scale;
 
   /* Template models */
+  GListStore          *album_model;
+  GtkNoSelection      *album_selection_model;
   GListStore          *artist_model;
-  GtkSingleSelection  *artist_selection_model;
+  GtkNoSelection      *artist_selection_model;
   GtkStringList       *genre_model;
-  GtkSingleSelection  *genre_selection_model;
+  GtkNoSelection      *genre_selection_model;
+  GListStore          *track_model;
+  GtkMultiSelection   *track_selection_model;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaWindow, polyhymnia_window, ADW_TYPE_APPLICATION_WINDOW)
@@ -100,9 +104,11 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_position_scale);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, volume_scale);
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, album_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artist_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genre_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genre_selection_model);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_selection_model);
 }
 
 static void
@@ -150,6 +156,11 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
   }
   else
   {
+    for (int i = 0; i < albums->len; i++)
+    {
+      PolyhymniaAlbum *album = g_ptr_array_index(albums, i);
+      g_list_store_append (self->album_model, album);
+    }
     g_ptr_array_free (albums, TRUE);
   }
 
@@ -163,6 +174,11 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
   }
   else
   {
+    for (int i = 0; i < tracks->len; i++)
+    {
+      PolyhymniaTrack *track = g_ptr_array_index(tracks, i);
+      g_list_store_append (self->track_model, track);
+    }
     g_ptr_array_free (tracks, TRUE);
   }
 
@@ -219,9 +235,15 @@ polyhymnia_window_init (PolyhymniaWindow *self)
                          self->player_bar, "visible",
                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
+  self->album_model = g_list_store_new (POLYHYMNIA_TYPE_ALBUM);
+  gtk_no_selection_set_model (self->album_selection_model,
+                              G_LIST_MODEL (self->album_model));
   self->artist_model = g_list_store_new (POLYHYMNIA_TYPE_ARTIST);
-  gtk_single_selection_set_model (self->artist_selection_model,
-                                  G_LIST_MODEL (self->artist_model));
+  gtk_no_selection_set_model (self->artist_selection_model,
+                              G_LIST_MODEL (self->artist_model));
+  self->track_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
+  gtk_multi_selection_set_model (self->track_selection_model,
+                                 G_LIST_MODEL (self->track_model));
 
   self->settings = g_settings_new ("com.github.pamugk.polyhymnia");
 

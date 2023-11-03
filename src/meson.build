@@ -1,5 +1,6 @@
 polyhymnia_sources = [
   'main.c',
+  'polyhymnia-album.c',
   'polyhymnia-artist.c',
   'polyhymnia-application.c',
   'polyhymnia-mpd-client.c',
