@@ -3,15 +3,22 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="PolyhymniaWindow" parent="AdwApplicationWindow">
+    <property name="height-request">640</property>
+    <property name="width-request">480</property>
     <child>
       <object class="AdwBreakpoint">
         <condition>max-width: 550sp</condition>
-        <setter object="switcher_bar" property="reveal">True</setter>
         <setter object="header_bar" property="title-widget"/>
+        <setter object="library_split_view" property="collapsed">true</setter>
+        <setter object="switcher_bar" property="reveal">true</setter>
       </object>
     </child>
     <property name="content">
-      <object class="AdwToolbarView">
+      <object class="AdwToolbarView" id="root_toolbar_view">
+        <property name="reveal-bottom-bars"
+          bind-source="mpd_client"
+          bind-property="initialized"
+          bind-flags="sync-create" />
         <child type="top">
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
@@ -43,12 +50,16 @@
           </object>
         </child>
         <child type="top">
-          <object class="GtkSearchBar" id="searchbar">
+          <object class="GtkSearchBar">
             <child>
 	      <object class="GtkSearchEntry">
                 <property name="placeholder-text" translatable="yes">Search…</property>
 	      </object>
             </child>
+            <property name="search-mode-enabled"
+            	bind-source="search_button"
+            	bind-property="active"
+            	bind-flags="sync-create" />
           </object>
         </child>
         <property name="content">
@@ -60,17 +71,16 @@
                 <property name="name">library_page</property>
                 <property name="title" translatable="yes">Library</property>
                 <property name="child">
-                  <object class="GtkBox">
-                    <property name="orientation">horizontal</property>
-                    <child>
+                  <object class="AdwOverlaySplitView" id="library_split_view">
+                    <child type="sidebar">
                       <object class="GtkStackSidebar" id="library_stack_sidebar">
                         <property name="stack">library_stack</property>
                       </object>
                     </child>
-                    <child>
+                    <child type="content">
                       <object class="GtkStack" id="library_stack">
                         <child>
-                          <object class="GtkStackPage" id="recent_stack_page">
+                          <object class="GtkStackPage">
                             <property name="name">recent_page</property>
                             <property name="title" translatable="yes">Recently Added</property>
                             <property name="child">
@@ -87,29 +97,21 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="artist_stack_page">
+                          <object class="GtkStackPage">
                             <property name="child">
-                              <object class="GtkBox">
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">12</property>
+                              <object class="AdwNavigationView">
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Artists</property>
-                                    <property name="xalign">0</property>
-                                    <style>
-                                      <class name="title-1"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="artist_scrolled_window">
+                                  <object class="AdwNavigationPage">
                                     <property name="child">
-                                      <object class="GtkGridView" id="artist_grid_view">
-                                        <property name="factory">artist_factory</property>
-                                        <property name="model">artist_selection_model</property>
+                                      <object class="GtkScrolledWindow">
+                                        <property name="child">
+                                          <object class="GtkGridView">
+                                            <property name="factory">artist_factory</property>
+                                            <property name="model">artist_selection_model</property>
+                                          </object>
+                                        </property>
                                       </object>
                                     </property>
-                                    <property name="vexpand">true</property>
                                   </object>
                                 </child>
                               </object>
@@ -119,29 +121,21 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="album_stack_page">
+                          <object class="GtkStackPage">
                             <property name="child">
-                              <object class="GtkBox">
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">12</property>
+                              <object class="AdwNavigationView">
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Albums</property>
-                                    <property name="xalign">0</property>
-                                    <style>
-                                      <class name="title-1"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="album_scrolled_window">
+                                  <object class="AdwNavigationPage">
                                     <property name="child">
-                                      <object class="GtkGridView" id="album_grid_view">
-                                        <property name="factory">album_factory</property>
-                                        <property name="model">album_selection_model</property>
+                                      <object class="GtkScrolledWindow">
+                                        <property name="child">
+                                          <object class="GtkGridView">
+                                            <property name="factory">album_factory</property>
+                                            <property name="model">album_selection_model</property>
+                                          </object>
+                                        </property>
                                       </object>
                                     </property>
-                                    <property name="vexpand">true</property>
                                   </object>
                                 </child>
                               </object>
@@ -151,30 +145,22 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="track_stack_page">
+                          <object class="GtkStackPage">
                             <property name="child">
-                              <object class="GtkBox">
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">12</property>
+                              <object class="AdwNavigationView">
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Songs</property>
-                                    <property name="xalign">0</property>
-                                    <style>
-                                      <class name="title-1"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="track_scrolled_window">
+                                  <object class="AdwNavigationPage">
                                     <property name="child">
-                                      <object class="GtkListView" id="track_list_view">
-                                        <property name="factory">track_factory</property>
-                                        <property name="model">track_selection_model</property>
-                                        <property name="show-separators">true</property>
+                                      <object class="GtkScrolledWindow">
+                                        <property name="child">
+                                          <object class="GtkListView">
+                                            <property name="factory">track_factory</property>
+                                            <property name="model">track_selection_model</property>
+                                            <property name="show-separators">true</property>
+                                          </object>
+                                        </property>
                                       </object>
                                     </property>
-                                    <property name="vexpand">true</property>
                                   </object>
                                 </child>
                               </object>
@@ -184,29 +170,21 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage" id="genre_stack_page">
+                          <object class="GtkStackPage">
                             <property name="child">
-                              <object class="GtkBox">
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">12</property>
+                              <object class="AdwNavigationView">
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Genres</property>
-                                    <property name="xalign">0</property>
-                                    <style>
-                                      <class name="title-1"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkScrolledWindow" id="genre_scrolled_window">
+                                  <object class="AdwNavigationPage">
                                     <property name="child">
-                                      <object class="GtkGridView" id="genre_grid_view">
-                                        <property name="factory">genre_factory</property>
-                                        <property name="model">genre_selection_model</property>
+                                      <object class="GtkScrolledWindow">
+                                        <property name="child">
+                                          <object class="GtkGridView">
+                                            <property name="factory">genre_factory</property>
+                                            <property name="model">genre_selection_model</property>
+                                          </object>
+		                        </property>
                                       </object>
-		                    </property>
-		                    <property name="vexpand">true</property>
+                                    </property>
                                   </object>
                                 </child>
                               </object>
@@ -240,6 +218,12 @@
         <child type="bottom">
           <object class="GtkActionBar" id="player_bar">
             <child type="start">
+              <object class="GtkImage">
+                <property name="icon-name">image-missing-symbolic</property>
+                <property name="pixel-size">50</property>
+              </object>
+            </child>
+            <child type="start">
 	      <object class="GtkButton" id="previous_track_button">
                 <property name="icon-name">media-skip-backward</property>
                 <property name="sensitive">false</property>
@@ -257,7 +241,7 @@
                 <property name="sensitive">false</property>
 	      </object>
             </child>
-            <child type="start">
+            <child type="center">
 	      <object class="GtkScale" id="track_position_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
@@ -269,11 +253,25 @@
                 </property>
                 <property name="hexpand">true</property>
                 <property name="orientation">horizontal</property>
-                <property name="sensitive">false</property>
 	      </object>
             </child>
-            <child type="center">
-	      <object class="GtkScale" id="volume_scale">
+            <child type="end">
+              <object class="GtkToggleButton" id="lyrics_button">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">media-view-subtitles-symbolic</property>
+                <property name="sensitive">false</property>
+                <property name="tooltip-text" translatable="yes">Lyrics</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="queue_button">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">view-list-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Queue</property>
+              </object>
+            </child>
+            <child type="end">
+	      <object class="GtkScaleButton" id="volume_scale">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
                     <property name="value">100</property>
@@ -282,8 +280,7 @@
                     <property name="step-increment">5</property>
                   </object>
                 </property>
-                <property name="orientation">horizontal</property>
-                <property name="sensitive">false</property>
+                <property name="icons">audio-volume-high-symbolic</property>
 	      </object>
             </child>
           </object>
@@ -325,6 +322,11 @@
         <property name="label" translatable="yes">Try again</property>
       </object>
     </property>
+  </object>
+
+  <object class="PolyhymniaMpdClient" id="mpd_client" />
+  <object class="GSettings" id="settings">
+    <property name="schema-id">com.github.pamugk.polyhymnia</property>
   </object>
 
   <object class="GtkBuilderListItemFactory" id="album_factory">
