@@ -163,7 +163,6 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
     if (mpd_initialization_error == MPD_ERROR_SUCCESS)
     {
       const unsigned *mpd_version = mpd_connection_get_server_version (mpd_connection);
-      g_object_set(G_OBJECT (self), "initialized", TRUE, NULL);
       g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
     }
     else
@@ -186,6 +185,10 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
   }
 
   self->mpd_connection = mpd_connection;
+  if (mpd_connection != NULL)
+  {
+    g_object_set(G_OBJECT (self), "initialized", TRUE, NULL);
+  }
 }
 
 void

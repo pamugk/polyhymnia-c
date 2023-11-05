@@ -22,6 +22,7 @@
     <file alias="music-note-single-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-note-single-symbolic.svg</file>
     <file alias="offline-globe-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/offline-globe-symbolic.svg</file>
     <file alias="preferences-system-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/preferences-system-symbolic.svg</file>
+    <file alias="subtitles-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/subtitles-symbolic.svg</file>
     <file alias="update-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/update-symbolic.svg</file>
     <file alias="user-trash-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/user-trash-symbolic.svg</file>
   </gresource>

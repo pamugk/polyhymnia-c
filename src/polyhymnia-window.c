@@ -9,6 +9,9 @@ struct _PolyhymniaWindow
   AdwApplicationWindow  parent_instance;
 
   /* Template widgets */
+  AdwViewStack        *content_stack;
+  AdwStatusPage       *no_mpd_connection_page;
+  AdwToolbarView      *root_toolbar_view;
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
@@ -46,6 +49,10 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-window.ui");
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, content_stack);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_mpd_connection_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, root_toolbar_view);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
 
@@ -59,19 +66,12 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
 static void
 polyhymnia_window_content_init (PolyhymniaWindow *self)
 {
-  gboolean mpd_initialized = FALSE;
   GError *error = NULL;
 
   GPtrArray *albums;
   GPtrArray *artists;
   GPtrArray *genres;
   GPtrArray *tracks;
-
-  g_object_get (self->mpd_client, "initialized", &mpd_initialized, NULL);
-  if (!mpd_initialized)
-  {
-    return;
-  }
 
   artists = polyhymnia_mpd_client_search_artists (self->mpd_client, &error);
   if (error != NULL)
@@ -147,6 +147,30 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
 }
 
 static void
+polyhymnia_window_mpd_initialized(GObject* self,
+                                  GParamSpec* pspec,
+                                  gpointer user_data)
+{
+  gboolean mpd_initialized = FALSE;
+  PolyhymniaWindow *window_self = user_data;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+
+  g_object_get (window_self->mpd_client, "initialized", &mpd_initialized, NULL);
+  if (mpd_initialized)
+  {
+    adw_toolbar_view_set_content (window_self->root_toolbar_view,
+                                  GTK_WIDGET (window_self->content_stack));
+    polyhymnia_window_content_init (window_self);
+  }
+  else
+  {
+    adw_toolbar_view_set_content (window_self->root_toolbar_view,
+                                  GTK_WIDGET (window_self->no_mpd_connection_page));
+  }
+}
+
+static void
 polyhymnia_window_init (PolyhymniaWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
@@ -174,5 +198,8 @@ polyhymnia_window_init (PolyhymniaWindow *self)
                     self, "fullscreened",
                     G_SETTINGS_BIND_DEFAULT);
 
-  polyhymnia_window_content_init(self);
+  polyhymnia_window_mpd_initialized (G_OBJECT(self->mpd_client), NULL, self);
+  g_signal_connect (self->mpd_client, "notify::initialized",
+                    G_CALLBACK (polyhymnia_window_mpd_initialized),
+                    self);
 }
