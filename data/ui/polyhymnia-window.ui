@@ -86,18 +86,21 @@
 	      <object class="GtkButton">
                 <property name="icon-name">media-skip-backward</property>
                 <property name="sensitive">false</property>
+                <property name="valign">center</property>
 	      </object>
             </child>
             <child type="start">
 	      <object class="GtkButton">
                 <property name="icon-name">media-playback-start</property>
                 <property name="sensitive">false</property>
+                <property name="valign">center</property>
 	      </object>
             </child>
             <child type="start">
 	      <object class="GtkButton">
                 <property name="icon-name">media-skip-forward</property>
                 <property name="sensitive">false</property>
+                <property name="valign">center</property>
 	      </object>
             </child>
             <child type="center">
@@ -120,13 +123,15 @@
                 <property name="icon-name">subtitles-symbolic</property>
                 <property name="sensitive">false</property>
                 <property name="tooltip-text" translatable="yes">Lyrics</property>
+                <property name="valign">center</property>
               </object>
             </child>
             <child type="end">
-              <object class="GtkToggleButton">
+              <object class="GtkToggleButton" id="queue_button">
                 <property name="has-tooltip">true</property>
-                <property name="icon-name">view-list-symbolic</property>
+                <property name="icon-name">queue-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Queue</property>
+                <property name="valign">center</property>
               </object>
             </child>
             <child type="end">
@@ -140,6 +145,7 @@
                   </object>
                 </property>
                 <property name="icons">audio-volume-high-symbolic</property>
+                <property name="valign">center</property>
 	      </object>
             </child>
           </object>
@@ -170,89 +176,162 @@
     </section>
   </menu>
 
-  <object class="AdwViewStack" id="content_stack">
-    <property name="vexpand">true</property>
-    <child>
-      <object class="AdwViewStackPage">
-        <property name="icon-name">library-music-symbolic</property>
-        <property name="name">library_page</property>
-        <property name="title" translatable="yes">Library</property>
-        <property name="child">
-          <object class="AdwOverlaySplitView" id="library_split_view">
-            <child type="sidebar">
-              <object class="GtkStackSidebar">
-                <property name="stack">library_stack</property>
-              </object>
-            </child>
-            <child type="content">
-              <object class="GtkStack" id="library_stack">
-                <child>
-                  <object class="GtkStackPage">
-                    <property name="child">
-                      <object class="AdwBin" id="recent_stack_page_content">
-                        <property name="child">recent_list_box</property>
+  <object class="AdwOverlaySplitView" id="content">
+    <child type="content">
+      <object class="AdwViewStack" id="content_stack">
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="icon-name">library-music-symbolic</property>
+            <property name="name">library_page</property>
+            <property name="title" translatable="yes">Library</property>
+            <property name="child">
+              <object class="AdwOverlaySplitView" id="library_split_view">
+                <child type="sidebar">
+                  <object class="GtkStackSidebar">
+                    <property name="stack">library_stack</property>
+                  </object>
+                </child>
+                <child type="content">
+                  <object class="GtkStack" id="library_stack">
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="AdwBin" id="recent_stack_page_content">
+                            <property name="child">recent_list_box</property>
+                          </object>
+                        </property>
+                        <property name="name">recent_page</property>
+                        <property name="title" translatable="yes">Recently Added</property>
                       </object>
-                    </property>
-                    <property name="name">recent_page</property>
-                    <property name="title" translatable="yes">Recently Added</property>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="AdwBin" id="artist_stack_page_content" />
+                        </property>
+                        <property name="name">artists_page</property>
+                        <property name="title" translatable="yes">Artists</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="AdwBin" id="album_stack_page_content" />
+                        </property>
+                        <property name="name">albums_page</property>
+                        <property name="title" translatable="yes">Albums</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="AdwBin" id="track_stack_page_content" />
+                        </property>
+                        <property name="name">songs_page</property>
+                        <property name="title" translatable="yes">Songs</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="AdwBin" id="genre_stack_page_content" />
+                        </property>
+                        <property name="name">genres_page</property>
+                        <property name="title" translatable="yes">Genres</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkStackPage">
-                    <property name="child">
-                      <object class="AdwBin" id="artist_stack_page_content" />
-                    </property>
-                    <property name="name">artists_page</property>
-                    <property name="title" translatable="yes">Artists</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkStackPage">
-                    <property name="child">
-                      <object class="AdwBin" id="album_stack_page_content" />
-                    </property>
-                    <property name="name">albums_page</property>
-                    <property name="title" translatable="yes">Albums</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkStackPage">
-                    <property name="child">
-                      <object class="AdwBin" id="track_stack_page_content" />
-                    </property>
-                    <property name="name">songs_page</property>
-                    <property name="title" translatable="yes">Songs</property>
-                 </object>
-               </child>
-               <child>
-                 <object class="GtkStackPage">
-                    <property name="child">
-                      <object class="AdwBin" id="genre_stack_page_content" />
-                    </property>
-                   <property name="name">genres_page</property>
-                   <property name="title" translatable="yes">Genres</property>
-                 </object>
-               </child>
-             </object>
-           </child>
-         </object>
-       </property>
-     </object>
-    </child>
-    <child>
-      <object class="AdwViewStackPage">
-        <property name="icon-name">audio-radio-symbolic</property>
-        <property name="name">radio_page</property>
-        <property name="title" translatable="yes">Radio</property>
-        <property name="child">
-          <object class="AdwStatusPage">
-            <property name="description" translatable="yes">Check your Internet connection and try again</property>
-            <property name="icon-name">offline-globe-symbolic</property>
-            <property name="title" translatable="yes">No Internet connection</property>
+              </object>
+            </property>
           </object>
-        </property>
+        </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="icon-name">audio-radio-symbolic</property>
+            <property name="name">radio_page</property>
+            <property name="title" translatable="yes">Radio</property>
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="description" translatable="yes">Check your Internet connection and try again</property>
+                <property name="icon-name">offline-globe-symbolic</property>
+                <property name="title" translatable="yes">No Internet connection</property>
+              </object>
+            </property>
+          </object>
+        </child>
       </object>
     </child>
+    <child type="sidebar">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Queue</property>
+                <style>
+                  <class name="title"/>
+                </style>
+              </object>
+            </property>
+            <child type="end">
+              <object class="GtkToggleButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">task-recurring-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Repeat</property>
+              </object>
+            </child>
+            <property name="show-end-title-buttons">false</property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwViewStack" id="queue_utility_stack">
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="GtkListBox">
+                    <child type="placeholder">
+                      <object class="AdwStatusPage">
+                        <property name="description" translatable="yes">Queue is empty</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="icon-name">queue-symbolic</property>
+                <property name="title" translatable="yes">Queue</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="GtkListBox">
+                    <child type="placeholder">
+                      <object class="AdwStatusPage">
+                        <property name="description" translatable="yes">History is empty</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="icon-name">clock-symbolic</property>
+                <property name="title" translatable="yes">History</property>
+              </object>
+            </child>
+          </object>
+        </property>
+        <child type="bottom">
+          <object class="AdwViewSwitcherBar">
+            <property name="reveal">true</property>
+            <property name="stack">queue_utility_stack</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <property name="collapsed">true</property>
+    <property name="sidebar-position">end</property>
+    <property name="show-sidebar"
+      bind-source="queue_button"
+      bind-property="active"
+      bind-flags="sync-create"/>
   </object>
 
   <object class="AdwNavigationView" id="album_navigation_view">
@@ -346,7 +425,7 @@
     <property name="child">
       <object class="GtkButton">
         <property name="action-name">app.reconnect</property>
-        <property name="halign">GTK_ALIGN_CENTER</property>
+        <property name="halign">center</property>
         <property name="label" translatable="yes">Try again</property>
       </object>
     </property>

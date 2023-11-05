@@ -11,7 +11,7 @@ struct _PolyhymniaWindow
   AdwApplicationWindow  parent_instance;
 
   /* Template widgets */
-  AdwViewStack        *content_stack;
+  AdwOverlaySplitView *content;
   AdwStatusPage       *no_mpd_connection_page;
   AdwToolbarView      *root_toolbar_view;
 
@@ -67,7 +67,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-window.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, content_stack);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_mpd_connection_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, root_toolbar_view);
 
@@ -267,7 +267,7 @@ polyhymnia_window_mpd_initialized(GObject* self,
   if (mpd_initialized)
   {
     adw_toolbar_view_set_content (window_self->root_toolbar_view,
-                                  GTK_WIDGET (window_self->content_stack));
+                                  GTK_WIDGET (window_self->content));
     polyhymnia_window_content_init (window_self);
   }
   else

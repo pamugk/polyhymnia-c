@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-05 19:36+0500\n"
+"POT-Creation-Date: 2023-11-05 21:24+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -47,13 +47,13 @@ msgid "Start Page"
 msgstr "Начальная страница"
 
 #: data/ui/polyhymnia-preferences-window.ui:24
-#: data/ui/polyhymnia-preferences-window.ui:41 data/ui/polyhymnia-window.ui:179
+#: data/ui/polyhymnia-preferences-window.ui:41 data/ui/polyhymnia-window.ui:186
 msgid "Library"
 msgstr "Библиотека"
 
 #: data/ui/polyhymnia-preferences-window.ui:25
 #: data/ui/polyhymnia-preferences-window.ui:100
-#: data/ui/polyhymnia-window.ui:246
+#: data/ui/polyhymnia-window.ui:253
 msgid "Radio"
 msgstr "Радио"
 
@@ -69,8 +69,8 @@ msgstr "Общие"
 msgid "Album information that can be found in external sources"
 msgstr "Информация об альбомах, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:215
-#: data/ui/polyhymnia-window.ui:271
+#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:222
+#: data/ui/polyhymnia-window.ui:339
 msgid "Albums"
 msgstr "Альбомы"
 
@@ -78,8 +78,8 @@ msgstr "Альбомы"
 msgid "Artist information that can be found in external sources"
 msgstr "Информация об исполнителях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:206
-#: data/ui/polyhymnia-window.ui:288
+#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:213
+#: data/ui/polyhymnia-window.ui:356
 msgid "Artists"
 msgstr "Исполнители"
 
@@ -87,8 +87,8 @@ msgstr "Исполнители"
 msgid "Song information that can be found in external sources"
 msgstr "Информация о песнях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:224
-#: data/ui/polyhymnia-window.ui:332
+#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:231
+#: data/ui/polyhymnia-window.ui:400
 msgid "Songs"
 msgstr "Песни"
 
@@ -142,59 +142,75 @@ msgstr "Искать"
 msgid "Search…"
 msgstr "Искать…"
 
-#: data/ui/polyhymnia-window.ui:122
+#: data/ui/polyhymnia-window.ui:125
 msgid "Lyrics"
 msgstr "Текст песни"
 
-#: data/ui/polyhymnia-window.ui:129
+#: data/ui/polyhymnia-window.ui:133 data/ui/polyhymnia-window.ui:290
 msgid "Queue"
 msgstr "Очередь"
 
-#: data/ui/polyhymnia-window.ui:159
+#: data/ui/polyhymnia-window.ui:165
 msgid "_Preferences"
 msgstr "_Настройки"
 
-#: data/ui/polyhymnia-window.ui:163
+#: data/ui/polyhymnia-window.ui:169
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбинации клавиш"
 
-#: data/ui/polyhymnia-window.ui:167
+#: data/ui/polyhymnia-window.ui:173
 msgid "_About Polyhymnia"
 msgstr "_О Polyhymnia"
 
-#: data/ui/polyhymnia-window.ui:197
+#: data/ui/polyhymnia-window.ui:204
 msgid "Recently Added"
 msgstr "Недавно добавленное"
 
-#: data/ui/polyhymnia-window.ui:233 data/ui/polyhymnia-window.ui:305
+#: data/ui/polyhymnia-window.ui:240 data/ui/polyhymnia-window.ui:373
 msgid "Genres"
 msgstr "Жанры"
 
-#: data/ui/polyhymnia-window.ui:249
+#: data/ui/polyhymnia-window.ui:256
 msgid "Check your Internet connection and try again"
 msgstr "Проверьте соединение с Интернетом и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:251
+#: data/ui/polyhymnia-window.ui:258
 msgid "No Internet connection"
 msgstr "Нет соединения с Интернетом"
 
-#: data/ui/polyhymnia-window.ui:312
+#: data/ui/polyhymnia-window.ui:272
+msgid "Repeat"
+msgstr "Повтор"
+
+#: data/ui/polyhymnia-window.ui:284
+msgid "Queue is empty"
+msgstr "Очередь пуста"
+
+#: data/ui/polyhymnia-window.ui:299
+msgid "History is empty"
+msgstr "История пуста"
+
+#: data/ui/polyhymnia-window.ui:305
+msgid "History"
+msgstr "История"
+
+#: data/ui/polyhymnia-window.ui:380
 msgid "Recently played songs will be placed here"
 msgstr "Здесь будут размещены недавно воспроизведённые песни"
 
-#: data/ui/polyhymnia-window.ui:314
+#: data/ui/polyhymnia-window.ui:382
 msgid "No recently played songs"
 msgstr "Нет недавно воспроизведённых песен"
 
-#: data/ui/polyhymnia-window.ui:343
+#: data/ui/polyhymnia-window.ui:411
 msgid "Check your MPD setup and try again"
 msgstr "Проверьте настройки MPD и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:345
+#: data/ui/polyhymnia-window.ui:413
 msgid "No MPD connection"
 msgstr "Нет соединения с MPD"
 
-#: data/ui/polyhymnia-window.ui:350
+#: data/ui/polyhymnia-window.ui:418
 msgid "Try again"
 msgstr "Повторить попытку"
 
