@@ -163,7 +163,6 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
     if (mpd_initialization_error == MPD_ERROR_SUCCESS)
     {
       const unsigned *mpd_version = mpd_connection_get_server_version (mpd_connection);
-      g_object_set(G_OBJECT (self), "initialized", TRUE, NULL);
       g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
     }
     else
@@ -186,6 +185,10 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
   }
 
   self->mpd_connection = mpd_connection;
+  if (mpd_connection != NULL)
+  {
+    g_object_set(G_OBJECT (self), "initialized", TRUE, NULL);
+  }
 }
 
 void
@@ -248,9 +251,8 @@ polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
   {
     if (pair->value != NULL && !g_str_equal (pair->value, ""))
     {
-      gchar *album = g_strdup (pair->value);
       GObject *album_object = g_object_new (POLYHYMNIA_TYPE_ALBUM,
-                                            "title", album,
+                                            "title", pair->value,
                                              NULL);
       g_ptr_array_add (results, album_object);
     }
@@ -308,9 +310,8 @@ polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
   {
     if (pair->value != NULL && !g_str_equal (pair->value, ""))
     {
-      gchar *name = g_strdup (pair->value);
       GObject *artist_object = g_object_new (POLYHYMNIA_TYPE_ARTIST,
-                                            "name", name,
+                                            "name", pair->value,
                                              NULL);
       g_ptr_array_add (results, artist_object);
     }
@@ -446,11 +447,11 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
   g_ptr_array_set_free_func (results, g_object_unref);
   while ((track = mpd_recv_song(self->mpd_connection)) != NULL)
   {
-    gchar *title = g_strdup (mpd_song_get_tag (track, MPD_TAG_TITLE, 0));
+    const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
     if (title != NULL && !g_str_equal (title, ""))
     {
-      gchar *album = g_strdup (mpd_song_get_tag (track, MPD_TAG_ALBUM, 0));
-      gchar *artist = g_strdup (mpd_song_get_tag (track, MPD_TAG_ARTIST, 0));
+      const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
       GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                             "title", title,
                                             "album", album,

@@ -9,7 +9,7 @@
         <child>
           <object class="GtkImage">
             <property name="icon-name">cd-symbolic</property>
-            <property name="pixel-size">100</property>
+            <property name="pixel-size">250</property>
           </object>
         </child>
         <child>
@@ -54,6 +54,9 @@
             <property name="xalign">0</property>
           </object>
         </child>
+        <style>
+          <class name="card"/>
+        </style>
       </object>
     </property>
   </template>
