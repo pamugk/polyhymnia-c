@@ -26,6 +26,10 @@
                 <property name="action-name">app.scan</property>
                 <property name="action-target">"library"</property>
                 <property name="icon-name">update-symbolic</property>
+                <property name="visible"
+                  bind-source="mpd_client"
+                  bind-property="initialized"
+                  bind-flags="sync-create" />
               </object>
             </child>
             <property name="title-widget">
@@ -44,6 +48,10 @@
               <object class="GtkToggleButton" id="search_button">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">edit-find-symbolic</property>
+                <property name="sensitive"
+                  bind-source="mpd_client"
+                  bind-property="initialized"
+                  bind-flags="sync-create" />
                 <property name="tooltip-text" translatable="yes">Search</property>
               </object>
             </child>
