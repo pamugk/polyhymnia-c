@@ -49,6 +49,10 @@ GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error);
 
+int
+polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
+                                 GError              **error);
+
 void
 polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
                                      GError              **error);
@@ -96,6 +100,11 @@ polyhymnia_mpd_client_seek_playback(PolyhymniaMpdClient *self,
                                     guint               id,
                                     time_t              position,
                                     GError              **error);
+
+void
+polyhymnia_mpd_client_set_volume(PolyhymniaMpdClient *self,
+                                 guint               volume,
+                                 GError              **error);
 
 void
 polyhymnia_mpd_client_stop_playback(PolyhymniaMpdClient *self,
