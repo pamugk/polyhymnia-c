@@ -27,6 +27,16 @@ polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
                                         const gchar         *song_uri,
                                         GError              **error);
 
+void
+polyhymnia_mpd_client_append_album_to_queue(PolyhymniaMpdClient *self,
+                                            const gchar         *album,
+                                            GError              **error);
+
+void
+polyhymnia_mpd_client_append_artist_to_queue(PolyhymniaMpdClient *self,
+                                             const gchar         *artist,
+                                             GError              **error);
+
 gint
 polyhymnia_mpd_client_append_to_queue(PolyhymniaMpdClient *self,
                                       const gchar         *song_uri,
@@ -58,6 +68,21 @@ polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
                                      GError              **error);
 
 void
+polyhymnia_mpd_client_play_album(PolyhymniaMpdClient *self,
+                                 const gchar         *album,
+                                 GError              **error);
+
+void
+polyhymnia_mpd_client_play_artist(PolyhymniaMpdClient *self,
+                                  const gchar         *artist,
+                                  GError              **error);
+
+gint
+polyhymnia_mpd_client_play_song(PolyhymniaMpdClient *self,
+                                const gchar         *song_uri,
+                                GError              **error);
+
+void
 polyhymnia_mpd_client_play_next(PolyhymniaMpdClient *self,
                                 GError              **error);
 
@@ -66,9 +91,9 @@ polyhymnia_mpd_client_play_previous(PolyhymniaMpdClient *self,
                                     GError              **error);
 
 void
-polyhymnia_mpd_client_play_song(PolyhymniaMpdClient *self,
-                                guint               id,
-                                GError              **error);
+polyhymnia_mpd_client_play_song_from_queue(PolyhymniaMpdClient *self,
+                                           guint               id,
+                                           GError              **error);
 
 void
 polyhymnia_mpd_client_resume_playback(PolyhymniaMpdClient *self,

@@ -139,6 +139,7 @@ polyhymnia_mpd_client_init (PolyhymniaMpdClient *self)
   }
 }
 
+/* Instance methods */
 gint
 polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
                                         const gchar         *song_uri,
@@ -163,7 +164,79 @@ polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
   return id;
 }
 
-/* Instance methods */
+static void
+polyhymnia_mpd_client_append_anything_to_queue(PolyhymniaMpdClient *self,
+                                               const gchar         *filter,
+                                               enum  mpd_tag_type  filter_tag,
+                                               GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+  g_return_if_fail (filter != NULL && !g_str_equal (filter, ""));
+
+  if (!mpd_search_add_db_songs (self->mpd_connection, TRUE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "request failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_add_tag_constraint (self->mpd_connection,
+                                      MPD_OPERATOR_DEFAULT,
+                                      filter_tag,
+                                      filter))
+  {
+    mpd_search_cancel (self->mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "filter failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (!mpd_search_commit (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "start failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+    return;
+  }
+  if (mpd_connection_get_error(self->mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_append_album_to_queue(PolyhymniaMpdClient *self,
+                                            const gchar         *album,
+                                            GError              **error)
+{
+  polyhymnia_mpd_client_append_anything_to_queue (self,
+                                                  album, MPD_TAG_ALBUM,
+                                                  error);
+}
+
+void
+polyhymnia_mpd_client_append_artist_to_queue(PolyhymniaMpdClient *self,
+                                             const gchar         *artist,
+                                             GError              **error)
+{
+  polyhymnia_mpd_client_append_anything_to_queue (self,
+                                                  artist, MPD_TAG_ALBUM_ARTIST,
+                                                  error);
+}
+
 gint
 polyhymnia_mpd_client_append_to_queue(PolyhymniaMpdClient *self,
                                       const gchar         *song_uri,
@@ -372,6 +445,88 @@ polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
   }
 }
 
+static void
+polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
+                            GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_play (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_play_album(PolyhymniaMpdClient *self,
+                                 const gchar         *album,
+                                 GError              **error)
+{
+  GError *inner_error = NULL;
+
+  polyhymnia_mpd_client_stop_playback (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_clear_queue (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_append_album_to_queue (self, album, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_play (self, error);
+  g_propagate_error(error, inner_error);
+}
+
+void
+polyhymnia_mpd_client_play_artist(PolyhymniaMpdClient *self,
+                                  const gchar         *artist,
+                                  GError              **error)
+{
+  GError *inner_error = NULL;
+
+  polyhymnia_mpd_client_stop_playback (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_clear_queue (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_append_artist_to_queue (self, artist, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_play (self, &inner_error);
+  g_propagate_error(error, inner_error);
+}
+
 void
 polyhymnia_mpd_client_play_next(PolyhymniaMpdClient *self,
                                 GError              **error)
@@ -399,6 +554,57 @@ polyhymnia_mpd_client_play_previous(PolyhymniaMpdClient *self,
   g_return_if_fail (self->mpd_connection != NULL);
 
   if (!mpd_run_previous (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+gint
+polyhymnia_mpd_client_play_song(PolyhymniaMpdClient *self,
+                                const gchar         *song_uri,
+                                GError              **error)
+{
+  GError *inner_error = NULL;
+  int id = -1;
+
+  polyhymnia_mpd_client_stop_playback (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return id;
+  }
+
+  polyhymnia_mpd_client_clear_queue (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return id;
+  }
+
+  id = polyhymnia_mpd_client_append_to_queue (self, song_uri, &inner_error);
+  if (inner_error == NULL)
+  {
+    polyhymnia_mpd_client_play (self, &inner_error);
+  }
+  g_propagate_error(error, inner_error);
+
+  return id;
+}
+
+void
+polyhymnia_mpd_client_play_song_from_queue(PolyhymniaMpdClient *self,
+                                           guint               id,
+                                           GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_play_id (self->mpd_connection, id))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
