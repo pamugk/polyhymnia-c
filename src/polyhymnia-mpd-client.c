@@ -139,11 +139,35 @@ polyhymnia_mpd_client_init (PolyhymniaMpdClient *self)
   }
 }
 
+gint
+polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
+                                        const gchar         *song_uri,
+                                        GError              **error)
+{
+  gint id;
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), 0);
+  g_return_val_if_fail (error == NULL || *error == NULL, 0);
+  g_return_val_if_fail (self->mpd_connection != NULL, 0);
+
+  id = mpd_run_add_id_whence (self->mpd_connection, song_uri,
+                              0, MPD_POSITION_AFTER_CURRENT);
+  if (id == -1)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+
+  return id;
+}
+
 /* Instance methods */
 gint
-polyhymnia_mpd_client_add_to_queue(PolyhymniaMpdClient *self,
-                                   const gchar         *song_uri,
-                                   GError              **error)
+polyhymnia_mpd_client_append_to_queue(PolyhymniaMpdClient *self,
+                                      const gchar         *song_uri,
+                                      GError              **error)
 {
   gint id;
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), 0);
@@ -306,6 +330,78 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
   }
 
   return results;
+}
+
+void
+polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
+                                     GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_pause(self->mpd_connection, TRUE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_play_next(PolyhymniaMpdClient *self,
+                                GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_next (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_play_previous(PolyhymniaMpdClient *self,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_previous (self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_resume_playback(PolyhymniaMpdClient *self,
+                                      GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_pause (self->mpd_connection, FALSE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
 }
 
 void
@@ -594,6 +690,44 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
   }
 
   return results;
+}
+
+void
+polyhymnia_mpd_client_seek_playback(PolyhymniaMpdClient *self,
+                                    guint               id,
+                                    time_t              position,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_seek_id(self->mpd_connection, id, position))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
+}
+
+void
+polyhymnia_mpd_client_stop_playback(PolyhymniaMpdClient *self,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->mpd_connection != NULL);
+
+  if (!mpd_run_stop(self->mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->mpd_connection));
+  }
 }
 
 void
