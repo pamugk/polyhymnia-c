@@ -212,23 +212,78 @@ polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
   if (condition == G_IO_IN)
   {
     enum mpd_idle events = mpd_recv_idle (self->idle_mpd_connection, FALSE);
-    g_debug ("Received MPD event mask: %d", events);
 
-    if (events != 0)
+    // Server closed connection, any further activity
+    if (events == 0)
     {
-      mpd_send_idle (self->idle_mpd_connection);
-      return TRUE;
+      g_debug ("MPD server disconnected");
+      g_object_set (self, "initialized", FALSE, NULL);
+      mpd_connection_free (self->main_mpd_connection);
+      self->main_mpd_connection = NULL;
+      mpd_connection_free (self->idle_mpd_connection);
+      self->idle_mpd_connection = NULL;
+      return FALSE;
     }
 
-    g_object_set (self, "initialized", FALSE, NULL);
-    mpd_connection_free (self->main_mpd_connection);
-    self->main_mpd_connection = NULL;
-    mpd_connection_free (self->idle_mpd_connection);
-    self->idle_mpd_connection = NULL;
-  }
-  else
-  {
-    g_debug ("MPD server hang up");
+    if (events & MPD_IDLE_DATABASE)
+    {
+      g_debug ("MPD: song database has been updated\n");
+    }
+    if (events & MPD_IDLE_STORED_PLAYLIST)
+    {
+      g_debug ("MPD: a stored playlist has been modified, created, deleted or renamed\n");
+    }
+    if (events & MPD_IDLE_QUEUE)
+    {
+      g_debug ("MPD: the queue has been modified\n");
+    }
+    if (events & MPD_IDLE_PLAYER)
+    {
+      g_debug ("MPD: the player state has changed: play, stop, pause, seek\n");
+    }
+    if (events & MPD_IDLE_MIXER)
+    {
+      g_debug ("MPD: the volume has been modified \n");
+    }
+    if (events & MPD_IDLE_OUTPUT)
+    {
+      g_debug ("MPD: an audio output device has been enabled or disabled\n");
+    }
+    if (events & MPD_IDLE_OPTIONS)
+    {
+      g_debug ("MPD: options have changed: crossfade, random, repeat,...\n");
+    }
+    if (events & MPD_IDLE_UPDATE)
+    {
+      g_debug ("MPD: a database update has started or finished\n");
+    }
+    if (events & MPD_IDLE_STICKER)
+    {
+      g_debug ("MPD: a sticker has been modified\n");
+    }
+    if (events & MPD_IDLE_SUBSCRIPTION)
+    {
+      g_debug ("MPD: a client has subscribed to or unsubscribed from a channel\n");
+    }
+    if (events & MPD_IDLE_MESSAGE)
+    {
+      g_debug ("MPD: a message on a subscribed channel was received\n");
+    }
+    if (events & MPD_IDLE_PARTITION)
+    {
+      g_debug ("MPD: a partition was added or changed\n");
+    }
+    if (events & MPD_IDLE_NEIGHBOR)
+    {
+      g_debug ("MPD: a neighbor was found or lost\n");
+    }
+    if (events & MPD_IDLE_MOUNT)
+    {
+      g_debug ("MPD: the mount list has changed\n");
+    }
+
+    mpd_send_idle (self->idle_mpd_connection);
+    return TRUE;
   }
 
   return FALSE;
