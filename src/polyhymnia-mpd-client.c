@@ -17,6 +17,7 @@ struct _PolyhymniaMpdClient
   /* Underlying MPD fields */
   struct mpd_connection   *main_mpd_connection;
   struct mpd_connection   *idle_mpd_connection;
+  GIOChannel              *idle_channel;
 
   /* State fields */
   gboolean                  initialized;
@@ -61,33 +62,21 @@ polyhymnia_mpd_client_finalize (GObject *gobject)
   if (self->main_mpd_connection != NULL)
   {
     mpd_connection_free(self->main_mpd_connection);
+    self->main_mpd_connection = NULL;
+  }
+  if (self->idle_channel != NULL)
+  {
+    g_object_unref (self->idle_channel);
+    self->idle_channel = NULL;
   }
   if (self->idle_mpd_connection != NULL)
   {
-    mpd_connection_free(self->idle_mpd_connection);
+    mpd_run_noidle (self->idle_mpd_connection);
+    mpd_connection_free (self->idle_mpd_connection);
+    self->idle_mpd_connection = NULL;
   }
 
   G_OBJECT_CLASS (polyhymnia_mpd_client_parent_class)->finalize (gobject);
-}
-
-static void
-polyhymnia_mpd_client_set_property (GObject      *object,
-                          guint         property_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
-{
-  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (object);
-
-  switch ((PolyhymniaMpdClientProperty) property_id)
-    {
-    case PROP_SCAN_AVAILABLE:
-      self->initialized = g_value_get_boolean (value);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-    }
 }
 
 static void
@@ -102,6 +91,26 @@ polyhymnia_mpd_client_get_property (GObject    *object,
     {
     case PROP_SCAN_AVAILABLE:
       g_value_set_boolean (value, self->initialized);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
+}
+
+static void
+polyhymnia_mpd_client_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
+{
+  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (object);
+
+  switch ((PolyhymniaMpdClientProperty) property_id)
+    {
+    case PROP_SCAN_AVAILABLE:
+      self->initialized = g_value_get_boolean (value);
       break;
 
     default:
@@ -137,6 +146,11 @@ static void
 polyhymnia_mpd_client_init (PolyhymniaMpdClient *self)
 {
   GError *error = NULL;
+
+  self->main_mpd_connection = NULL;
+  self->idle_mpd_connection = NULL;
+  self->idle_channel = NULL;
+
   polyhymnia_mpd_client_connect (self, &error);
   if (error != NULL)
   {
@@ -146,7 +160,80 @@ polyhymnia_mpd_client_init (PolyhymniaMpdClient *self)
   }
 }
 
+/* Utility functions */
+static struct mpd_connection *
+polyhymnia_mpd_client_connection_init(GError **error)
+{
+  struct mpd_connection *mpd_connection;
+  enum mpd_error mpd_initialization_error;
+
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+  mpd_connection = mpd_connection_new(NULL, 0, 0);
+
+  if (mpd_connection != NULL)
+  {
+    mpd_initialization_error = mpd_connection_get_error(mpd_connection);
+    if (mpd_initialization_error == MPD_ERROR_SUCCESS)
+    {
+      const unsigned *mpd_version = mpd_connection_get_server_version (mpd_connection);
+      g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
+    }
+    else
+    {
+      g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "%s",
+                 mpd_connection_get_error_message(mpd_connection));
+      mpd_connection_free (mpd_connection);
+      mpd_connection = NULL;
+    }
+  }
+  else
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_OOM,
+                 "Out of memory");
+  }
+
+  return mpd_connection;
+}
+
 /* Instance methods */
+static gboolean
+polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
+                                           GIOCondition condition,
+                                           gpointer data)
+{
+  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (data);
+
+  if (condition == G_IO_IN)
+  {
+    enum mpd_idle events = mpd_recv_idle (self->idle_mpd_connection, FALSE);
+    g_debug ("Received MPD event mask: %d", events);
+
+    if (events != 0)
+    {
+      mpd_send_idle (self->idle_mpd_connection);
+      return TRUE;
+    }
+
+    g_object_set (self, "initialized", FALSE, NULL);
+    mpd_connection_free (self->main_mpd_connection);
+    self->main_mpd_connection = NULL;
+    mpd_connection_free (self->idle_mpd_connection);
+    self->idle_mpd_connection = NULL;
+  }
+  else
+  {
+    g_debug ("MPD server hang up");
+  }
+
+  return FALSE;
+}
+
 gint
 polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
                                         const gchar         *song_uri,
@@ -285,46 +372,6 @@ polyhymnia_mpd_client_clear_queue(PolyhymniaMpdClient *self,
   }
 }
 
-static struct mpd_connection *
-polyhymnia_mpd_client_connection_init(GError **error)
-{
-  struct mpd_connection *mpd_connection;
-  enum mpd_error mpd_initialization_error;
-
-  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-  mpd_connection = mpd_connection_new(NULL, 0, 0);
-
-  if (mpd_connection != NULL)
-  {
-    mpd_initialization_error = mpd_connection_get_error(mpd_connection);
-    if (mpd_initialization_error == MPD_ERROR_SUCCESS)
-    {
-      const unsigned *mpd_version = mpd_connection_get_server_version (mpd_connection);
-      g_debug("Connected to MPD %d.%d.%d", mpd_version[0], mpd_version[1], mpd_version[2]);
-    }
-    else
-    {
-      g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "%s",
-                 mpd_connection_get_error_message(mpd_connection));
-      mpd_connection_free (mpd_connection);
-      mpd_connection = NULL;
-    }
-  }
-  else
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_OOM,
-                 "Out of memory");
-  }
-
-  return mpd_connection;
-}
-
 static void
 polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
 {
@@ -340,8 +387,10 @@ polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
     return;
   }
 
-  /*if (!mpd_send_idle(self->idle_mpd_connection))
+  if (!mpd_send_idle(self->idle_mpd_connection))
   {
+    mpd_connection_free (self->idle_mpd_connection);
+    self->idle_mpd_connection = NULL;
     g_warning ("MPD send idle failed: %s",
              mpd_connection_get_error_message(self->main_mpd_connection));
     return;
@@ -349,14 +398,11 @@ polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
 
   fd = mpd_connection_get_fd(self->idle_mpd_connection);
 
-  if (inner_error != NULL)
-  {
-    g_warning ("MPD client idling socket initialization error: %s\n",
-              inner_error->message);
-    g_error_free (inner_error);
-    mpd_run_noidle (self->idle_mpd_connection);
-    return;
-  }*/
+  self->idle_channel = g_io_channel_unix_new (fd);
+  g_io_channel_set_encoding (self->idle_channel, NULL, NULL);
+  g_io_add_watch (self->idle_channel, G_IO_IN | G_IO_HUP,
+                  polyhymnia_mpd_client_accept_idle_channel,
+                  self);
 }
 
 void
@@ -376,9 +422,8 @@ polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
   }
   else
   {
-    self->idle_mpd_connection = NULL;
+    g_propagate_error(error, inner_error);
   }
-  g_propagate_error(error, inner_error);
 
   if (self->main_mpd_connection != NULL)
   {

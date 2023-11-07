@@ -272,8 +272,20 @@ polyhymnia_window_mpd_initialized(GObject* self,
   }
   else
   {
+    GListModel *genres_list = G_LIST_MODEL (window_self->genre_model);
+    guint genres_count = g_list_model_get_n_items (genres_list);
+
     adw_toolbar_view_set_content (window_self->root_toolbar_view,
                                   GTK_WIDGET (window_self->no_mpd_connection_page));
+    g_list_store_remove_all (window_self->artist_model);
+    g_list_store_remove_all (window_self->album_model);
+    g_list_store_remove_all (window_self->track_model);
+
+    while (genres_count > 0)
+    {
+      gtk_string_list_remove (window_self->genre_model, genres_count - 1);
+      genres_count = g_list_model_get_n_items (genres_list);
+    }
   }
 }
 
