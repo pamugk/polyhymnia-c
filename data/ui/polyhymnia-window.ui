@@ -14,7 +14,7 @@
       </object>
     </child>
     <property name="content">
-      <object class="AdwToolbarView" id="root_toolbar_view">
+      <object class="AdwToolbarView">
         <property name="reveal-bottom-bars"
           bind-source="mpd_client"
           bind-property="initialized"
@@ -74,6 +74,9 @@
             	bind-flags="sync-create" />
           </object>
         </child>
+        <property name="content">
+          <object class="AdwToastOverlay" id="root_toast_overlay" />
+        </property>
         <child type="bottom">
           <object class="GtkActionBar">
             <child type="start">
@@ -289,13 +292,7 @@
             <child>
               <object class="AdwViewStackPage">
                 <property name="child">
-                  <object class="GtkListBox">
-                    <child type="placeholder">
-                      <object class="AdwStatusPage">
-                        <property name="description" translatable="yes">Queue is empty</property>
-                      </object>
-                    </child>
-                  </object>
+                  <object class="GtkScrolledWindow" id="queue_page_content" />
                 </property>
                 <property name="icon-name">queue-symbolic</property>
                 <property name="title" translatable="yes">Queue</property>
@@ -431,6 +428,13 @@
     </property>
   </object>
 
+  <object class="GtkListView" id="queue_list_view">
+    <property name="factory">track_factory</property>
+    <property name="model">track_selection_model</property>
+    <property name="show-separators">true</property>
+  </object>
+  <object class="AdwStatusPage" id="queue_status_page" />
+
   <object class="PolyhymniaMpdClient" id="mpd_client" />
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
@@ -459,5 +463,8 @@
     <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
   </object>
   <object class="GtkMultiSelection" id="track_selection_model">
+  </object>
+
+  <object class="GtkNoSelection" id="queue_selection_model">
   </object>
 </interface>
