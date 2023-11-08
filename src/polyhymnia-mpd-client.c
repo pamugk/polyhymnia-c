@@ -4,11 +4,31 @@
 #include <gio/gio.h>
 #include <mpd/client.h>
 
+/* Type metadata */
 typedef enum
 {
   PROP_SCAN_AVAILABLE = 1,
   N_PROPERTIES,
 } PolyhymniaMpdClientProperty;
+
+typedef enum
+{
+  SIGNAL_DATABASE_UPDATED = 1,
+  SIGNAL_STORED_PLAYLIST_MODIFIED,
+  SIGNAL_QUEUE_MODIFIED,
+  SIGNAL_PLAYER_STATE_CHANGED,
+  SIGNAL_VOLUME_MODIFIED,
+  SIGNAL_AUDIO_OUTPUT_CHANGED,
+  SIGNAL_PLAYBACK_OPTIONS_CHANGED,
+  SIGNAL_DATABASE_UPDATE_STATE_CHANGED,
+  SIGNAL_STICKER_MODIFIED,
+  SIGNAL_SUBSCRIPTIONS_CHANGED,
+  SIGNAL_MESSAGE_RECEIVED,
+  SIGNAL_PARTITIONS_CHANGED,
+  SIGNAL_NEIGHBORS_CHANGED,
+  SIGNAL_MOUNT_LIST_CHANGED,
+  N_SIGNALS,
+} PolyhymniaMpdClientSignal;
 
 struct _PolyhymniaMpdClient
 {
@@ -28,6 +48,8 @@ G_DEFINE_FINAL_TYPE (PolyhymniaMpdClient, polyhymnia_mpd_client, G_TYPE_OBJECT)
 G_DEFINE_QUARK (PolyhymniaMpdClient, polyhymnia_mpd_client_error);
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static guint obj_signals[N_SIGNALS] = { 0, };
 
 /* Class stuff - constructors, destructors, etc */
 static void
@@ -123,6 +145,7 @@ static void
 polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
 
   gobject_class->constructed = polyhymnia_mpd_client_constructed;
   gobject_class->constructor = polyhymnia_mpd_client_constructor;
@@ -140,6 +163,91 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
   g_object_class_install_properties (gobject_class,
                                      N_PROPERTIES,
                                      obj_properties);
+
+  obj_signals[SIGNAL_DATABASE_UPDATED] =
+     g_signal_newv ("database-updated", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_STORED_PLAYLIST_MODIFIED] =
+     g_signal_newv ("stored-playlist-modified", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_QUEUE_MODIFIED] =
+     g_signal_newv ("queue-modified", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_PLAYER_STATE_CHANGED] =
+     g_signal_newv ("player-state-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_VOLUME_MODIFIED] =
+     g_signal_newv ("volume-modified", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_AUDIO_OUTPUT_CHANGED] =
+     g_signal_newv ("audio-output-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_PLAYBACK_OPTIONS_CHANGED] =
+     g_signal_newv ("playback-options-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_DATABASE_UPDATE_STATE_CHANGED] =
+     g_signal_newv ("database-update-state-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_STICKER_MODIFIED] =
+     g_signal_newv ("sticker-modified", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_SUBSCRIPTIONS_CHANGED] =
+     g_signal_newv ("subscriptions-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_MESSAGE_RECEIVED] =
+     g_signal_newv ("message-received", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_PARTITIONS_CHANGED] =
+     g_signal_newv ("partitions-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_NEIGHBORS_CHANGED] =
+     g_signal_newv ("neighbors-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+  obj_signals[SIGNAL_MOUNT_LIST_CHANGED] =
+     g_signal_newv ("mount-list-changed", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
 }
 
 static void
@@ -228,58 +336,72 @@ polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
     if (events & MPD_IDLE_DATABASE)
     {
       g_debug ("MPD: song database has been updated\n");
+      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATED], 0);
     }
     if (events & MPD_IDLE_STORED_PLAYLIST)
     {
       g_debug ("MPD: a stored playlist has been modified, created, deleted or renamed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_STORED_PLAYLIST_MODIFIED], 0);
     }
     if (events & MPD_IDLE_QUEUE)
     {
       g_debug ("MPD: the queue has been modified\n");
+      g_signal_emit (self, obj_signals[SIGNAL_QUEUE_MODIFIED], 0);
     }
     if (events & MPD_IDLE_PLAYER)
     {
-      g_debug ("MPD: the player state has changed: play, stop, pause, seek\n");
+      g_debug ("MPD: the player state has changed (play, stop, pause, seek, etc)\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PLAYER_STATE_CHANGED], 0);
     }
     if (events & MPD_IDLE_MIXER)
     {
       g_debug ("MPD: the volume has been modified \n");
+      g_signal_emit (self, obj_signals[SIGNAL_VOLUME_MODIFIED], 0);
     }
     if (events & MPD_IDLE_OUTPUT)
     {
       g_debug ("MPD: an audio output device has been enabled or disabled\n");
+      g_signal_emit (self, obj_signals[SIGNAL_AUDIO_OUTPUT_CHANGED], 0);
     }
     if (events & MPD_IDLE_OPTIONS)
     {
-      g_debug ("MPD: options have changed: crossfade, random, repeat,...\n");
+      g_debug ("MPD: options have changed (crossfade, random, repeat, etc)\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PLAYBACK_OPTIONS_CHANGED], 0);
     }
     if (events & MPD_IDLE_UPDATE)
     {
       g_debug ("MPD: a database update has started or finished\n");
+      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATE_STATE_CHANGED], 0);
     }
     if (events & MPD_IDLE_STICKER)
     {
       g_debug ("MPD: a sticker has been modified\n");
+      g_signal_emit (self, obj_signals[SIGNAL_STICKER_MODIFIED], 0);
     }
     if (events & MPD_IDLE_SUBSCRIPTION)
     {
       g_debug ("MPD: a client has subscribed to or unsubscribed from a channel\n");
+      g_signal_emit (self, obj_signals[SIGNAL_SUBSCRIPTIONS_CHANGED], 0);
     }
     if (events & MPD_IDLE_MESSAGE)
     {
       g_debug ("MPD: a message on a subscribed channel was received\n");
+      g_signal_emit (self, obj_signals[SIGNAL_MESSAGE_RECEIVED], 0);
     }
     if (events & MPD_IDLE_PARTITION)
     {
       g_debug ("MPD: a partition was added or changed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PARTITIONS_CHANGED], 0);
     }
     if (events & MPD_IDLE_NEIGHBOR)
     {
       g_debug ("MPD: a neighbor was found or lost\n");
+      g_signal_emit (self, obj_signals[SIGNAL_NEIGHBORS_CHANGED], 0);
     }
     if (events & MPD_IDLE_MOUNT)
     {
       g_debug ("MPD: the mount list has changed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_MOUNT_LIST_CHANGED], 0);
     }
 
     mpd_send_idle (self->idle_mpd_connection);
@@ -803,16 +925,12 @@ polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
   g_return_if_fail (error == NULL || *error == NULL);
 
   scan_job_id = mpd_run_update (self->main_mpd_connection, NULL);
-  if (scan_job_id > 0)
-  {
-    g_debug ("Scanning...");
-  }
-  else
+  if (scan_job_id == 0)
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "%s",
+                 "failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
   }
 }
