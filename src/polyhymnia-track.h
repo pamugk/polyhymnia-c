@@ -9,4 +9,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaTrack, polyhymnia_track, POLYHYMNIA, TRACK, GObject)
 
+const gchar *
+polyhymnia_track_get_uri (const PolyhymniaTrack *track);
+
 G_END_DECLS

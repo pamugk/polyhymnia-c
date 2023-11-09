@@ -132,7 +132,7 @@
             <child type="end">
               <object class="GtkToggleButton" id="queue_button">
                 <property name="has-tooltip">true</property>
-                <property name="icon-name">queue-symbolic</property>
+                <property name="icon-name">music-queue-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Queue</property>
                 <property name="valign">center</property>
               </object>
@@ -278,47 +278,29 @@
               </object>
             </property>
             <child type="end">
-              <object class="GtkToggleButton">
+              <object class="GtkButton" id="queue_to_playlist_button">
                 <property name="has-tooltip">true</property>
-                <property name="icon-name">task-recurring-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Repeat</property>
+                <property name="icon-name">playlist-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Add to playlist</property>
+                <property name="visible">false</property>
               </object>
             </child>
             <property name="show-end-title-buttons">false</property>
           </object>
         </child>
         <property name="content">
-          <object class="AdwViewStack" id="queue_utility_stack">
-            <child>
-              <object class="AdwViewStackPage">
-                <property name="child">
-                  <object class="GtkScrolledWindow" id="queue_page_content" />
-                </property>
-                <property name="icon-name">queue-symbolic</property>
-                <property name="title" translatable="yes">Queue</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwViewStackPage">
-                <property name="child">
-                  <object class="GtkListBox">
-                    <child type="placeholder">
-                      <object class="AdwStatusPage">
-                        <property name="description" translatable="yes">History is empty</property>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <property name="icon-name">clock-symbolic</property>
-                <property name="title" translatable="yes">History</property>
-              </object>
-            </child>
-          </object>
+          <object class="GtkScrolledWindow" id="queue_page_content" />
         </property>
         <child type="bottom">
-          <object class="AdwViewSwitcherBar">
-            <property name="reveal">true</property>
-            <property name="stack">queue_utility_stack</property>
+          <object class="GtkActionBar" id="queue_action_bar">
+            <child type="end">
+              <object class="GtkButton" id="clear_queue_button">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">x-circular-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Clear</property>
+              </object>
+            </child>
+            <property name="revealed">false</property>
           </object>
         </child>
       </object>
@@ -399,12 +381,12 @@
             <child type="top">
               <object class="GtkActionBar">
                 <child type="end">
-	          <object class="GtkButton">
+	          <object class="GtkButton" id="add_tracks_to_queue_button">
                     <property name="icon-name">plus-symbolic</property>
 	          </object>
                 </child>
                 <child type="end">
-	          <object class="GtkButton">
+	          <object class="GtkButton" id="play_tracks_button">
                     <property name="icon-name">media-playback-start-symbolic</property>
 	          </object>
                 </child>
@@ -449,7 +431,7 @@
 
   <object class="GtkListView" id="queue_list_view">
     <property name="factory">track_factory</property>
-    <property name="model">track_selection_model</property>
+    <property name="model">queue_selection_model</property>
     <property name="show-separators">true</property>
   </object>
   <object class="AdwStatusPage" id="queue_status_page" />

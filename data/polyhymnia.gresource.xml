@@ -21,14 +21,16 @@
     <file alias="month-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/month-symbolic.svg</file>
     <file alias="music-artist-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-artist-symbolic.svg</file>
     <file alias="music-note-single-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-note-single-symbolic.svg</file>
+    <file alias="music-queue-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-queue-symbolic.svg</file>
     <file alias="offline-globe-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/offline-globe-symbolic.svg</file>
+    <file alias="playlist-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/playlist-symbolic.svg</file>
     <file alias="plus-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/plus-symbolic.svg</file>
     <file alias="preferences-system-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/preferences-system-symbolic.svg</file>
     <file alias="question-round-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/question-round-symbolic.svg</file>
-    <file alias="queue-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/queue-symbolic.svg</file>
     <file alias="subtitles-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/subtitles-symbolic.svg</file>
     <file alias="task-recurring-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/task-recurring-symbolic.svg</file>
     <file alias="update-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/update-symbolic.svg</file>
     <file alias="user-trash-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/user-trash-symbolic.svg</file>
+    <file alias="x-circular-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/x-circular-symbolic.svg</file>
   </gresource>
 </gresources>

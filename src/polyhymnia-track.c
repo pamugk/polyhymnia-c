@@ -1,6 +1,7 @@
 
 #include "polyhymnia-track.h"
 
+/* Type metadata */
 typedef enum
 {
   PROP_ID = 1,
@@ -33,6 +34,7 @@ G_DEFINE_FINAL_TYPE (PolyhymniaTrack, polyhymnia_track, G_TYPE_OBJECT)
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+/* Utility functions */
 static gchar*
 seconds_to_readable(guint duration)
 {
@@ -44,6 +46,7 @@ seconds_to_readable(guint duration)
     : g_strdup_printf ("%d:%02d:%02d", hours, minutes, seconds);
 }
 
+/* Class stuff */
 static void
 polyhymnia_track_finalize (GObject *gobject)
 {
@@ -215,4 +218,11 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
 static void
 polyhymnia_track_init (PolyhymniaTrack *self)
 {
+}
+
+/* Instance methods */
+const gchar *
+polyhymnia_track_get_uri (const PolyhymniaTrack *track)
+{
+  return track->uri;
 }
