@@ -87,21 +87,21 @@
             </child>
             <child type="start">
 	      <object class="GtkButton">
-                <property name="icon-name">media-skip-backward</property>
+                <property name="icon-name">media-skip-backward-symbolic</property>
                 <property name="sensitive">false</property>
                 <property name="valign">center</property>
 	      </object>
             </child>
             <child type="start">
 	      <object class="GtkButton">
-                <property name="icon-name">media-playback-start</property>
+                <property name="icon-name">media-playback-start-symbolic</property>
                 <property name="sensitive">false</property>
                 <property name="valign">center</property>
 	      </object>
             </child>
             <child type="start">
 	      <object class="GtkButton">
-                <property name="icon-name">media-skip-forward</property>
+                <property name="icon-name">media-skip-forward-symbolic</property>
                 <property name="sensitive">false</property>
                 <property name="valign">center</property>
 	      </object>
@@ -395,14 +395,33 @@
     <child>
       <object class="AdwNavigationPage">
         <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkListView">
-                <property name="factory">track_factory</property>
-                <property name="model">track_selection_model</property>
-                <property name="show-separators">true</property>
+          <object class="AdwToolbarView" id="track_toolbar_view">
+            <child type="top">
+              <object class="GtkActionBar">
+                <child type="end">
+	          <object class="GtkButton">
+                    <property name="icon-name">plus-symbolic</property>
+	          </object>
+                </child>
+                <child type="end">
+	          <object class="GtkButton">
+                    <property name="icon-name">media-playback-start-symbolic</property>
+	          </object>
+                </child>
+              </object>
+            </child>
+            <property name="content">
+              <object class="GtkScrolledWindow">
+                <property name="child">
+                  <object class="GtkListView">
+                    <property name="factory">track_factory</property>
+                    <property name="model">track_selection_model</property>
+                    <property name="show-separators">true</property>
+                  </object>
+                </property>
               </object>
             </property>
+            <property name="reveal-top-bars">false</property>
           </object>
         </property>
         <property name="title" translatable="yes">Songs</property>

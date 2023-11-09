@@ -26,6 +26,7 @@ struct _PolyhymniaWindow
 
   AdwBin              *track_stack_page_content;
   AdwNavigationView   *track_navigation_view;
+  AdwToolbarView      *track_toolbar_view;
   AdwStatusPage       *tracks_status_page;
 
   AdwBin              *genre_stack_page_content;
@@ -76,6 +77,12 @@ polyhymnia_window_mpd_queue_modified(GObject* self, gpointer user_data);
 static void
 polyhymnia_window_queue_pane_init (PolyhymniaWindow *self);
 
+static void
+polyhymnia_window_track_selection_changed (GtkSelectionModel* self,
+                                           guint position,
+                                           guint n_items,
+                                           gpointer user_data);
+
 /* Class stuff */
 static void
 polyhymnia_window_dispose(GObject *gobject)
@@ -112,6 +119,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_stack_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_navigation_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_page_content);
@@ -161,6 +169,10 @@ polyhymnia_window_init (PolyhymniaWindow *self)
   g_settings_bind (self->settings, "window-fullscreened",
                     self, "fullscreened",
                     G_SETTINGS_BIND_DEFAULT);
+
+  g_signal_connect (self->track_selection_model, "selection-changed",
+                    G_CALLBACK (polyhymnia_window_track_selection_changed),
+                    self);
 
   polyhymnia_window_mpd_client_initialized (G_OBJECT(self->mpd_client), NULL, self);
   g_signal_connect (self->mpd_client, "notify::initialized",
@@ -413,9 +425,7 @@ polyhymnia_window_queue_pane_init (PolyhymniaWindow *self)
   if (error != NULL)
   {
     g_object_set (G_OBJECT (self->queue_status_page),
-                  "description", NULL,
-                  "icon-name", "error-symbolic",
-                  "title", _("Queue fetch failed"),
+                  "description", _("Failed to fetch queue"),
                   NULL);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_status_page));
@@ -443,4 +453,20 @@ polyhymnia_window_queue_pane_init (PolyhymniaWindow *self)
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->genre_navigation_view));
   }
+}
+
+static void
+polyhymnia_window_track_selection_changed (GtkSelectionModel* self,
+                                           guint position,
+                                           guint n_items,
+                                           gpointer user_data)
+{
+  GtkBitset *selection = gtk_selection_model_get_selection (self);
+  PolyhymniaWindow *window_self = user_data;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+
+  adw_toolbar_view_set_reveal_top_bars (window_self->track_toolbar_view,
+                                        !gtk_bitset_is_empty (selection));
+  gtk_bitset_unref (selection);
 }

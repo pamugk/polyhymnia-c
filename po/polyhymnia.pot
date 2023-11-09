@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-09 00:18+0500\n"
+"POT-Creation-Date: 2023-11-09 09:25+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -250,7 +250,7 @@ msgid "Library has been updated"
 msgstr ""
 
 #: src/polyhymnia-window.c:418
-msgid "Queue fetch failed"
+msgid "Failed to fetch queue"
 msgstr ""
 
 #: src/polyhymnia-window.c:430
