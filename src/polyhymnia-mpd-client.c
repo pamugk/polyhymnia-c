@@ -728,7 +728,7 @@ polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
   }
 }
 
-static void
+void
 polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
                             GError              **error)
 {

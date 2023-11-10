@@ -68,6 +68,10 @@ polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
                                      GError              **error);
 
 void
+polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
+                            GError              **error);
+
+void
 polyhymnia_mpd_client_play_album(PolyhymniaMpdClient *self,
                                  const gchar         *album,
                                  GError              **error);
