@@ -199,17 +199,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="child">
-                          <object class="AdwBin" id="recent_stack_page_content">
-                            <property name="child">recent_list_box</property>
-                          </object>
-                        </property>
-                        <property name="name">recent_page</property>
-                        <property name="title" translatable="yes">Recently Added</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
                           <object class="AdwBin" id="artist_stack_page_content" />
                         </property>
                         <property name="name">artists_page</property>
@@ -361,15 +350,6 @@
           </object>
         </property>
         <property name="title" translatable="yes">Genres</property>
-      </object>
-    </child>
-  </object>
-  <object class="GtkListBox" id="recent_list_box">
-    <child type="placeholder">
-      <object class="AdwStatusPage">
-        <property name="description" translatable="yes">Recently played songs will be placed here</property>
-        <property name="icon-name">list-symbolic</property>
-        <property name="title" translatable="yes">No recently played songs</property>
       </object>
     </child>
   </object>
