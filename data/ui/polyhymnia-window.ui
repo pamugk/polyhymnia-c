@@ -86,39 +86,105 @@
               </object>
             </child>
             <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-skip-backward-symbolic</property>
-                <property name="sensitive">false</property>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkLabel" id="current_track_title_label">
+                    <property name="ellipsize">end</property>
+                    <property name="single-line-mode">true</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="heading"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="current_track_artist_label">
+                    <property name="ellipsize">end</property>
+                    <property name="single-line-mode">true</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="caption"/>
+                    </style>
+                  </object>
+                </child>
+                <property name="orientation">vertical</property>
                 <property name="valign">center</property>
-	      </object>
-            </child>
-            <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-playback-start-symbolic</property>
-                <property name="sensitive">false</property>
-                <property name="valign">center</property>
-	      </object>
-            </child>
-            <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-skip-forward-symbolic</property>
-                <property name="sensitive">false</property>
-                <property name="valign">center</property>
-	      </object>
+              </object>
             </child>
             <child type="center">
-	      <object class="GtkScale">
-                <property name="adjustment">
-                  <object class="GtkAdjustment">
-                    <property name="value">100</property>
-                    <property name="lower">0</property>
-                    <property name="upper">100</property>
-                    <property name="step-increment">5</property>
-                  </object>
-                </property>
-                <property name="hexpand">true</property>
-                <property name="orientation">horizontal</property>
-	      </object>
+              <object class="GtkGrid">
+                <child>
+                  <object class="GtkScale">
+                    <layout>
+                      <property name="column">0</property>
+                      <property name="column-span">3</property>
+                      <property name="row">0</property>
+                    </layout>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="step-increment">5</property>
+                        <property name="upper"
+                          bind-source="player"
+                          bind-property="total-seconds"
+                          bind-flags="sync-create" />
+                        <property name="value"
+                          bind-source="player"
+                          bind-property="elapsed-seconds"
+                          bind-flags="sync-create" />
+                      </object>
+                    </property>
+                    <property name="hexpand">true</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="sensitive"
+                      bind-source="player"
+                      bind-property="active"
+                      bind-flags="sync-create" />
+	          </object>
+                </child>
+                <child>
+	          <object class="GtkButton">
+                    <layout>
+                      <property name="column">0</property>
+                      <property name="row">1</property>
+                    </layout>
+                    <property name="halign">end</property>
+                    <property name="icon-name">media-skip-backward-symbolic</property>
+                    <property name="sensitive"
+                      bind-source="player"
+                      bind-property="has-previous"
+                      bind-flags="sync-create" />
+	          </object>
+                </child>
+                <child>
+	          <object class="GtkButton" id="play_button">
+                    <layout>
+                      <property name="column">1</property>
+                      <property name="row">1</property>
+                    </layout>
+                    <property name="halign">center</property>
+                    <property name="sensitive"
+                      bind-source="player"
+                      bind-property="active"
+                      bind-flags="sync-create" />
+	          </object>
+                </child>
+                <child>
+	          <object class="GtkButton">
+                    <layout>
+                      <property name="column">2</property>
+                      <property name="row">1</property>
+                    </layout>
+                    <property name="halign">start</property>
+                    <property name="icon-name">media-skip-forward-symbolic</property>
+                    <property name="sensitive"
+                      bind-source="player"
+                      bind-property="has-next"
+                      bind-flags="sync-create" />
+	          </object>
+                </child>
+                <property name="valign">center</property>
+              </object>
             </child>
             <child type="end">
               <object class="GtkToggleButton">
@@ -141,13 +207,20 @@
 	      <object class="GtkScaleButton">
                 <property name="adjustment">
                   <object class="GtkAdjustment">
-                    <property name="value">100</property>
                     <property name="lower">0</property>
-                    <property name="upper">100</property>
                     <property name="step-increment">5</property>
+                    <property name="upper">100</property>
+                    <property name="value"
+                      bind-source="player"
+                      bind-property="volume"
+                      bind-flags="sync-create" />
                   </object>
                 </property>
                 <property name="icons">audio-volume-high-symbolic</property>
+                <property name="sensitive"
+                  bind-source="player"
+                  bind-property="audio-available"
+                  bind-flags="sync-create" />
                 <property name="valign">center</property>
 	      </object>
             </child>
@@ -367,7 +440,7 @@
                 </child>
                 <child type="end">
 	          <object class="GtkButton" id="play_tracks_button">
-                    <property name="icon-name">media-playback-start-symbolic</property>
+                    <property name="icon-name">play-large-symbolic</property>
 	          </object>
                 </child>
               </object>
@@ -417,6 +490,8 @@
   <object class="AdwStatusPage" id="queue_status_page" />
 
   <object class="PolyhymniaMpdClient" id="mpd_client" />
+  <object class="PolyhymniaPlayer" id="player" />
+
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
   </object>

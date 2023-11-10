@@ -2,6 +2,7 @@
 #include "config.h"
 
 #include "polyhymnia-mpd-client.h"
+#include "polyhymnia-player.h"
 #include "polyhymnia-window.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -15,6 +16,10 @@ struct _PolyhymniaWindow
   AdwOverlaySplitView *content;
   AdwStatusPage       *no_mpd_connection_page;
   AdwToastOverlay     *root_toast_overlay;
+
+  GtkLabel            *current_track_artist_label;
+  GtkLabel            *current_track_title_label;
+  GtkButton           *play_button;
 
   AdwBin              *artist_stack_page_content;
   AdwNavigationView   *artist_navigation_view;
@@ -44,6 +49,7 @@ struct _PolyhymniaWindow
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
+  PolyhymniaPlayer    *player;
   GSettings           *settings;
 
   GListStore          *album_model;
@@ -76,9 +82,9 @@ static void
 polyhymnia_window_content_init (PolyhymniaWindow *self);
 
 static void
-polyhymnia_window_mpd_client_initialized(GObject* self,
+polyhymnia_window_mpd_client_initialized(PolyhymniaMpdClient* self,
                                          GParamSpec* pspec,
-                                         gpointer user_data);
+                                         PolyhymniaWindow* user_data);
 
 static void
 polyhymnia_window_mpd_database_updated(GObject* self, gpointer user_data);
@@ -89,6 +95,19 @@ polyhymnia_window_mpd_queue_modified(GObject* self, gpointer user_data);
 static void
 polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
                                               gpointer user_data);
+
+static void
+polyhymnia_window_player_current_track(PolyhymniaPlayer* self,
+                                       GParamSpec* pspec,
+                                       PolyhymniaWindow* user_data);
+
+static void
+polyhymnia_window_player_state(PolyhymniaPlayer* self,
+                               GParamSpec* pspec,
+                               PolyhymniaWindow* user_data);
+
+static const gchar *
+polyhymnia_window_player_state_to_icon(PolyhymniaPlayerPlaybackStatus state);
 
 static void
 polyhymnia_window_queue_to_playlist_button_clicked (GtkButton* self,
@@ -128,6 +147,10 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_mpd_connection_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, root_toast_overlay);
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, current_track_artist_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, current_track_title_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, play_button);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artist_stack_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artist_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_status_page);
@@ -152,6 +175,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_to_playlist_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, album_selection_model);
@@ -212,9 +236,19 @@ polyhymnia_window_init (PolyhymniaWindow *self)
                     G_CALLBACK (polyhymnia_window_queue_to_playlist_button_clicked),
                     self);
 
-  polyhymnia_window_mpd_client_initialized (G_OBJECT(self->mpd_client), NULL, self);
+  polyhymnia_window_mpd_client_initialized (self->mpd_client, NULL, self);
   g_signal_connect (self->mpd_client, "notify::initialized",
                     G_CALLBACK (polyhymnia_window_mpd_client_initialized),
+                    self);
+
+  polyhymnia_window_player_current_track (self->player, NULL, self);
+  g_signal_connect (self->player, "notify::current-track",
+                    G_CALLBACK (polyhymnia_window_player_current_track),
+                    self);
+
+  polyhymnia_window_player_state (self->player, NULL, self);
+  g_signal_connect (self->player, "notify::playback-status",
+                    G_CALLBACK (polyhymnia_window_player_state),
                     self);
 
   g_signal_connect (self->mpd_client, "database-updated",
@@ -458,29 +492,28 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
 }
 
 static void
-polyhymnia_window_mpd_client_initialized(GObject* self,
-                                  GParamSpec* pspec,
-                                  gpointer user_data)
+polyhymnia_window_mpd_client_initialized(PolyhymniaMpdClient* self,
+                                         GParamSpec* pspec,
+                                         PolyhymniaWindow* user_data)
 {
   gboolean mpd_initialized = FALSE;
-  PolyhymniaWindow *window_self = user_data;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (user_data));
 
-  g_object_get (window_self->mpd_client, "initialized", &mpd_initialized, NULL);
+  g_object_get (user_data->mpd_client, "initialized", &mpd_initialized, NULL);
   if (mpd_initialized)
   {
-    adw_toast_overlay_set_child (window_self->root_toast_overlay,
-                                 GTK_WIDGET (window_self->content));
-    polyhymnia_window_content_init (window_self);
-    polyhymnia_window_queue_pane_init (window_self);
+    adw_toast_overlay_set_child (user_data->root_toast_overlay,
+                                 GTK_WIDGET (user_data->content));
+    polyhymnia_window_content_init (user_data);
+    polyhymnia_window_queue_pane_init (user_data);
   }
   else
   {
-    adw_toast_overlay_set_child (window_self->root_toast_overlay,
-                                 GTK_WIDGET (window_self->no_mpd_connection_page));
-    g_list_store_remove_all (window_self->queue_model);
-    polyhymnia_window_content_clear (window_self);
+    adw_toast_overlay_set_child (user_data->root_toast_overlay,
+                                 GTK_WIDGET (user_data->no_mpd_connection_page));
+    g_list_store_remove_all (user_data->queue_model);
+    polyhymnia_window_content_clear (user_data);
   }
 }
 
@@ -565,6 +598,60 @@ polyhymnia_window_mpd_queue_modified(GObject* self, gpointer user_data)
 
   g_list_store_remove_all (window_self->queue_model);
   polyhymnia_window_queue_pane_init (window_self);
+}
+
+static void
+polyhymnia_window_player_current_track(PolyhymniaPlayer* self,
+                                       GParamSpec* pspec,
+                                       PolyhymniaWindow* user_data)
+{
+  const PolyhymniaTrack *current_track;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (user_data));
+
+  current_track = polyhymnia_player_get_current_track (self);
+  if (current_track == NULL)
+  {
+    gtk_label_set_text (user_data->current_track_artist_label, NULL);
+    gtk_label_set_text (user_data->current_track_title_label, NULL);
+  }
+  else
+  {
+    const gchar *artist = polyhymnia_track_get_artist (current_track);
+    const gchar *title = polyhymnia_track_get_title (current_track);
+
+    gtk_label_set_text (user_data->current_track_artist_label, artist);
+    gtk_label_set_text (user_data->current_track_title_label, title);
+  }
+}
+
+static void
+polyhymnia_window_player_state(PolyhymniaPlayer* self,
+                               GParamSpec* pspec,
+                               PolyhymniaWindow* user_data)
+{
+  const char *icon_name;
+  PolyhymniaPlayerPlaybackStatus player_state;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (user_data));
+
+  player_state = polyhymnia_player_get_playback_status (self);
+  icon_name = polyhymnia_window_player_state_to_icon (player_state);
+  gtk_button_set_icon_name (user_data->play_button, icon_name);
+}
+
+static const gchar *
+polyhymnia_window_player_state_to_icon(PolyhymniaPlayerPlaybackStatus state)
+{
+  switch (state)
+  {
+  case POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PAUSED:
+    return "pause-large-symbolic";
+  case POLYHYMNIA_PLAYER_PLAYBACK_STATUS_UNKNOWN:
+    return "play-large-disabled-symbolic";
+  default:
+    return "play-large-disabled-symbolic";
+  }
 }
 
 static void

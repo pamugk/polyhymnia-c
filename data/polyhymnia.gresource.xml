@@ -23,6 +23,9 @@
     <file alias="music-note-single-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-note-single-symbolic.svg</file>
     <file alias="music-queue-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/music-queue-symbolic.svg</file>
     <file alias="offline-globe-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/offline-globe-symbolic.svg</file>
+    <file alias="pause-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/pause-large-symbolic.svg</file>
+    <file alias="play-large-disabled-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/play-large-disabled-symbolic.svg</file>
+    <file alias="play-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/play-large-symbolic.svg</file>
     <file alias="playlist-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/playlist-symbolic.svg</file>
     <file alias="plus-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/plus-symbolic.svg</file>
     <file alias="preferences-system-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/preferences-system-symbolic.svg</file>

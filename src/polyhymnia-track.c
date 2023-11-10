@@ -222,7 +222,25 @@ polyhymnia_track_init (PolyhymniaTrack *self)
 
 /* Instance methods */
 const gchar *
-polyhymnia_track_get_uri (const PolyhymniaTrack *track)
+polyhymnia_track_get_artist (const PolyhymniaTrack *self)
 {
-  return track->uri;
+  return self->artist;
+}
+
+guint
+polyhymnia_track_get_duration (const PolyhymniaTrack *self)
+{
+  return self->duration;
+}
+
+const gchar *
+polyhymnia_track_get_title (const PolyhymniaTrack *self)
+{
+  return self->title;
+}
+
+const gchar *
+polyhymnia_track_get_uri (const PolyhymniaTrack *self)
+{
+  return self->uri;
 }

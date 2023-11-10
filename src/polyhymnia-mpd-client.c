@@ -1,13 +1,12 @@
 
 #include "polyhymnia-mpd-client.h"
 
-#include <gio/gio.h>
 #include <mpd/client.h>
 
 /* Type metadata */
 typedef enum
 {
-  PROP_SCAN_AVAILABLE = 1,
+  PROP_INITIALIZED = 1,
   N_PROPERTIES,
 } PolyhymniaMpdClientProperty;
 
@@ -111,7 +110,7 @@ polyhymnia_mpd_client_get_property (GObject    *object,
 
   switch ((PolyhymniaMpdClientProperty) property_id)
     {
-    case PROP_SCAN_AVAILABLE:
+    case PROP_INITIALIZED:
       g_value_set_boolean (value, self->initialized);
       break;
 
@@ -131,7 +130,7 @@ polyhymnia_mpd_client_set_property (GObject      *object,
 
   switch ((PolyhymniaMpdClientProperty) property_id)
     {
-    case PROP_SCAN_AVAILABLE:
+    case PROP_INITIALIZED:
       self->initialized = g_value_get_boolean (value);
       break;
 
@@ -153,7 +152,7 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
   gobject_class->get_property = polyhymnia_mpd_client_get_property;
   gobject_class->set_property = polyhymnia_mpd_client_set_property;
 
-  obj_properties[PROP_SCAN_AVAILABLE] =
+  obj_properties[PROP_INITIALIZED] =
     g_param_spec_boolean ("initialized",
                          "Initialized",
                          "Whether MPD connection is established.",
@@ -688,6 +687,88 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
   return results;
 }
 
+PolyhymniaPlayerState
+polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
+                                 GError              **error)
+{
+  PolyhymniaPlayerState state = {};
+  struct mpd_status     *status;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), state);
+  g_return_val_if_fail (error == NULL || *error == NULL, state);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, state);
+
+  status = mpd_run_status (self->main_mpd_connection);
+  if (status == NULL)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "main request failed - %s",
+                 mpd_connection_get_error_message (self->main_mpd_connection));
+  }
+  else
+  {
+    PolyhymniaTrack *current_track = NULL;
+    int             current_track_id = mpd_status_get_song_id (status);
+    int             volume = mpd_status_get_volume (status);
+
+    if (current_track_id != -1)
+    {
+      struct mpd_song *current_song;
+      current_song = mpd_run_get_queue_song_id (self->main_mpd_connection,
+                                                current_track_id);
+
+      if (current_song == NULL)
+      {
+        g_set_error (error,
+                     POLYHYMNIA_MPD_CLIENT_ERROR,
+                     POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                     "current track request failed - %s",
+                     mpd_connection_get_error_message (self->main_mpd_connection));
+      }
+      else
+      {
+        const gchar *album = mpd_song_get_tag (current_song, MPD_TAG_ALBUM, 0);
+        const gchar *artist = mpd_song_get_tag (current_song, MPD_TAG_ARTIST, 0);
+        current_track = g_object_new (POLYHYMNIA_TYPE_TRACK,
+                                      "id", mpd_song_get_id (current_song),
+                                      "position", mpd_song_get_pos (current_song),
+                                      "uri", mpd_song_get_uri (current_song),
+                                      "title", current_song,
+                                      "album", album,
+                                      "artist", artist,
+                                      "duration", mpd_song_get_duration (current_song),
+                                      NULL);
+        mpd_song_free (current_song);
+      }
+    }
+
+    state.current_track   = current_track;
+    state.elapsed_seconds = mpd_status_get_elapsed_ms (status) / 1000;
+    state.has_next        = mpd_status_get_next_song_id (status) != -1;
+    state.has_previous    = mpd_status_get_song_pos (status) > 0;
+    state.playback_status = (PolyhymniaPlayerPlaybackStatus) mpd_status_get_state (status);
+    state.random          = mpd_status_get_random (status);
+    state.repeat          = mpd_status_get_repeat (status);
+
+    if (volume >= 0)
+    {
+      state.audio_available = TRUE;
+      state.volume          = volume;
+    }
+    else
+    {
+      state.audio_available = FALSE;
+      state.volume          = 0;
+    }
+
+    mpd_status_free (status);
+  }
+
+  return state;
+}
+
 int
 polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
                                  GError              **error)
@@ -708,6 +789,12 @@ polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
   }
 
   return volume;
+}
+
+gboolean
+polyhymnia_mpd_client_is_initialized (const PolyhymniaMpdClient *self)
+{
+  return self->initialized;
 }
 
 void

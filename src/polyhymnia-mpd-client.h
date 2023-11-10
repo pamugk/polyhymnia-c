@@ -5,6 +5,7 @@
 
 #include "polyhymnia-album.h"
 #include "polyhymnia-artist.h"
+#include "polyhymnia-player-state.h"
 #include "polyhymnia-track.h"
 
 G_BEGIN_DECLS
@@ -59,9 +60,16 @@ GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error);
 
+PolyhymniaPlayerState
+polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
+                                 GError              **error);
+
 int
 polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
                                  GError              **error);
+
+gboolean
+polyhymnia_mpd_client_is_initialized (const PolyhymniaMpdClient *self);
 
 void
 polyhymnia_mpd_client_pause_playback(PolyhymniaMpdClient *self,
