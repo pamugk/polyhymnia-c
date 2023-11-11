@@ -13,6 +13,7 @@ struct _PolyhymniaPlayerBar
   GtkLabel            *current_track_title_label;
   GtkToggleButton     *queue_button;
   GtkButton           *play_button;
+  GtkAdjustment       *playback_adjustment;
 
   /* Template objects */
   PolyhymniaPlayer    *player;
@@ -25,11 +26,15 @@ static const gchar *
 polyhymnia_player_bar_state_to_icon(PolyhymniaPlayerPlaybackStatus state);
 
 /* Event handler declaration  */
-
 static void
 polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
                                     GParamSpec          *pspec,
                                     PolyhymniaPlayer    *user_data);
+
+static void
+polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
+                                      GParamSpec          *pspec,
+                                      PolyhymniaPlayer    *user_data);
 
 static void
 polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
@@ -78,6 +83,7 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_title_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, queue_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_adjustment);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, player);
 
@@ -91,6 +97,8 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_current_track);
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_elapsed_seconds);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_state);
 }
 
@@ -100,6 +108,7 @@ polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   polyhymnia_player_bar_current_track (self, NULL, self->player);
+  polyhymnia_player_bar_elapsed_seconds (self, NULL, self->player);
   polyhymnia_player_bar_state (self, NULL, self->player);
 }
 /* Instance methods */
@@ -124,6 +133,8 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
   {
     gtk_label_set_text (self->current_track_artist_label, NULL);
     gtk_label_set_text (self->current_track_title_label, NULL);
+
+    gtk_adjustment_set_upper (self->playback_adjustment, 0);
   }
   else
   {
@@ -132,7 +143,21 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
 
     gtk_label_set_text (self->current_track_artist_label, artist);
     gtk_label_set_text (self->current_track_title_label, title);
+
+    gtk_adjustment_set_upper (self->playback_adjustment,
+                              (gdouble) polyhymnia_track_get_duration (current_track));
   }
+}
+
+static void
+polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
+                                      GParamSpec          *pspec,
+                                      PolyhymniaPlayer    *user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+
+  gtk_adjustment_set_value (self->playback_adjustment,
+                            (gdouble) polyhymnia_player_get_elapsed (user_data));
 }
 
 static void

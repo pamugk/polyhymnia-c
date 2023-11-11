@@ -15,7 +15,6 @@ typedef enum
   PROP_PLAYBACK_STATUS,
   PROP_RANDOM_ORDER,
   PROP_REPEAT_PLAYBACK,
-  PROP_TOTAL_SECONDS,
   PROP_VOLUME,
   N_PROPERTIES,
 } PolyhymniaPlayerProperty;
@@ -142,11 +141,11 @@ polyhymnia_player_get_property (GObject    *object,
     case PROP_PLAYBACK_STATUS:
       g_value_set_enum (value, self->playback_status);
       break;
-    case PROP_TOTAL_SECONDS:
-      g_value_set_uint (value,
-                        self->current_track == NULL
-                        ? 0
-                        : polyhymnia_track_get_duration (self->current_track));
+    case PROP_RANDOM_ORDER:
+      g_value_set_boolean (value, self->random);
+      break;
+    case PROP_REPEAT_PLAYBACK:
+      g_value_set_boolean (value, self->repeat);
       break;
     case PROP_VOLUME:
       g_value_set_double (value, self->volume);
@@ -254,13 +253,6 @@ polyhymnia_player_class_init (PolyhymniaPlayerClass *klass)
                           FALSE,
                           G_PARAM_READABLE | G_PARAM_STATIC_NAME);
 
-  obj_properties[PROP_TOTAL_SECONDS] =
-    g_param_spec_uint ("total-seconds",
-                       "Total seconds",
-                       "Full duration of a current track (in seconds).",
-                       0, G_MAXUINT, 0,
-                       G_PARAM_READWRITE | G_PARAM_STATIC_NAME);
-
   obj_properties[PROP_VOLUME] =
     g_param_spec_double ("volume",
                          "Volume",
@@ -302,6 +294,12 @@ const PolyhymniaTrack *
 polyhymnia_player_get_current_track (const PolyhymniaPlayer *self)
 {
   return self->current_track;
+}
+
+guint
+polyhymnia_player_get_elapsed (const PolyhymniaPlayer *self)
+{
+  return self->elapsed_seconds;
 }
 
 PolyhymniaPlayerPlaybackStatus
@@ -431,8 +429,8 @@ polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
   if (new_state.current_track_id < 0 && self->current_track != NULL)
   {
     g_clear_object (&self->current_track);
+    self->elapsed_seconds = 0;
     g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_CURRENT_TRACK]);
-    g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_TOTAL_SECONDS]);
   }
   else if (new_state.current_track_id >= 0 && self->current_track == NULL)
   {
@@ -449,8 +447,8 @@ polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
     }
 
     self->current_track = new_track;
+    self->elapsed_seconds = new_state.elapsed_seconds;
     g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_CURRENT_TRACK]);
-    g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_TOTAL_SECONDS]);
   }
   else if (new_state.current_track_id !=
            polyhymnia_track_get_id (self->current_track))
@@ -471,7 +469,6 @@ polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
     self->current_track = new_track;
 
     g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_CURRENT_TRACK]);
-    g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_TOTAL_SECONDS]);
   }
 
   if (new_state.elapsed_seconds != self->elapsed_seconds)

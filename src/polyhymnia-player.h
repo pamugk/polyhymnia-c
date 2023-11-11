@@ -15,6 +15,9 @@ G_DECLARE_FINAL_TYPE (PolyhymniaPlayer, polyhymnia_player, POLYHYMNIA, PLAYER, G
 const PolyhymniaTrack *
 polyhymnia_player_get_current_track (const PolyhymniaPlayer *self);
 
+guint
+polyhymnia_player_get_elapsed (const PolyhymniaPlayer *self);
+
 PolyhymniaPlayerPlaybackStatus
 polyhymnia_player_get_playback_status (const PolyhymniaPlayer *self);
 

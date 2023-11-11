@@ -226,7 +226,6 @@
     		  swapped="true" />
               </object>
             </child>
-            <property name="revealed">false</property>
           </object>
         </child>
       </object>
