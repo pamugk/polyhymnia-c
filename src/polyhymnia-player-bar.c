@@ -1,4 +1,5 @@
 
+#include <gdk/gdk.h>
 #include "polyhymnia-player.h"
 #include "polyhymnia-player-bar.h"
 
@@ -7,9 +8,13 @@ struct _PolyhymniaPlayerBar
 {
   GtkWidget  parent_instance;
 
+  /* Stored UI state */
+  GdkTexture          *current_track_album_cover;
+
   /* Template widgets */
   GtkActionBar        *root_action_bar;
   GtkLabel            *current_track_artist_label;
+  GtkImage            *current_track_cover_image;
   GtkLabel            *current_track_title_label;
   GtkToggleButton     *queue_button;
   GtkButton           *play_button;
@@ -80,6 +85,7 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, root_action_bar);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_artist_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_cover_image);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_title_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, queue_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
@@ -126,7 +132,7 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
 {
   const PolyhymniaTrack *current_track;
 
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   current_track = polyhymnia_player_get_current_track (user_data);
   if (current_track == NULL)
@@ -135,14 +141,46 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
     gtk_label_set_text (self->current_track_title_label, NULL);
 
     gtk_adjustment_set_upper (self->playback_adjustment, 0);
+    gtk_image_set_from_icon_name (self->current_track_cover_image,
+                                  "image-missing-symbolic");
+    g_clear_object (&self->current_track_album_cover);
   }
   else
   {
-    const gchar *artist = polyhymnia_track_get_artist (current_track);
-    const gchar *title = polyhymnia_track_get_title (current_track);
+    GError *error = NULL;
+    GBytes *cover = polyhymnia_player_get_current_track_album_cover (self->player,
+                                                                     &error);
+    if (error != NULL)
+    {
+      g_warning ("Failed to get current track cover: %s\n", error->message);
+      g_error_free (error);
+      error = NULL;
+      gtk_image_set_from_icon_name (self->current_track_cover_image,
+                                    "image-missing-symbolic");
+    }
+    else if (cover != NULL)
+    {
+      self->current_track_album_cover = gdk_texture_new_from_bytes (cover, &error);
+      if (error != NULL)
+      {
+        g_warning ("Failed to convert current track cover: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+        g_bytes_unref (cover);
+        gtk_image_set_from_icon_name (self->current_track_cover_image,
+                                      "image-missing-symbolic");
+      }
+      else
+      {
+        gtk_image_set_from_paintable (self->current_track_cover_image,
+                                      GDK_PAINTABLE (self->current_track_album_cover));
+      }
+    }
 
-    gtk_label_set_text (self->current_track_artist_label, artist);
-    gtk_label_set_text (self->current_track_title_label, title);
+    gtk_label_set_text (self->current_track_artist_label,
+                        polyhymnia_track_get_artist (current_track));
+    gtk_label_set_text (self->current_track_title_label,
+                        polyhymnia_track_get_title (current_track));
 
     gtk_adjustment_set_upper (self->playback_adjustment,
                               (gdouble) polyhymnia_track_get_duration (current_track));
@@ -154,7 +192,7 @@ polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
                                       GParamSpec          *pspec,
                                       PolyhymniaPlayer    *user_data)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   gtk_adjustment_set_value (self->playback_adjustment,
                             (gdouble) polyhymnia_player_get_elapsed (user_data));
@@ -164,7 +202,7 @@ static void
 polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
                                           gpointer            user_data)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   polyhymnia_player_play_next (self->player, NULL);
 }
@@ -173,7 +211,7 @@ static void
 polyhymnia_player_bar_play_button_clicked(PolyhymniaPlayerBar *self,
                                           gpointer            user_data)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   polyhymnia_player_toggle_playback_state (self->player, NULL);
 }
@@ -182,7 +220,7 @@ static void
 polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
                                               gpointer            user_data)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   polyhymnia_player_play_previous (self->player, NULL);
 }
@@ -195,7 +233,7 @@ polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
   const char *icon_name;
   PolyhymniaPlayerPlaybackStatus player_state;
 
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   player_state = polyhymnia_player_get_playback_status (user_data);
   icon_name = polyhymnia_player_bar_state_to_icon (player_state);

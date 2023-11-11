@@ -6,8 +6,7 @@
     <child>
       <object class="GtkActionBar" id="root_action_bar">
         <child type="start">
-          <object class="GtkImage">
-            <property name="icon-name">image-missing-symbolic</property>
+          <object class="GtkImage" id="current_track_cover_image">
             <property name="pixel-size">50</property>
           </object>
         </child>

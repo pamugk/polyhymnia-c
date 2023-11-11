@@ -15,6 +15,10 @@ G_DECLARE_FINAL_TYPE (PolyhymniaPlayer, polyhymnia_player, POLYHYMNIA, PLAYER, G
 const PolyhymniaTrack *
 polyhymnia_player_get_current_track (const PolyhymniaPlayer *self);
 
+GBytes *
+polyhymnia_player_get_current_track_album_cover (PolyhymniaPlayer *self,
+                                                 GError           **error);
+
 guint
 polyhymnia_player_get_elapsed (const PolyhymniaPlayer *self);
 

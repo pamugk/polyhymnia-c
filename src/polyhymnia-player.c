@@ -1,5 +1,6 @@
 
 #include "polyhymnia-enums.h"
+#include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-player.h"
 #include "polyhymnia-player.h"
 
@@ -296,6 +297,19 @@ polyhymnia_player_get_current_track (const PolyhymniaPlayer *self)
   return self->current_track;
 }
 
+GBytes *
+polyhymnia_player_get_current_track_album_cover (PolyhymniaPlayer *self,
+                                                 GError           **error)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_PLAYER (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+  g_return_val_if_fail (self->current_track != NULL, NULL);
+
+  return polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                     polyhymnia_track_get_uri (self->current_track),
+                                                     error);
+}
+
 guint
 polyhymnia_player_get_elapsed (const PolyhymniaPlayer *self)
 {
@@ -312,8 +326,8 @@ void
 polyhymnia_player_play_next (PolyhymniaPlayer *self,
                              GError           **error)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
-  g_assert (error == NULL || *error == NULL);
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (error == NULL || *error == NULL);
 
   polyhymnia_mpd_client_play_next (self->mpd_client, error);
 }
@@ -322,8 +336,8 @@ void
 polyhymnia_player_play_previous (PolyhymniaPlayer *self,
                                  GError           **error)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
-  g_assert (error == NULL || *error == NULL);
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (error == NULL || *error == NULL);
 
   polyhymnia_mpd_client_play_previous (self->mpd_client, error);
 }
@@ -332,8 +346,8 @@ void
 polyhymnia_player_toggle_playback_state (PolyhymniaPlayer *self,
                                          GError           **error)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
-  g_assert (error == NULL || *error == NULL);
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (error == NULL || *error == NULL);
 
   switch (self->playback_status)
   {
@@ -351,7 +365,7 @@ static void
 polyhymnia_player_mpd_audio_output_changed (PolyhymniaPlayer    * self,
                                             PolyhymniaMpdClient *user_data)
 {
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 }
 
 static void
@@ -360,7 +374,7 @@ polyhymnia_player_mpd_initialized (PolyhymniaPlayer    * self,
                                    PolyhymniaMpdClient *user_data)
 {
 
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 
   if (polyhymnia_mpd_client_is_initialized (self->mpd_client))
   {
@@ -415,7 +429,7 @@ polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
   GError *error = NULL;
   PolyhymniaPlayerPlaybackState new_state;
 
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 
   new_state = polyhymnia_mpd_client_get_playback_state (user_data, &error);
   if (error != NULL)
@@ -501,7 +515,7 @@ polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    * self,
   GError *error = NULL;
   PolyhymniaPlayerPlaybackOptions new_options;
 
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 
   new_options = polyhymnia_mpd_client_get_playback_options (user_data, &error);
   if (error != NULL)
@@ -531,7 +545,7 @@ polyhymnia_player_mpd_volume_changed (PolyhymniaPlayer    * self,
   GError *error = NULL;
   guint new_volume;
 
-  g_assert (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 
   new_volume = polyhymnia_mpd_client_get_volume (user_data, &error);
   if (error != NULL)
