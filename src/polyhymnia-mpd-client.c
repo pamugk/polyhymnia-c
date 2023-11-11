@@ -593,6 +593,26 @@ polyhymnia_mpd_client_append_to_queue(PolyhymniaMpdClient *self,
 }
 
 void
+polyhymnia_mpd_client_change_volume(PolyhymniaMpdClient *self,
+                                    gint8               volume_diff,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  if (!mpd_run_change_volume (self->main_mpd_connection, volume_diff))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+void
 polyhymnia_mpd_client_clear_queue(PolyhymniaMpdClient *self,
                                   GError             **error)
 {

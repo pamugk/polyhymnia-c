@@ -169,8 +169,11 @@ polyhymnia_player_set_property (GObject      *object,
   switch ((PolyhymniaPlayerProperty) property_id)
     {
     case PROP_VOLUME:
+    {
       self->volume = g_value_get_double (value);
+      polyhymnia_mpd_client_set_volume (self->mpd_client, self->volume, NULL);
       break;
+    }
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -291,6 +294,15 @@ polyhymnia_player_init (PolyhymniaPlayer *self)
 }
 
 /* Instance methods */
+void
+polyhymnia_player_change_volume (PolyhymniaPlayer *self,
+                                 gint8             volume_diff,
+                                 GError           **error)
+{
+  polyhymnia_mpd_client_change_volume (self->mpd_client,
+                                       volume_diff, error);
+}
+
 const PolyhymniaTrack *
 polyhymnia_player_get_current_track (const PolyhymniaPlayer *self)
 {

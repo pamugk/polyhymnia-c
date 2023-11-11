@@ -135,7 +135,7 @@
           </object>
         </child>
         <child type="end">
-          <object class="GtkScaleButton">
+          <object class="GtkScaleButton" id="volume_scale_button">
             <property name="adjustment">
               <object class="GtkAdjustment">
                 <property name="lower">0</property>
@@ -144,10 +144,9 @@
                 <property name="value"
                   bind-source="player"
                   bind-property="volume"
-                  bind-flags="sync-create" />
+                  bind-flags="bidirectional|sync-create" />
               </object>
             </property>
-            <property name="icons">audio-volume-high-symbolic</property>
             <property name="sensitive"
               bind-source="player"
               bind-property="audio-available"

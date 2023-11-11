@@ -12,6 +12,11 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaPlayer, polyhymnia_player, POLYHYMNIA, PLAYER, GObject)
 
+void
+polyhymnia_player_change_volume (PolyhymniaPlayer *self,
+                                 gint8             volume_diff,
+                                 GError           **error);
+
 const PolyhymniaTrack *
 polyhymnia_player_get_current_track (const PolyhymniaPlayer *self);
 

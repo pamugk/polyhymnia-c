@@ -19,12 +19,21 @@ struct _PolyhymniaPlayerBar
   GtkToggleButton     *queue_button;
   GtkButton           *play_button;
   GtkAdjustment       *playback_adjustment;
+  GtkScaleButton      *volume_scale_button;
 
   /* Template objects */
   PolyhymniaPlayer    *player;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaPlayerBar, polyhymnia_player_bar, GTK_TYPE_WIDGET)
+
+static const gchar *VOLUME_ICONS[] =
+{
+  "audio-volume-low-symbolic",
+  "audio-volume-high-symbolic",
+  "audio-volume-medium-symbolic",
+  NULL,
+};
 
 /* Utility functions declaration */
 static const gchar *
@@ -58,6 +67,14 @@ polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
                             GParamSpec          *pspec,
                             PolyhymniaPlayer    *user_data);
 
+static void
+polyhymnia_player_bar_volume_minus_button_clicked(PolyhymniaPlayerBar *self,
+                                                  gpointer             user_data);
+
+static void
+polyhymnia_player_bar_volume_plus_button_clicked(PolyhymniaPlayerBar *self,
+                                                 gpointer             user_data);
+
 /* Class stuff */
 static void
 polyhymnia_player_bar_dispose(GObject *gobject)
@@ -90,6 +107,7 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, queue_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_adjustment);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, volume_scale_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, player);
 
@@ -112,6 +130,16 @@ static void
 polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  gtk_scale_button_set_icons (self->volume_scale_button, VOLUME_ICONS);
+  g_signal_connect_swapped (gtk_scale_button_get_minus_button (self->volume_scale_button),
+                            "clicked",
+                            G_CALLBACK (polyhymnia_player_bar_volume_minus_button_clicked),
+                            self);
+  g_signal_connect_swapped (gtk_scale_button_get_plus_button (self->volume_scale_button),
+                            "clicked",
+                            G_CALLBACK (polyhymnia_player_bar_volume_plus_button_clicked),
+                            self);
 
   polyhymnia_player_bar_current_track (self, NULL, self->player);
   polyhymnia_player_bar_elapsed_seconds (self, NULL, self->player);
@@ -240,6 +268,21 @@ polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
   gtk_button_set_icon_name (self->play_button, icon_name);
 }
 
+static void
+polyhymnia_player_bar_volume_minus_button_clicked(PolyhymniaPlayerBar *self,
+                                                  gpointer             user_data)
+{
+  polyhymnia_player_change_volume (self->player, -5, NULL);
+}
+
+static void
+polyhymnia_player_bar_volume_plus_button_clicked(PolyhymniaPlayerBar *self,
+                                                 gpointer             user_data)
+{
+  polyhymnia_player_change_volume (self->player, 5, NULL);
+}
+
+/* Utility functions implementation*/
 static const gchar *
 polyhymnia_player_bar_state_to_icon(PolyhymniaPlayerPlaybackStatus state)
 {

@@ -6,6 +6,11 @@
 #include "polyhymnia-player-state.h"
 
 G_BEGIN_DECLS
+void
+polyhymnia_mpd_client_change_volume(PolyhymniaMpdClient *self,
+                                    gint8               volume_diff,
+                                    GError              **error);
+
 PolyhymniaPlayerPlaybackOptions
 polyhymnia_mpd_client_get_playback_options(PolyhymniaMpdClient *self,
                                            GError              **error);
