@@ -1,5 +1,7 @@
 
 #include <gdk/gdk.h>
+
+#include "polyhymnia-format-utils.h"
 #include "polyhymnia-player.h"
 #include "polyhymnia-player-bar.h"
 
@@ -19,6 +21,8 @@ struct _PolyhymniaPlayerBar
   GtkToggleButton     *queue_button;
   GtkButton           *play_button;
   GtkAdjustment       *playback_adjustment;
+  GtkLabel            *playback_elapsed_label;
+  GtkLabel            *playback_total_label;
   GtkScaleButton      *volume_scale_button;
 
   /* Template objects */
@@ -57,6 +61,12 @@ polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
 static void
 polyhymnia_player_bar_play_button_clicked(PolyhymniaPlayerBar *self,
                                           gpointer             user_data);
+
+static gboolean
+polyhymnia_player_bar_playback_seek(PolyhymniaPlayerBar *self,
+                                    GtkScrollType       *scroll,
+                                    gdouble              value,
+                                    GtkScale            *user_data);
 
 static void
 polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
@@ -107,6 +117,8 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, queue_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_adjustment);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_elapsed_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_total_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, volume_scale_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, player);
@@ -115,6 +127,8 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
                                            polyhymnia_player_bar_next_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_play_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_playback_seek);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_previous_button_clicked);
 
@@ -165,6 +179,8 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
   current_track = polyhymnia_player_get_current_track (user_data);
   if (current_track == NULL)
   {
+    gtk_label_set_text (self->playback_total_label, NULL);
+
     gtk_label_set_text (self->current_track_artist_label, NULL);
     gtk_label_set_text (self->current_track_title_label, NULL);
 
@@ -205,6 +221,8 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
       }
     }
 
+    gtk_label_set_text (self->playback_total_label,
+                        polyhymnia_track_get_duration_readable (current_track));
     gtk_label_set_text (self->current_track_artist_label,
                         polyhymnia_track_get_artist (current_track));
     gtk_label_set_text (self->current_track_title_label,
@@ -220,10 +238,15 @@ polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
                                       GParamSpec          *pspec,
                                       PolyhymniaPlayer    *user_data)
 {
+  guint elapsed = polyhymnia_player_get_elapsed (user_data);
+  gchar *elapsed_readable = seconds_to_readable (elapsed);
+
   g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
-  gtk_adjustment_set_value (self->playback_adjustment,
-                            (gdouble) polyhymnia_player_get_elapsed (user_data));
+  gtk_label_set_text (self->playback_elapsed_label, elapsed_readable);
+  gtk_adjustment_set_value (self->playback_adjustment, (gdouble) elapsed);
+
+  g_free (elapsed_readable);
 }
 
 static void
@@ -242,6 +265,17 @@ polyhymnia_player_bar_play_button_clicked(PolyhymniaPlayerBar *self,
   g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
 
   polyhymnia_player_toggle_playback_state (self->player, NULL);
+}
+
+static gboolean
+polyhymnia_player_bar_playback_seek(PolyhymniaPlayerBar *self,
+                                    GtkScrollType       *scroll,
+                                    gdouble              value,
+                                    GtkScale            *user_data)
+{
+  polyhymnia_player_playback_seek (self->player, value, NULL);
+
+  return FALSE;
 }
 
 static void

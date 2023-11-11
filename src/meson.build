@@ -3,6 +3,7 @@ polyhymnia_sources = [
   'polyhymnia-album.c',
   'polyhymnia-artist.c',
   'polyhymnia-application.c',
+  'polyhymnia-format-utils.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',

@@ -1,4 +1,5 @@
 
+#include "polyhymnia-format-utils.h"
 #include "polyhymnia-track.h"
 
 /* Type metadata */
@@ -33,18 +34,6 @@ struct _PolyhymniaTrack
 G_DEFINE_FINAL_TYPE (PolyhymniaTrack, polyhymnia_track, G_TYPE_OBJECT)
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
-/* Utility functions */
-static gchar*
-seconds_to_readable(guint duration)
-{
-  gushort hours = duration / 3600;
-  gushort minutes = (duration % 3600) / 60;
-  gushort seconds = duration %  60;
-  return hours == 0
-    ? g_strdup_printf ("%02d:%02d", minutes, seconds)
-    : g_strdup_printf ("%d:%02d:%02d", hours, minutes, seconds);
-}
 
 /* Class stuff */
 static void
@@ -231,6 +220,12 @@ guint
 polyhymnia_track_get_duration (const PolyhymniaTrack *self)
 {
   return self->duration;
+}
+
+const gchar *
+polyhymnia_track_get_duration_readable (const PolyhymniaTrack *self)
+{
+  return self->duration_readable;
 }
 
 guint

@@ -39,6 +39,11 @@ polyhymnia_player_play_previous (PolyhymniaPlayer *self,
                                  GError           **error);
 
 void
+polyhymnia_player_playback_seek (PolyhymniaPlayer *self,
+                                 guint            new_position,
+                                 GError           **error);
+
+void
 polyhymnia_player_toggle_playback_state (PolyhymniaPlayer *self,
                                          GError           **error);
 

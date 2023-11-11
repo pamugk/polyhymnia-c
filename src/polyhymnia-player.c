@@ -355,6 +355,33 @@ polyhymnia_player_play_previous (PolyhymniaPlayer *self,
 }
 
 void
+polyhymnia_player_playback_seek (PolyhymniaPlayer *self,
+                                 guint            new_position,
+                                 GError           **error)
+{
+  GError *inner_error = NULL;
+
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->current_track != NULL);
+
+  polyhymnia_mpd_client_seek_playback (self->mpd_client,
+                                       polyhymnia_track_get_id (self->current_track),
+                                       new_position,
+                                       &inner_error);
+  if (inner_error != NULL)
+  {
+    g_warning ("Failed to seek track: %s\n", inner_error->message);
+    g_propagate_error (error, inner_error);
+  }
+  else
+  {
+    self->elapsed_seconds = new_position;
+  }
+  g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_ELAPSED_SECONDS]);
+}
+
+void
 polyhymnia_player_toggle_playback_state (PolyhymniaPlayer *self,
                                          GError           **error)
 {

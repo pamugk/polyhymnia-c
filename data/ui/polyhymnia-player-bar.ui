@@ -39,19 +39,33 @@
         <child type="center">
           <object class="GtkBox">
             <child>
-              <object class="GtkScale">
-                <property name="adjustment">
-                  <object class="GtkAdjustment" id="playback_adjustment">
-                    <property name="lower">0</property>
-                    <property name="step-increment">5</property>
-                  </object>
-                </property>
-                <property name="hexpand">true</property>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkLabel" id="playback_elapsed_label" />
+                </child>
+                <child>
+              	  <object class="GtkScale">
+              	    <property name="adjustment">
+              	      <object class="GtkAdjustment" id="playback_adjustment">
+              	        <property name="lower">0</property>
+              	        <property name="step-increment">5</property>
+              	      </object>
+              	    </property>
+              	    <property name="hexpand">true</property>
+              	    <property name="orientation">horizontal</property>
+              	    <property name="sensitive"
+              	      bind-source="player"
+              	      bind-property="active"
+              	      bind-flags="sync-create" />
+              	    <signal name="change-value"
+              	      handler="polyhymnia_player_bar_playback_seek"
+              	      swapped="true" />
+              	  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="playback_total_label" />
+                </child>
                 <property name="orientation">horizontal</property>
-                <property name="sensitive"
-                  bind-source="player"
-                  bind-property="active"
-                  bind-flags="sync-create" />
               </object>
             </child>
             <child>

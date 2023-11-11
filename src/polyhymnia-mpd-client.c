@@ -1515,7 +1515,7 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
 void
 polyhymnia_mpd_client_seek_playback(PolyhymniaMpdClient *self,
                                     guint               id,
-                                    time_t              position,
+                                    guint               position,
                                     GError              **error)
 {
   g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
