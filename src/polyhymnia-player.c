@@ -70,6 +70,7 @@ polyhymnia_player_dispose (GObject *gobject)
   PolyhymniaPlayer *self = POLYHYMNIA_PLAYER (gobject);
 
   g_clear_object (&self->current_track);
+  g_clear_object (&self->mpd_client);
 
   G_OBJECT_CLASS (polyhymnia_player_parent_class)->dispose (gobject);
 }

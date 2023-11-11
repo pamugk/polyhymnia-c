@@ -77,26 +77,21 @@ polyhymnia_mpd_client_constructor (GType type,
 }
 
 static void
-polyhymnia_mpd_client_finalize (GObject *gobject)
+polyhymnia_mpd_client_dispose (GObject *gobject)
 {
   PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (gobject);
 
-  if (self->main_mpd_connection != NULL)
-  {
-    mpd_connection_free(self->main_mpd_connection);
-    self->main_mpd_connection = NULL;
-  }
-  if (self->idle_channel != NULL)
-  {
-    g_object_unref (self->idle_channel);
-    self->idle_channel = NULL;
-  }
-  if (self->idle_mpd_connection != NULL)
-  {
-    mpd_run_noidle (self->idle_mpd_connection);
-    mpd_connection_free (self->idle_mpd_connection);
-    self->idle_mpd_connection = NULL;
-  }
+  g_clear_pointer (&self->main_mpd_connection, mpd_connection_free);
+  g_clear_object (&self->idle_channel);
+  g_clear_pointer (&self->idle_mpd_connection, mpd_connection_free);
+
+  G_OBJECT_CLASS (polyhymnia_mpd_client_parent_class)->dispose (gobject);
+}
+
+static void
+polyhymnia_mpd_client_finalize (GObject *gobject)
+{
+  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (gobject);
 
   G_OBJECT_CLASS (polyhymnia_mpd_client_parent_class)->finalize (gobject);
 }
@@ -149,6 +144,7 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
 
   gobject_class->constructed = polyhymnia_mpd_client_constructed;
   gobject_class->constructor = polyhymnia_mpd_client_constructor;
+  gobject_class->dispose = polyhymnia_mpd_client_dispose;
   gobject_class->finalize = polyhymnia_mpd_client_finalize;
   gobject_class->get_property = polyhymnia_mpd_client_get_property;
   gobject_class->set_property = polyhymnia_mpd_client_set_property;

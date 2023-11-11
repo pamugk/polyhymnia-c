@@ -5,6 +5,7 @@ polyhymnia_sources = [
   'polyhymnia-application.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-player.c',
+  'polyhymnia-player-bar.c',
   'polyhymnia-preferences-window.c',
   'polyhymnia-track.c',
   'polyhymnia-window.c',
