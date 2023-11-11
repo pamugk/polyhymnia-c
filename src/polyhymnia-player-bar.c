@@ -25,15 +25,28 @@ static const gchar *
 polyhymnia_player_bar_state_to_icon(PolyhymniaPlayerPlaybackStatus state);
 
 /* Event handler declaration  */
-static void
-polyhymnia_player_bar_current_track(PolyhymniaPlayer* self,
-                                    GParamSpec* pspec,
-                                    PolyhymniaPlayerBar* user_data);
 
 static void
-polyhymnia_player_bar_state(PolyhymniaPlayer* self,
-                            GParamSpec* pspec,
-                            PolyhymniaPlayerBar* user_data);
+polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
+                                    GParamSpec          *pspec,
+                                    PolyhymniaPlayer    *user_data);
+
+static void
+polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
+                                          gpointer             user_data);
+
+static void
+polyhymnia_player_bar_play_button_clicked(PolyhymniaPlayerBar *self,
+                                          gpointer             user_data);
+
+static void
+polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
+                                              gpointer             user_data);
+
+static void
+polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
+                            GParamSpec          *pspec,
+                            PolyhymniaPlayer    *user_data);
 
 /* Class stuff */
 static void
@@ -67,6 +80,18 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, player);
+
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_next_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_play_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_previous_button_clicked);
+
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_current_track);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_state);
 }
 
 static void
@@ -74,15 +99,8 @@ polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  polyhymnia_player_bar_current_track (self->player, NULL, self);
-  g_signal_connect (self->player, "notify::current-track",
-                    G_CALLBACK (polyhymnia_player_bar_current_track),
-                    self);
-
-  polyhymnia_player_bar_state (self->player, NULL, self);
-  g_signal_connect (self->player, "notify::playback-status",
-                    G_CALLBACK (polyhymnia_player_bar_state),
-                    self);
+  polyhymnia_player_bar_current_track (self, NULL, self->player);
+  polyhymnia_player_bar_state (self, NULL, self->player);
 }
 /* Instance methods */
 GtkWidget *
@@ -93,43 +111,70 @@ polyhymnia_player_bar_get_queue_toggle_button (const PolyhymniaPlayerBar *self)
 
 /* Event handler implementation */
 static void
-polyhymnia_player_bar_current_track(PolyhymniaPlayer* self,
-                                    GParamSpec* pspec,
-                                    PolyhymniaPlayerBar* user_data)
+polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
+                                    GParamSpec          *pspec,
+                                    PolyhymniaPlayer    *user_data)
 {
   const PolyhymniaTrack *current_track;
 
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (user_data));
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
 
-  current_track = polyhymnia_player_get_current_track (self);
+  current_track = polyhymnia_player_get_current_track (user_data);
   if (current_track == NULL)
   {
-    gtk_label_set_text (user_data->current_track_artist_label, NULL);
-    gtk_label_set_text (user_data->current_track_title_label, NULL);
+    gtk_label_set_text (self->current_track_artist_label, NULL);
+    gtk_label_set_text (self->current_track_title_label, NULL);
   }
   else
   {
     const gchar *artist = polyhymnia_track_get_artist (current_track);
     const gchar *title = polyhymnia_track_get_title (current_track);
 
-    gtk_label_set_text (user_data->current_track_artist_label, artist);
-    gtk_label_set_text (user_data->current_track_title_label, title);
+    gtk_label_set_text (self->current_track_artist_label, artist);
+    gtk_label_set_text (self->current_track_title_label, title);
   }
 }
 
 static void
-polyhymnia_player_bar_state(PolyhymniaPlayer* self,
-                            GParamSpec* pspec,
-                            PolyhymniaPlayerBar* user_data)
+polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
+                                          gpointer            user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+
+  polyhymnia_player_play_next (self->player, NULL);
+}
+
+static void
+polyhymnia_player_bar_play_button_clicked(PolyhymniaPlayerBar *self,
+                                          gpointer            user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+
+  polyhymnia_player_toggle_playback_state (self->player, NULL);
+}
+
+static void
+polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
+                                              gpointer            user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
+
+  polyhymnia_player_play_previous (self->player, NULL);
+}
+
+static void
+polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
+                            GParamSpec          *pspec,
+                            PolyhymniaPlayer    *user_data)
 {
   const char *icon_name;
   PolyhymniaPlayerPlaybackStatus player_state;
 
-  g_assert (POLYHYMNIA_IS_PLAYER_BAR (user_data));
+  g_assert (POLYHYMNIA_IS_PLAYER_BAR (self));
 
-  player_state = polyhymnia_player_get_playback_status (self);
+  player_state = polyhymnia_player_get_playback_status (user_data);
   icon_name = polyhymnia_player_bar_state_to_icon (player_state);
-  gtk_button_set_icon_name (user_data->play_button, icon_name);
+  gtk_button_set_icon_name (self->play_button, icon_name);
 }
 
 static const gchar *
@@ -137,11 +182,11 @@ polyhymnia_player_bar_state_to_icon(PolyhymniaPlayerPlaybackStatus state)
 {
   switch (state)
   {
-  case POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PAUSED:
+  case POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PLAYING:
     return "pause-large-symbolic";
   case POLYHYMNIA_PLAYER_PLAYBACK_STATUS_UNKNOWN:
     return "play-large-disabled-symbolic";
   default:
-    return "play-large-disabled-symbolic";
+    return "play-large-symbolic";
   }
 }

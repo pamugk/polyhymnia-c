@@ -186,7 +186,7 @@
       </object>
     </child>
     <child type="sidebar">
-      <object class="AdwToolbarView">
+      <object class="AdwToolbarView" id="queue_toolbar_view">
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
@@ -198,11 +198,14 @@
               </object>
             </property>
             <child type="end">
-              <object class="GtkButton" id="queue_to_playlist_button">
+              <object class="GtkButton">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Add to playlist</property>
                 <property name="visible">false</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_window_queue_to_playlist_button_clicked"
+    		  swapped="true" />
               </object>
             </child>
             <property name="show-end-title-buttons">false</property>
@@ -212,12 +215,15 @@
           <object class="GtkScrolledWindow" id="queue_page_content" />
         </property>
         <child type="bottom">
-          <object class="GtkActionBar" id="queue_action_bar">
+          <object class="GtkActionBar">
             <child type="end">
-              <object class="GtkButton" id="clear_queue_button">
+              <object class="GtkButton">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">x-circular-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Clear</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_window_clear_queue_button_clicked"
+    		  swapped="true" />
               </object>
             </child>
             <property name="revealed">false</property>
@@ -288,13 +294,19 @@
             <child type="top">
               <object class="GtkActionBar">
                 <child type="end">
-	          <object class="GtkButton" id="add_tracks_to_queue_button">
+	          <object class="GtkButton">
                     <property name="icon-name">plus-symbolic</property>
+                    <signal name="clicked"
+                      handler="polyhymnia_window_add_tracks_to_queue_button_clicked"
+                      swapped="true" />
 	          </object>
                 </child>
                 <child type="end">
-	          <object class="GtkButton" id="play_tracks_button">
+	          <object class="GtkButton">
                     <property name="icon-name">play-large-symbolic</property>
+                    <signal name="clicked"
+                      handler="polyhymnia_window_play_tracks_button_clicked"
+                      swapped="true" />
 	          </object>
                 </child>
               </object>
@@ -343,7 +355,17 @@
   </object>
   <object class="AdwStatusPage" id="queue_status_page" />
 
-  <object class="PolyhymniaMpdClient" id="mpd_client" />
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="database-updated"
+      handler="polyhymnia_window_mpd_database_updated"
+      swapped="true" />
+    <signal name="notify::initialized"
+      handler="polyhymnia_window_mpd_client_initialized"
+      swapped="true" />
+    <signal name="queue-modified"
+      handler="polyhymnia_window_mpd_queue_modified"
+      swapped="true" />
+  </object>
 
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
@@ -372,6 +394,9 @@
     <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
   </object>
   <object class="GtkMultiSelection" id="track_selection_model">
+    <signal name="selection-changed"
+      handler="polyhymnia_window_track_selection_changed"
+      swapped="true" />
   </object>
 
   <object class="GtkNoSelection" id="queue_selection_model">

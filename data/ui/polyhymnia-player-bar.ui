@@ -80,6 +80,9 @@
                   bind-source="player"
                   bind-property="has-previous"
                   bind-flags="sync-create" />
+	        <signal name="clicked"
+	          handler="polyhymnia_player_bar_previous_button_clicked"
+	          swapped="true" />
 	      </object>
 	    </child>
 	    <child>
@@ -93,6 +96,9 @@
 	          bind-source="player"
 	          bind-property="active"
 	          bind-flags="sync-create" />
+	        <signal name="clicked"
+	          handler="polyhymnia_player_bar_play_button_clicked"
+	          swapped="true" />
 	      </object>
 	    </child>
 	    <child>
@@ -107,6 +113,9 @@
 	          bind-source="player"
 	          bind-property="has-next"
 	          bind-flags="sync-create" />
+	        <signal name="clicked"
+	          handler="polyhymnia_player_bar_next_button_clicked"
+	          swapped="true"/>
 	      </object>
 	    </child>
 	    <property name="valign">center</property>
@@ -154,6 +163,13 @@
     </child>
   </template>
 
-  <object class="PolyhymniaPlayer" id="player" />
+  <object class="PolyhymniaPlayer" id="player">
+    <signal name="notify::current-track"
+      handler="polyhymnia_player_bar_current_track"
+      swapped="true" />
+    <signal name="notify::playback-status"
+      handler="polyhymnia_player_bar_state"
+      swapped="true" />
+  </object>
 
 </interface>

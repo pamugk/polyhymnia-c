@@ -125,8 +125,8 @@ polyhymnia_application_quit_action (GSimpleAction *action,
 
 static void
 polyhymnia_application_preferences_action (GSimpleAction *action,
-                                     GVariant      *parameter,
-                                     gpointer       user_data)
+                                           GVariant      *parameter,
+                                           gpointer       user_data)
 {
   PolyhymniaApplication *self = user_data;
   GtkWindow *window = NULL;
@@ -147,8 +147,8 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
 
 static void
 polyhymnia_application_reconnect_action (GSimpleAction *action,
-                                     GVariant      *parameter,
-                                     gpointer       user_data)
+                                         GVariant      *parameter,
+                                         gpointer       user_data)
 {
   GError *error = NULL;
   PolyhymniaApplication *self = user_data;

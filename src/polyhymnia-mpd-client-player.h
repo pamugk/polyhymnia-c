@@ -6,12 +6,24 @@
 #include "polyhymnia-player-state.h"
 
 G_BEGIN_DECLS
+PolyhymniaPlayerPlaybackOptions
+polyhymnia_mpd_client_get_playback_options(PolyhymniaMpdClient *self,
+                                           GError              **error);
+
+PolyhymniaPlayerPlaybackState
+polyhymnia_mpd_client_get_playback_state(PolyhymniaMpdClient *self,
+                                         GError              **error);
+
+PolyhymniaTrack *
+polyhymnia_mpd_client_get_song_from_queue(PolyhymniaMpdClient *self,
+                                          guint               id,
+                                          GError              **error);
 
 PolyhymniaPlayerState
 polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
                                  GError              **error);
 
-int
+guint
 polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
                                  GError              **error);
 

@@ -642,6 +642,69 @@ polyhymnia_mpd_client_delete_from_queue(PolyhymniaMpdClient *self,
   }
 }
 
+PolyhymniaPlayerPlaybackOptions
+polyhymnia_mpd_client_get_playback_options(PolyhymniaMpdClient *self,
+                                           GError              **error)
+{
+  PolyhymniaPlayerPlaybackOptions state = {};
+  struct mpd_status     *status;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), state);
+  g_return_val_if_fail (error == NULL || *error == NULL, state);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, state);
+
+  status = mpd_run_status (self->main_mpd_connection);
+  if (status == NULL)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "request failed - %s",
+                 mpd_connection_get_error_message (self->main_mpd_connection));
+    return state;
+  }
+
+  state.random = mpd_status_get_random (status);
+  state.repeat = mpd_status_get_repeat (status);
+
+  mpd_status_free (status);
+
+  return state;
+}
+
+PolyhymniaPlayerPlaybackState
+polyhymnia_mpd_client_get_playback_state(PolyhymniaMpdClient *self,
+                                         GError              **error)
+{
+  PolyhymniaPlayerPlaybackState state = {};
+  struct mpd_status     *status;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), state);
+  g_return_val_if_fail (error == NULL || *error == NULL, state);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, state);
+
+  status = mpd_run_status (self->main_mpd_connection);
+  if (status == NULL)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "request failed - %s",
+                 mpd_connection_get_error_message (self->main_mpd_connection));
+    return state;
+  }
+
+  state.current_track_id = mpd_status_get_song_id (status);
+  state.elapsed_seconds  = mpd_status_get_elapsed_ms (status) / 1000;
+  state.has_next         = mpd_status_get_next_song_id (status) != -1;
+  state.has_previous     = mpd_status_get_song_pos (status) > 0;
+  state.playback_status  = (PolyhymniaPlayerPlaybackStatus) mpd_status_get_state (status);
+
+  mpd_status_free (status);
+
+  return state;
+}
+
 GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error)
@@ -703,6 +766,49 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
   return results;
 }
 
+PolyhymniaTrack *
+polyhymnia_mpd_client_get_song_from_queue(PolyhymniaMpdClient *self,
+                                          guint               id,
+                                          GError              **error)
+{
+  PolyhymniaTrack *song_object;
+  struct mpd_song *song;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
+
+  song = mpd_run_get_queue_song_id (self->main_mpd_connection, id);
+
+  if (song == NULL)
+  {
+    g_set_error (error,
+                  POLYHYMNIA_MPD_CLIENT_ERROR,
+                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                  "current track request failed - %s",
+                  mpd_connection_get_error_message (self->main_mpd_connection));
+    return NULL;
+  }
+  else
+  {
+    const gchar *album = mpd_song_get_tag (song, MPD_TAG_ALBUM, 0);
+    const gchar *artist = mpd_song_get_tag (song, MPD_TAG_ARTIST, 0);
+    const gchar *title = mpd_song_get_tag (song, MPD_TAG_TITLE, 0);
+    song_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
+                                "id", mpd_song_get_id (song),
+                                "position", mpd_song_get_pos (song),
+                                "uri", mpd_song_get_uri (song),
+                                "title", title,
+                                "album", album,
+                                "artist", artist,
+                                "duration", mpd_song_get_duration (song),
+                                NULL);
+    mpd_song_free (song);
+  }
+
+  return song_object;
+}
+
 PolyhymniaPlayerState
 polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
                                  GError              **error)
@@ -731,42 +837,18 @@ polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
 
     if (current_track_id != -1)
     {
-      struct mpd_song *current_song;
-      current_song = mpd_run_get_queue_song_id (self->main_mpd_connection,
-                                                current_track_id);
-
-      if (current_song == NULL)
-      {
-        g_set_error (error,
-                     POLYHYMNIA_MPD_CLIENT_ERROR,
-                     POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                     "current track request failed - %s",
-                     mpd_connection_get_error_message (self->main_mpd_connection));
-      }
-      else
-      {
-        const gchar *album = mpd_song_get_tag (current_song, MPD_TAG_ALBUM, 0);
-        const gchar *artist = mpd_song_get_tag (current_song, MPD_TAG_ARTIST, 0);
-        current_track = g_object_new (POLYHYMNIA_TYPE_TRACK,
-                                      "id", mpd_song_get_id (current_song),
-                                      "position", mpd_song_get_pos (current_song),
-                                      "uri", mpd_song_get_uri (current_song),
-                                      "title", current_song,
-                                      "album", album,
-                                      "artist", artist,
-                                      "duration", mpd_song_get_duration (current_song),
-                                      NULL);
-        mpd_song_free (current_song);
-      }
+      current_track = polyhymnia_mpd_client_get_song_from_queue (self, current_track_id, error);
     }
 
-    state.current_track   = current_track;
-    state.elapsed_seconds = mpd_status_get_elapsed_ms (status) / 1000;
-    state.has_next        = mpd_status_get_next_song_id (status) != -1;
-    state.has_previous    = mpd_status_get_song_pos (status) > 0;
-    state.playback_status = (PolyhymniaPlayerPlaybackStatus) mpd_status_get_state (status);
-    state.random          = mpd_status_get_random (status);
-    state.repeat          = mpd_status_get_repeat (status);
+    state.playback_state.current_track_id = current_track_id;
+    state.current_track                   = current_track;
+    state.playback_state.elapsed_seconds  = mpd_status_get_elapsed_ms (status) / 1000;
+    state.playback_state.has_next         = mpd_status_get_next_song_id (status) != -1;
+    state.playback_state.has_previous     = mpd_status_get_song_pos (status) > 0;
+    state.playback_state.playback_status  = (PolyhymniaPlayerPlaybackStatus) mpd_status_get_state (status);
+
+    state.playback_options.random        = mpd_status_get_random (status);
+    state.playback_options.repeat        = mpd_status_get_repeat (status);
 
     if (volume >= 0)
     {
@@ -785,23 +867,28 @@ polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
   return state;
 }
 
-int
+guint
 polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
                                  GError              **error)
 {
-  int volume;
+  int response;
+  guint volume = 0;
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), -1);
   g_return_val_if_fail (error == NULL || *error == NULL, -1);
   g_return_val_if_fail (self->main_mpd_connection != NULL, -1);
 
-  volume = mpd_run_get_volume (self->main_mpd_connection);
-  if (volume == -1)
+  response = mpd_run_get_volume (self->main_mpd_connection);
+  if (response == -1)
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
+  }
+  else
+  {
+    volume = response;
   }
 
   return volume;

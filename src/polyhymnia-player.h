@@ -18,4 +18,16 @@ polyhymnia_player_get_current_track (const PolyhymniaPlayer *self);
 PolyhymniaPlayerPlaybackStatus
 polyhymnia_player_get_playback_status (const PolyhymniaPlayer *self);
 
+void
+polyhymnia_player_play_next (PolyhymniaPlayer *self,
+                             GError           **error);
+
+void
+polyhymnia_player_play_previous (PolyhymniaPlayer *self,
+                                 GError           **error);
+
+void
+polyhymnia_player_toggle_playback_state (PolyhymniaPlayer *self,
+                                         GError           **error);
+
 G_END_DECLS

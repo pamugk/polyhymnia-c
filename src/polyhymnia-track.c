@@ -233,6 +233,12 @@ polyhymnia_track_get_duration (const PolyhymniaTrack *self)
   return self->duration;
 }
 
+guint
+polyhymnia_track_get_id (const PolyhymniaTrack *self)
+{
+  return self->id;
+}
+
 const gchar *
 polyhymnia_track_get_title (const PolyhymniaTrack *self)
 {

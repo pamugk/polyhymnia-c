@@ -15,6 +15,9 @@ polyhymnia_track_get_artist (const PolyhymniaTrack *self);
 guint
 polyhymnia_track_get_duration (const PolyhymniaTrack *self);
 
+guint
+polyhymnia_track_get_id (const PolyhymniaTrack *self);
+
 const gchar *
 polyhymnia_track_get_title (const PolyhymniaTrack *self);
 

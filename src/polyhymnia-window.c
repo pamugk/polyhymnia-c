@@ -29,20 +29,16 @@ struct _PolyhymniaWindow
   AdwBin              *track_stack_page_content;
   AdwNavigationView   *track_navigation_view;
   AdwToolbarView      *track_toolbar_view;
-  GtkButton           *play_tracks_button;
-  GtkButton           *add_tracks_to_queue_button;
   AdwStatusPage       *tracks_status_page;
 
   AdwBin              *genre_stack_page_content;
   AdwNavigationView   *genre_navigation_view;
   AdwStatusPage       *genres_status_page;
 
-  GtkButton           *clear_queue_button;
-  GtkActionBar        *queue_action_bar;
-  GtkScrolledWindow   *queue_page_content;
+  AdwToolbarView      *queue_toolbar_view;
   GtkListView         *queue_list_view;
+  GtkScrolledWindow   *queue_page_content;
   AdwStatusPage       *queue_status_page;
-  GtkButton           *queue_to_playlist_button;
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
@@ -65,11 +61,12 @@ G_DEFINE_FINAL_TYPE (PolyhymniaWindow, polyhymnia_window, ADW_TYPE_APPLICATION_W
 
 /* Event handler & other utility functions declaration */
 static void
-polyhymnia_window_add_tracks_to_queue_button_clicked (GtkButton* self,
-                                                      gpointer user_data);
+polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
+                                                      GtkButton        *user_data);
+
 static void
-polyhymnia_window_clear_queue_button_clicked (GtkButton* self,
-                                              gpointer user_data);
+polyhymnia_window_clear_queue_button_clicked (PolyhymniaWindow *self,
+                                              GtkButton        *user_data);
 
 static void
 polyhymnia_window_content_clear (PolyhymniaWindow *self);
@@ -78,32 +75,34 @@ static void
 polyhymnia_window_content_init (PolyhymniaWindow *self);
 
 static void
-polyhymnia_window_mpd_client_initialized(PolyhymniaMpdClient* self,
-                                         GParamSpec* pspec,
-                                         PolyhymniaWindow* user_data);
+polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
+                                          GParamSpec          *pspec,
+                                          PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_window_mpd_database_updated(GObject* self, gpointer user_data);
+polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
+                                        PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_window_mpd_queue_modified(GObject* self, gpointer user_data);
+polyhymnia_window_mpd_queue_modified (PolyhymniaWindow    *self,
+                                      PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
-                                              gpointer user_data);
+polyhymnia_window_play_tracks_button_clicked (PolyhymniaWindow *self,
+                                              GtkButton        *user_data);
 
 static void
-polyhymnia_window_queue_to_playlist_button_clicked (GtkButton* self,
-                                                    gpointer user_data);
+polyhymnia_window_queue_to_playlist_button_clicked (PolyhymniaWindow *self,
+                                                    GtkButton        *user_data);
 
 static void
 polyhymnia_window_queue_pane_init (PolyhymniaWindow *self);
 
 static void
-polyhymnia_window_track_selection_changed (GtkSelectionModel* self,
-                                           guint position,
-                                           guint n_items,
-                                           gpointer user_data);
+polyhymnia_window_track_selection_changed (PolyhymniaWindow  *self,
+                                           guint             position,
+                                           guint             n_items,
+                                           GtkSelectionModel *user_data);
 
 /* Class stuff */
 static void
@@ -145,15 +144,11 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_status_page);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, play_tracks_button);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, add_tracks_to_queue_button);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, clear_queue_button);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_action_bar);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_list_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_page_content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_status_page);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_to_playlist_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
@@ -165,6 +160,23 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, track_selection_model);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, queue_selection_model);
+
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_add_tracks_to_queue_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_clear_queue_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_mpd_database_updated);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_mpd_client_initialized);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_mpd_queue_modified);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_play_tracks_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_queue_to_playlist_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_track_selection_changed);
 }
 
 static void
@@ -206,47 +218,19 @@ polyhymnia_window_init (PolyhymniaWindow *self)
                     self, "fullscreened",
                     G_SETTINGS_BIND_DEFAULT);
 
-  g_signal_connect (self->add_tracks_to_queue_button, "clicked",
-                    G_CALLBACK (polyhymnia_window_add_tracks_to_queue_button_clicked),
-                    self);
-  g_signal_connect (self->play_tracks_button, "clicked",
-                    G_CALLBACK (polyhymnia_window_play_tracks_button_clicked),
-                    self);
-  g_signal_connect (self->track_selection_model, "selection-changed",
-                    G_CALLBACK (polyhymnia_window_track_selection_changed),
-                    self);
-
-  g_signal_connect (self->clear_queue_button, "clicked",
-                    G_CALLBACK (polyhymnia_window_clear_queue_button_clicked),
-                    self);
-  g_signal_connect (self->clear_queue_button, "clicked",
-                    G_CALLBACK (polyhymnia_window_queue_to_playlist_button_clicked),
-                    self);
-
-  polyhymnia_window_mpd_client_initialized (self->mpd_client, NULL, self);
-  g_signal_connect (self->mpd_client, "notify::initialized",
-                    G_CALLBACK (polyhymnia_window_mpd_client_initialized),
-                    self);
-
-  g_signal_connect (self->mpd_client, "database-updated",
-                    G_CALLBACK (polyhymnia_window_mpd_database_updated),
-                    self);
-  g_signal_connect (self->mpd_client, "queue-modified",
-                    G_CALLBACK (polyhymnia_window_mpd_queue_modified),
-                    self);
+  polyhymnia_window_mpd_client_initialized (self, NULL, self->mpd_client);
 }
 
 /* Event handler & other utility functions implementation */
 static void
-polyhymnia_window_clear_queue_button_clicked (GtkButton* self,
-                                              gpointer user_data)
+polyhymnia_window_clear_queue_button_clicked (PolyhymniaWindow *self,
+                                              GtkButton        *user_data)
 {
   GError           *error = NULL;
-  PolyhymniaWindow *window_self = user_data;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  polyhymnia_mpd_client_clear_queue (window_self->mpd_client, &error);
+  polyhymnia_mpd_client_clear_queue (self->mpd_client, &error);
 
   if (error != NULL)
   {
@@ -257,19 +241,18 @@ polyhymnia_window_clear_queue_button_clicked (GtkButton* self,
 }
 
 static void
-polyhymnia_window_add_tracks_to_queue_button_clicked (GtkButton* self,
-                                                      gpointer user_data)
+polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
+                                                      GtkButton        *user_data)
 {
   GError            *error = NULL;
   GListModel        *track_list_model;
   GtkBitset         *selected_tracks;
   GtkSelectionModel *track_selection_model;
-  PolyhymniaWindow  *window_self = user_data;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  track_list_model = G_LIST_MODEL (window_self->track_selection_model);
-  track_selection_model = GTK_SELECTION_MODEL (window_self->track_selection_model);
+  track_list_model = G_LIST_MODEL (self->track_selection_model);
+  track_selection_model = GTK_SELECTION_MODEL (self->track_selection_model);
   selected_tracks = gtk_selection_model_get_selection (track_selection_model);
 
   for (guint i = 0; i < gtk_bitset_get_size (selected_tracks); i++)
@@ -278,7 +261,7 @@ polyhymnia_window_add_tracks_to_queue_button_clicked (GtkButton* self,
     const PolyhymniaTrack *track = g_list_model_get_item (track_list_model,
                                                           track_index);
     const gchar *track_uri = polyhymnia_track_get_uri (track);
-    polyhymnia_mpd_client_append_to_queue (window_self->mpd_client, track_uri,
+    polyhymnia_mpd_client_append_to_queue (self->mpd_client, track_uri,
                                            &error);
     if (error != NULL)
     {
@@ -469,58 +452,54 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
 }
 
 static void
-polyhymnia_window_mpd_client_initialized(PolyhymniaMpdClient* self,
-                                         GParamSpec* pspec,
-                                         PolyhymniaWindow* user_data)
+polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
+                                          GParamSpec          *pspec,
+                                          PolyhymniaMpdClient *user_data)
 {
-  gboolean mpd_initialized = FALSE;
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  g_assert (POLYHYMNIA_IS_WINDOW (user_data));
-
-  g_object_get (user_data->mpd_client, "initialized", &mpd_initialized, NULL);
-  if (mpd_initialized)
+  if (polyhymnia_mpd_client_is_initialized (user_data))
   {
-    adw_toast_overlay_set_child (user_data->root_toast_overlay,
-                                 GTK_WIDGET (user_data->content));
-    polyhymnia_window_content_init (user_data);
-    polyhymnia_window_queue_pane_init (user_data);
+    adw_toast_overlay_set_child (self->root_toast_overlay,
+                                 GTK_WIDGET (self->content));
+    polyhymnia_window_content_init (self);
+    polyhymnia_window_queue_pane_init (self);
   }
   else
   {
-    adw_toast_overlay_set_child (user_data->root_toast_overlay,
-                                 GTK_WIDGET (user_data->no_mpd_connection_page));
-    g_list_store_remove_all (user_data->queue_model);
-    polyhymnia_window_content_clear (user_data);
+    adw_toast_overlay_set_child (self->root_toast_overlay,
+                                 GTK_WIDGET (self->no_mpd_connection_page));
+    g_list_store_remove_all (self->queue_model);
+    polyhymnia_window_content_clear (self);
   }
 }
 
 static void
-polyhymnia_window_mpd_database_updated(GObject* self, gpointer user_data)
+polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
+                                        PolyhymniaMpdClient *user_data)
 {
   AdwToast *database_updated_toast = adw_toast_new (_("Library has been updated"));
-  PolyhymniaWindow *window_self = user_data;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  adw_toast_overlay_add_toast (window_self->root_toast_overlay,
+  adw_toast_overlay_add_toast (self->root_toast_overlay,
                                database_updated_toast);
-  polyhymnia_window_content_clear (window_self);
-  polyhymnia_window_content_init (window_self);
+  polyhymnia_window_content_clear (self);
+  polyhymnia_window_content_init (self);
 }
 
 static void
-polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
-                                              gpointer user_data)
+polyhymnia_window_play_tracks_button_clicked (PolyhymniaWindow *self,
+                                              GtkButton        *user_data)
 {
   GError            *error = NULL;
   GListModel        *track_list_model;
   GtkBitset         *selected_tracks;
   GtkSelectionModel *track_selection_model;
-  PolyhymniaWindow *window_self = user_data;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  polyhymnia_mpd_client_clear_queue (window_self->mpd_client, &error);
+  polyhymnia_mpd_client_clear_queue (self->mpd_client, &error);
   if (error != NULL)
   {
     g_warning("Failed to clear queue: %s\n", error->message);
@@ -528,8 +507,8 @@ polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
     error = NULL;
   }
 
-  track_list_model = G_LIST_MODEL (window_self->track_selection_model);
-  track_selection_model = GTK_SELECTION_MODEL (window_self->track_selection_model);
+  track_list_model = G_LIST_MODEL (self->track_selection_model);
+  track_selection_model = GTK_SELECTION_MODEL (self->track_selection_model);
   selected_tracks = gtk_selection_model_get_selection (track_selection_model);
 
   for (guint i = 0; i < gtk_bitset_get_size (selected_tracks); i++)
@@ -538,7 +517,7 @@ polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
     const PolyhymniaTrack *track = g_list_model_get_item (track_list_model,
                                                           track_index);
     const gchar *track_uri = polyhymnia_track_get_uri (track);
-    polyhymnia_mpd_client_append_to_queue (window_self->mpd_client, track_uri,
+    polyhymnia_mpd_client_append_to_queue (self->mpd_client, track_uri,
                                            &error);
     if (error != NULL)
     {
@@ -548,7 +527,7 @@ polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
     }
   }
 
-  polyhymnia_mpd_client_play (window_self->mpd_client, &error);
+  polyhymnia_mpd_client_play (self->mpd_client, &error);
   if (error != NULL)
   {
     g_warning("Failed to start playback: %s\n", error->message);
@@ -556,25 +535,24 @@ polyhymnia_window_play_tracks_button_clicked (GtkButton* self,
     error = NULL;
   }
 
-  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (window_self->track_selection_model));
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->track_selection_model));
 }
 
 static void
-polyhymnia_window_queue_to_playlist_button_clicked (GtkButton* self,
-                                                    gpointer user_data)
+polyhymnia_window_queue_to_playlist_button_clicked (PolyhymniaWindow *self,
+                                                    GtkButton        *user_data)
 {
 
 }
 
 static void
-polyhymnia_window_mpd_queue_modified(GObject* self, gpointer user_data)
+polyhymnia_window_mpd_queue_modified (PolyhymniaWindow    *self,
+                                      PolyhymniaMpdClient *user_data)
 {
-  PolyhymniaWindow *window_self = user_data;
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
-
-  g_list_store_remove_all (window_self->queue_model);
-  polyhymnia_window_queue_pane_init (window_self);
+  g_list_store_remove_all (self->queue_model);
+  polyhymnia_window_queue_pane_init (self);
 }
 
 static void
@@ -588,8 +566,8 @@ polyhymnia_window_queue_pane_init (PolyhymniaWindow *self)
     g_object_set (G_OBJECT (self->queue_status_page),
                   "description", _("Failed to fetch queue"),
                   NULL);
-    gtk_widget_set_visible (GTK_WIDGET (self->queue_to_playlist_button), FALSE);
-    gtk_action_bar_set_revealed (self->queue_action_bar, FALSE);
+    adw_toolbar_view_set_reveal_bottom_bars (self->queue_toolbar_view, FALSE);
+    adw_toolbar_view_set_reveal_top_bars (self->queue_toolbar_view, FALSE);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_status_page));
     g_warning("Queue fetch failed: %s\n", error->message);
@@ -602,8 +580,8 @@ polyhymnia_window_queue_pane_init (PolyhymniaWindow *self)
     g_object_set (G_OBJECT (self->queue_status_page),
                   "description", _("Queue is empty"),
                   NULL);
-    gtk_widget_set_visible (GTK_WIDGET (self->queue_to_playlist_button), FALSE);
-    gtk_action_bar_set_revealed (self->queue_action_bar, FALSE);
+    adw_toolbar_view_set_reveal_bottom_bars (self->queue_toolbar_view, FALSE);
+    adw_toolbar_view_set_reveal_top_bars (self->queue_toolbar_view, FALSE);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_status_page));
   }
@@ -617,23 +595,22 @@ polyhymnia_window_queue_pane_init (PolyhymniaWindow *self)
     g_ptr_array_free (queue, TRUE);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_list_view));
-    gtk_widget_set_visible (GTK_WIDGET (self->queue_to_playlist_button), TRUE);
-    gtk_action_bar_set_revealed (self->queue_action_bar, TRUE);
+    adw_toolbar_view_set_reveal_bottom_bars (self->queue_toolbar_view, TRUE);
+    adw_toolbar_view_set_reveal_top_bars (self->queue_toolbar_view, TRUE);
   }
 }
 
 static void
-polyhymnia_window_track_selection_changed (GtkSelectionModel* self,
-                                           guint position,
-                                           guint n_items,
-                                           gpointer user_data)
+polyhymnia_window_track_selection_changed (PolyhymniaWindow  *self,
+                                           guint             position,
+                                           guint             n_items,
+                                           GtkSelectionModel *user_data)
 {
-  GtkBitset *selection = gtk_selection_model_get_selection (self);
-  PolyhymniaWindow *window_self = user_data;
+  GtkBitset *selection = gtk_selection_model_get_selection (user_data);
 
-  g_assert (POLYHYMNIA_IS_WINDOW (window_self));
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  adw_toolbar_view_set_reveal_top_bars (window_self->track_toolbar_view,
+  adw_toolbar_view_set_reveal_top_bars (self->track_toolbar_view,
                                         !gtk_bitset_is_empty (selection));
   gtk_bitset_unref (selection);
 }

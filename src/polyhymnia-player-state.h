@@ -8,16 +8,26 @@ G_BEGIN_DECLS
 
 typedef struct
 {
-  gboolean        audio_available;
-  PolyhymniaTrack *current_track;
+  gboolean random;
+  gboolean repeat;
+} PolyhymniaPlayerPlaybackOptions;
+
+typedef struct
+{
+  gint            current_track_id;
   guint           elapsed_seconds;
   gboolean        has_next;
   gboolean        has_previous;
-  gboolean        random;
-  gboolean        repeat;
-  guint           volume;
+  PolyhymniaPlayerPlaybackStatus  playback_status;
+} PolyhymniaPlayerPlaybackState;
 
-  PolyhymniaPlayerPlaybackStatus playback_status;
+typedef struct
+{
+  gboolean                        audio_available;
+  PolyhymniaTrack                 *current_track;
+  PolyhymniaPlayerPlaybackOptions playback_options;
+  PolyhymniaPlayerPlaybackState   playback_state;
+  guint                           volume;
 } PolyhymniaPlayerState;
 
 G_END_DECLS
