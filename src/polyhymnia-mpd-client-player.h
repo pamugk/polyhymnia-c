@@ -59,4 +59,14 @@ polyhymnia_mpd_client_set_volume(PolyhymniaMpdClient *self,
                                  guint               volume,
                                  GError              **error);
 
+void
+polyhymnia_mpd_client_toggle_random_order(PolyhymniaMpdClient *self,
+                                          gboolean            new_value,
+                                          GError              **error);
+
+void
+polyhymnia_mpd_client_toggle_repeat(PolyhymniaMpdClient *self,
+                                    gboolean            new_value,
+                                    GError              **error);
+
 G_END_DECLS

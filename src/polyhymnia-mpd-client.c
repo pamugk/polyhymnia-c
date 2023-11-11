@@ -1573,3 +1573,43 @@ polyhymnia_mpd_client_swap_songs_in_queue(PolyhymniaMpdClient *self,
     mpd_connection_clear_error (self->main_mpd_connection);
   }
 }
+
+void
+polyhymnia_mpd_client_toggle_random_order(PolyhymniaMpdClient *self,
+                                          gboolean            new_value,
+                                          GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  if (!mpd_run_random(self->main_mpd_connection, new_value))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+void
+polyhymnia_mpd_client_toggle_repeat(PolyhymniaMpdClient *self,
+                                    gboolean            new_value,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  if (!mpd_run_repeat (self->main_mpd_connection, new_value))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}

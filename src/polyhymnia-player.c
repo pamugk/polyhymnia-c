@@ -168,6 +168,18 @@ polyhymnia_player_set_property (GObject      *object,
 
   switch ((PolyhymniaPlayerProperty) property_id)
     {
+    case PROP_RANDOM_ORDER:
+    {
+      self->random = g_value_get_boolean (value);
+      polyhymnia_mpd_client_toggle_random_order (self->mpd_client, self->random, NULL);
+      break;
+    }
+    case PROP_REPEAT_PLAYBACK:
+    {
+      self->repeat = g_value_get_boolean (value);
+      polyhymnia_mpd_client_toggle_repeat (self->mpd_client, self->repeat, NULL);
+      break;
+    }
     case PROP_VOLUME:
     {
       self->volume = g_value_get_double (value);
@@ -248,14 +260,14 @@ polyhymnia_player_class_init (PolyhymniaPlayerClass *klass)
                           "Random order",
                           "Marks whether playback is playing in random order.",
                           FALSE,
-                          G_PARAM_READABLE | G_PARAM_STATIC_NAME);
+                          G_PARAM_READWRITE | G_PARAM_STATIC_NAME);
 
   obj_properties[PROP_REPEAT_PLAYBACK] =
     g_param_spec_boolean ("repeat-playback",
                           "Repeat playback",
                           "Marks whether playback is on repeat.",
                           FALSE,
-                          G_PARAM_READABLE | G_PARAM_STATIC_NAME);
+                          G_PARAM_READWRITE | G_PARAM_STATIC_NAME);
 
   obj_properties[PROP_VOLUME] =
     g_param_spec_double ("volume",

@@ -41,7 +41,12 @@
             <child>
               <object class="GtkBox">
                 <child>
-                  <object class="GtkLabel" id="playback_elapsed_label" />
+                  <object class="GtkLabel" id="playback_elapsed_label">
+              	    <property name="visible"
+              	      bind-source="player"
+              	      bind-property="active"
+              	      bind-flags="sync-create" />
+                  </object>
                 </child>
                 <child>
               	  <object class="GtkScale">
@@ -63,7 +68,12 @@
               	  </object>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="playback_total_label" />
+                  <object class="GtkLabel" id="playback_total_label">
+              	    <property name="visible"
+              	      bind-source="player"
+              	      bind-property="active"
+              	      bind-flags="sync-create" />
+                  </object>
                 </child>
                 <property name="orientation">horizontal</property>
               </object>
@@ -75,7 +85,7 @@
 	            <property name="active"
 	              bind-source="player"
 	              bind-property="random-order"
-	              bind-flags="sync-create" />
+	              bind-flags="bidirectional|sync-create" />
 	            <property name="icon-name">media-playlist-shuffle-symbolic</property>
 	          </object>
 	        </child>
@@ -93,6 +103,10 @@
 	        </child>
 	        <child>
 	          <object class="GtkButton" id="play_button">
+	            <property name="sensitive"
+	              bind-source="player"
+	              bind-property="active"
+	              bind-flags="sync-create" />
 	            <signal name="clicked"
 	              handler="polyhymnia_player_bar_play_button_clicked"
 	              swapped="true" />
@@ -115,7 +129,7 @@
 	            <property name="active"
 	              bind-source="player"
 	              bind-property="repeat-playback"
-	              bind-flags="sync-create" />
+	              bind-flags="bidirectional|sync-create" />
 	            <property name="icon-name">media-playlist-repeat-symbolic</property>
 	          </object>
 	        </child>
@@ -125,10 +139,6 @@
             </child>
 	    <property name="orientation">vertical</property>
 	    <property name="valign">center</property>
-	    <property name="visible"
-	      bind-source="player"
-	      bind-property="active"
-	      bind-flags="sync-create" />
 	  </object>
         </child>
         <child type="end">
