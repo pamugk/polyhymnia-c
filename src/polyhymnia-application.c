@@ -2,7 +2,8 @@
 #include "config.h"
 
 #include "polyhymnia-application.h"
-#include "polyhymnia-mpd-client.h"
+#include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-player.h"
 #include "polyhymnia-preferences-window.h"
 #include "polyhymnia-window.h"
 
@@ -11,6 +12,7 @@ struct _PolyhymniaApplication
   AdwApplication parent_instance;
 
   PolyhymniaMpdClient *mpd_client;
+  PolyhymniaPlayer    *player;
 };
 
 G_DEFINE_TYPE (PolyhymniaApplication, polyhymnia_application, ADW_TYPE_APPLICATION)
@@ -55,7 +57,8 @@ polyhymnia_application_shutdown (GApplication *app)
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
   self = POLYHYMNIA_APPLICATION (app);
-  g_clear_object (&self->mpd_client);
+  g_clear_object (&(self->mpd_client));
+  g_clear_object (&(self->player));
 
   G_APPLICATION_CLASS (polyhymnia_application_parent_class)->shutdown (app);
 }
@@ -69,7 +72,9 @@ polyhymnia_application_startup (GApplication *app)
   g_assert (POLYHYMNIA_IS_APPLICATION (app));
 
   self = POLYHYMNIA_APPLICATION (app);
+
   self->mpd_client = g_object_new (POLYHYMNIA_TYPE_MPD_CLIENT, NULL);
+  self->player = g_object_new (POLYHYMNIA_TYPE_PLAYER, NULL);
 }
 
 static void
@@ -120,8 +125,8 @@ polyhymnia_application_quit_action (GSimpleAction *action,
 
 static void
 polyhymnia_application_preferences_action (GSimpleAction *action,
-                                     GVariant      *parameter,
-                                     gpointer       user_data)
+                                           GVariant      *parameter,
+                                           gpointer       user_data)
 {
   PolyhymniaApplication *self = user_data;
   GtkWindow *window = NULL;
@@ -142,8 +147,8 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
 
 static void
 polyhymnia_application_reconnect_action (GSimpleAction *action,
-                                     GVariant      *parameter,
-                                     gpointer       user_data)
+                                         GVariant      *parameter,
+                                         gpointer       user_data)
 {
   GError *error = NULL;
   PolyhymniaApplication *self = user_data;
@@ -205,3 +210,4 @@ polyhymnia_application_init (PolyhymniaApplication *self)
 	                                  "app.preferences",
 	                                  (const char *[]) { "<primary>comma", NULL });
 }
+

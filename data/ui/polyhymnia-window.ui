@@ -14,7 +14,7 @@
       </object>
     </child>
     <property name="content">
-      <object class="AdwToolbarView" id="root_toolbar_view">
+      <object class="AdwToolbarView">
         <property name="reveal-bottom-bars"
           bind-source="mpd_client"
           bind-property="initialized"
@@ -74,80 +74,14 @@
             	bind-flags="sync-create" />
           </object>
         </child>
+        <property name="content">
+          <object class="AdwToastOverlay" id="root_toast_overlay" />
+        </property>
         <child type="bottom">
-          <object class="GtkActionBar">
-            <child type="start">
-              <object class="GtkImage">
-                <property name="icon-name">image-missing-symbolic</property>
-                <property name="pixel-size">50</property>
-              </object>
-            </child>
-            <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-skip-backward</property>
-                <property name="sensitive">false</property>
-                <property name="valign">center</property>
-	      </object>
-            </child>
-            <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-playback-start</property>
-                <property name="sensitive">false</property>
-                <property name="valign">center</property>
-	      </object>
-            </child>
-            <child type="start">
-	      <object class="GtkButton">
-                <property name="icon-name">media-skip-forward</property>
-                <property name="sensitive">false</property>
-                <property name="valign">center</property>
-	      </object>
-            </child>
-            <child type="center">
-	      <object class="GtkScale">
-                <property name="adjustment">
-                  <object class="GtkAdjustment">
-                    <property name="value">100</property>
-                    <property name="lower">0</property>
-                    <property name="upper">100</property>
-                    <property name="step-increment">5</property>
-                  </object>
-                </property>
-                <property name="hexpand">true</property>
-                <property name="orientation">horizontal</property>
-	      </object>
-            </child>
-            <child type="end">
-              <object class="GtkToggleButton">
-                <property name="has-tooltip">true</property>
-                <property name="icon-name">subtitles-symbolic</property>
-                <property name="sensitive">false</property>
-                <property name="tooltip-text" translatable="yes">Lyrics</property>
-                <property name="valign">center</property>
-              </object>
-            </child>
-            <child type="end">
-              <object class="GtkToggleButton" id="queue_button">
-                <property name="has-tooltip">true</property>
-                <property name="icon-name">queue-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Queue</property>
-                <property name="valign">center</property>
-              </object>
-            </child>
-            <child type="end">
-	      <object class="GtkScaleButton">
-                <property name="adjustment">
-                  <object class="GtkAdjustment">
-                    <property name="value">100</property>
-                    <property name="lower">0</property>
-                    <property name="upper">100</property>
-                    <property name="step-increment">5</property>
-                  </object>
-                </property>
-                <property name="icons">audio-volume-high-symbolic</property>
-                <property name="valign">center</property>
-	      </object>
-            </child>
+          <object class="PolyhymniaPlayerBar" id="player_bar">
+            <style>
+              <class name="toolbar"/>
+            </style>
           </object>
         </child>
         <child type="bottom">
@@ -193,17 +127,6 @@
                 </child>
                 <child type="content">
                   <object class="GtkStack" id="library_stack">
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwBin" id="recent_stack_page_content">
-                            <property name="child">recent_list_box</property>
-                          </object>
-                        </property>
-                        <property name="name">recent_page</property>
-                        <property name="title" translatable="yes">Recently Added</property>
-                      </object>
-                    </child>
                     <child>
                       <object class="GtkStackPage">
                         <property name="child">
@@ -263,7 +186,7 @@
       </object>
     </child>
     <child type="sidebar">
-      <object class="AdwToolbarView">
+      <object class="AdwToolbarView" id="queue_toolbar_view">
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
@@ -275,63 +198,40 @@
               </object>
             </property>
             <child type="end">
-              <object class="GtkToggleButton">
+              <object class="GtkButton">
                 <property name="has-tooltip">true</property>
-                <property name="icon-name">task-recurring-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Repeat</property>
+                <property name="icon-name">playlist-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Add to playlist</property>
+                <property name="visible">false</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_window_queue_to_playlist_button_clicked"
+    		  swapped="true" />
               </object>
             </child>
             <property name="show-end-title-buttons">false</property>
           </object>
         </child>
         <property name="content">
-          <object class="AdwViewStack" id="queue_utility_stack">
-            <child>
-              <object class="AdwViewStackPage">
-                <property name="child">
-                  <object class="GtkListBox">
-                    <child type="placeholder">
-                      <object class="AdwStatusPage">
-                        <property name="description" translatable="yes">Queue is empty</property>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <property name="icon-name">queue-symbolic</property>
-                <property name="title" translatable="yes">Queue</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwViewStackPage">
-                <property name="child">
-                  <object class="GtkListBox">
-                    <child type="placeholder">
-                      <object class="AdwStatusPage">
-                        <property name="description" translatable="yes">History is empty</property>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <property name="icon-name">clock-symbolic</property>
-                <property name="title" translatable="yes">History</property>
-              </object>
-            </child>
-          </object>
+          <object class="GtkScrolledWindow" id="queue_page_content" />
         </property>
         <child type="bottom">
-          <object class="AdwViewSwitcherBar">
-            <property name="reveal">true</property>
-            <property name="stack">queue_utility_stack</property>
+          <object class="GtkActionBar">
+            <child type="end">
+              <object class="GtkButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">x-circular-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Clear</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_window_clear_queue_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
     <property name="collapsed">true</property>
     <property name="sidebar-position">end</property>
-    <property name="show-sidebar"
-      bind-source="queue_button"
-      bind-property="active"
-      bind-flags="sync-create"/>
   </object>
 
   <object class="AdwNavigationView" id="album_navigation_view">
@@ -385,27 +285,43 @@
       </object>
     </child>
   </object>
-  <object class="GtkListBox" id="recent_list_box">
-    <child type="placeholder">
-      <object class="AdwStatusPage">
-        <property name="description" translatable="yes">Recently played songs will be placed here</property>
-        <property name="icon-name">list-symbolic</property>
-        <property name="title" translatable="yes">No recently played songs</property>
-      </object>
-    </child>
-  </object>
   <object class="AdwNavigationView" id="track_navigation_view">
     <child>
       <object class="AdwNavigationPage">
         <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkListView">
-                <property name="factory">track_factory</property>
-                <property name="model">track_selection_model</property>
-                <property name="show-separators">true</property>
+          <object class="AdwToolbarView" id="track_toolbar_view">
+            <child type="top">
+              <object class="GtkActionBar">
+                <child type="end">
+	          <object class="GtkButton">
+                    <property name="icon-name">plus-symbolic</property>
+                    <signal name="clicked"
+                      handler="polyhymnia_window_add_tracks_to_queue_button_clicked"
+                      swapped="true" />
+	          </object>
+                </child>
+                <child type="end">
+	          <object class="GtkButton">
+                    <property name="icon-name">play-large-symbolic</property>
+                    <signal name="clicked"
+                      handler="polyhymnia_window_play_tracks_button_clicked"
+                      swapped="true" />
+	          </object>
+                </child>
+              </object>
+            </child>
+            <property name="content">
+              <object class="GtkScrolledWindow">
+                <property name="child">
+                  <object class="GtkListView">
+                    <property name="factory">track_factory</property>
+                    <property name="model">track_selection_model</property>
+                    <property name="show-separators">true</property>
+                  </object>
+                </property>
               </object>
             </property>
+            <property name="reveal-top-bars">false</property>
           </object>
         </property>
         <property name="title" translatable="yes">Songs</property>
@@ -431,7 +347,25 @@
     </property>
   </object>
 
-  <object class="PolyhymniaMpdClient" id="mpd_client" />
+  <object class="GtkListView" id="queue_list_view">
+    <property name="factory">track_factory</property>
+    <property name="model">queue_selection_model</property>
+    <property name="show-separators">true</property>
+  </object>
+  <object class="AdwStatusPage" id="queue_status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="database-updated"
+      handler="polyhymnia_window_mpd_database_updated"
+      swapped="true" />
+    <signal name="notify::initialized"
+      handler="polyhymnia_window_mpd_client_initialized"
+      swapped="true" />
+    <signal name="queue-modified"
+      handler="polyhymnia_window_mpd_queue_modified"
+      swapped="true" />
+  </object>
+
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
   </object>
@@ -459,5 +393,11 @@
     <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
   </object>
   <object class="GtkMultiSelection" id="track_selection_model">
+    <signal name="selection-changed"
+      handler="polyhymnia_window_track_selection_changed"
+      swapped="true" />
+  </object>
+
+  <object class="GtkNoSelection" id="queue_selection_model">
   </object>
 </interface>

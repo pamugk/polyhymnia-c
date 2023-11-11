@@ -1,9 +1,14 @@
 
+#include "polyhymnia-format-utils.h"
 #include "polyhymnia-track.h"
 
+/* Type metadata */
 typedef enum
 {
-  PROP_TITLE = 1,
+  PROP_ID = 1,
+  PROP_POSITION,
+  PROP_URI,
+  PROP_TITLE,
   PROP_ALBUM,
   PROP_ARTIST,
   PROP_DURATION,
@@ -16,6 +21,9 @@ struct _PolyhymniaTrack
   GObject  parent_instance;
 
   /* Data */
+  guint id;
+  guint position;
+  gchar *uri;
   gchar *title;
   gchar *album;
   gchar *artist;
@@ -27,22 +35,13 @@ G_DEFINE_FINAL_TYPE (PolyhymniaTrack, polyhymnia_track, G_TYPE_OBJECT)
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-static gchar*
-seconds_to_readable(guint duration)
-{
-  gushort hours = duration / 3600;
-  gushort minutes = (duration % 3600) / 60;
-  gushort seconds = duration %  60;
-  return hours == 0
-    ? g_strdup_printf ("%02d:%02d", minutes, seconds)
-    : g_strdup_printf ("%d:%02d:%02d", hours, minutes, seconds);
-}
-
+/* Class stuff */
 static void
 polyhymnia_track_finalize (GObject *gobject)
 {
   PolyhymniaTrack *self = POLYHYMNIA_TRACK (gobject);
 
+  g_free (self->uri);
   g_free (self->title);
   g_free (self->album);
   g_free (self->artist);
@@ -61,6 +60,15 @@ polyhymnia_track_get_property (GObject    *object,
 
   switch ((PolyhymniaTrackProperty) property_id)
     {
+    case PROP_ID:
+      g_value_set_uint (value, self->id);
+      break;
+    case PROP_POSITION:
+      g_value_set_uint (value, self->position);
+      break;
+    case PROP_URI:
+      g_value_set_string (value, self->uri);
+      break;
     case PROP_TITLE:
       g_value_set_string (value, self->title);
       break;
@@ -93,6 +101,15 @@ polyhymnia_track_set_property (GObject      *object,
 
   switch ((PolyhymniaTrackProperty) property_id)
     {
+    case PROP_ID:
+      self->id = g_value_get_uint (value);
+      break;
+    case PROP_POSITION:
+      self->position = g_value_get_uint (value);
+      break;
+    case PROP_URI:
+      g_set_str (&(self->uri), g_value_get_string (value));
+      break;
     case PROP_TITLE:
       g_set_str (&(self->title), g_value_get_string (value));
       break;
@@ -127,28 +144,50 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
   gobject_class->get_property = polyhymnia_track_get_property;
   gobject_class->set_property = polyhymnia_track_set_property;
 
+  obj_properties[PROP_ID] =
+    g_param_spec_uint ("id",
+                       "ID",
+                       "Track id (in a queue)",
+                       0,
+                       G_MAXUINT,
+                       0,
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_POSITION] =
+    g_param_spec_uint ("position",
+                       "Position",
+                       "Track position (in a queue)",
+                       0,
+                       G_MAXUINT,
+                       0,
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_URI] =
+    g_param_spec_string ("uri",
+                         "URI",
+                         "Track filepath",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_TITLE] =
     g_param_spec_string ("title",
                           "Title",
-                          "Track title.",
+                          "Track title",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUM] =
     g_param_spec_string ("album",
                           "Album",
-                          "Title of source album.",
-                          "Unknown",
+                          "Title of source album",
+                          NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ARTIST] =
     g_param_spec_string ("artist",
                           "Artist",
-                          "Name of an artist.",
-                          "Unknown",
+                          "Name of an artist",
+                          NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_DURATION] =
     g_param_spec_uint ("duration",
                        "Duration",
-                       "Track duration (in seconds).",
+                       "Track duration (in seconds)",
                        0,
                        G_MAXUINT,
                        0,
@@ -156,7 +195,7 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
   obj_properties[PROP_DURATION_READABLE] =
     g_param_spec_string ("duration-readable",
                          "Duration (human-readable representation)",
-                         "Track duration (string in UI format).",
+                         "Track duration (string in UI format)",
                          NULL,
                          G_PARAM_READABLE);
 
@@ -168,4 +207,41 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
 static void
 polyhymnia_track_init (PolyhymniaTrack *self)
 {
+}
+
+/* Instance methods */
+const gchar *
+polyhymnia_track_get_artist (const PolyhymniaTrack *self)
+{
+  return self->artist;
+}
+
+guint
+polyhymnia_track_get_duration (const PolyhymniaTrack *self)
+{
+  return self->duration;
+}
+
+const gchar *
+polyhymnia_track_get_duration_readable (const PolyhymniaTrack *self)
+{
+  return self->duration_readable;
+}
+
+guint
+polyhymnia_track_get_id (const PolyhymniaTrack *self)
+{
+  return self->id;
+}
+
+const gchar *
+polyhymnia_track_get_title (const PolyhymniaTrack *self)
+{
+  return self->title;
+}
+
+const gchar *
+polyhymnia_track_get_uri (const PolyhymniaTrack *self)
+{
+  return self->uri;
 }
