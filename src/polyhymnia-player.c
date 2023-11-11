@@ -1,6 +1,6 @@
 
 #include "polyhymnia-enums.h"
-#include "polyhymnia-mpd-client.h"
+#include "polyhymnia-mpd-client-player.h"
 #include "polyhymnia-player.h"
 
 /* Type metadata */

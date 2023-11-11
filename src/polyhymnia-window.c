@@ -1,7 +1,7 @@
 
 #include "config.h"
 
-#include "polyhymnia-mpd-client.h"
+#include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-player.h"
 #include "polyhymnia-window.h"
 

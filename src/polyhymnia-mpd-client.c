@@ -1,5 +1,6 @@
 
-#include "polyhymnia-mpd-client.h"
+#include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-player.h"
 
 #include <mpd/client.h>
 
@@ -308,7 +309,7 @@ polyhymnia_mpd_client_connection_init(GError **error)
   return mpd_connection;
 }
 
-/* Instance methods */
+/* Private instance methods declaration*/
 static gboolean
 polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
                                            GIOCondition condition,
@@ -410,30 +411,6 @@ polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
   return FALSE;
 }
 
-gint
-polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
-                                        const gchar         *song_uri,
-                                        GError              **error)
-{
-  gint id;
-  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), 0);
-  g_return_val_if_fail (error == NULL || *error == NULL, 0);
-  g_return_val_if_fail (self->main_mpd_connection != NULL, 0);
-
-  id = mpd_run_add_id_whence (self->main_mpd_connection, song_uri,
-                              0, MPD_POSITION_AFTER_CURRENT);
-  if (id == -1)
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-  }
-
-  return id;
-}
-
 static void
 polyhymnia_mpd_client_append_anything_to_queue(PolyhymniaMpdClient *self,
                                                const gchar         *filter,
@@ -485,6 +462,82 @@ polyhymnia_mpd_client_append_anything_to_queue(PolyhymniaMpdClient *self,
                  "cleanup failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
   }
+}
+
+static void
+polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
+{
+  gint fd;
+  GError *inner_error = NULL;
+
+  self->idle_mpd_connection = polyhymnia_mpd_client_connection_init (&inner_error);
+  if (inner_error != NULL)
+  {
+    g_warning ("MPD client event loop initialization error: %s\n",
+              inner_error->message);
+    g_error_free (inner_error);
+    return;
+  }
+
+  if (!mpd_send_idle(self->idle_mpd_connection))
+  {
+    mpd_connection_free (self->idle_mpd_connection);
+    self->idle_mpd_connection = NULL;
+    g_warning ("MPD send idle failed: %s",
+             mpd_connection_get_error_message(self->main_mpd_connection));
+    return;
+  }
+
+  fd = mpd_connection_get_fd(self->idle_mpd_connection);
+
+  self->idle_channel = g_io_channel_unix_new (fd);
+  g_io_channel_set_encoding (self->idle_channel, NULL, NULL);
+  g_io_add_watch (self->idle_channel, G_IO_IN | G_IO_HUP,
+                  polyhymnia_mpd_client_accept_idle_channel,
+                  self);
+}
+
+static void
+polyhymnia_mpd_client_stop_playback(PolyhymniaMpdClient *self,
+                                    GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  if (!mpd_run_stop(self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+  }
+}
+
+/* Instance methods */
+gint
+polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
+                                        const gchar         *song_uri,
+                                        GError              **error)
+{
+  gint id;
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), 0);
+  g_return_val_if_fail (error == NULL || *error == NULL, 0);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, 0);
+
+  id = mpd_run_add_id_whence (self->main_mpd_connection, song_uri,
+                              0, MPD_POSITION_AFTER_CURRENT);
+  if (id == -1)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+  }
+
+  return id;
 }
 
 void
@@ -546,39 +599,6 @@ polyhymnia_mpd_client_clear_queue(PolyhymniaMpdClient *self,
                  "failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
   }
-}
-
-static void
-polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
-{
-  gint fd;
-  GError *inner_error = NULL;
-
-  self->idle_mpd_connection = polyhymnia_mpd_client_connection_init (&inner_error);
-  if (inner_error != NULL)
-  {
-    g_warning ("MPD client event loop initialization error: %s\n",
-              inner_error->message);
-    g_error_free (inner_error);
-    return;
-  }
-
-  if (!mpd_send_idle(self->idle_mpd_connection))
-  {
-    mpd_connection_free (self->idle_mpd_connection);
-    self->idle_mpd_connection = NULL;
-    g_warning ("MPD send idle failed: %s",
-             mpd_connection_get_error_message(self->main_mpd_connection));
-    return;
-  }
-
-  fd = mpd_connection_get_fd(self->idle_mpd_connection);
-
-  self->idle_channel = g_io_channel_unix_new (fd);
-  g_io_channel_set_encoding (self->idle_channel, NULL, NULL);
-  g_io_add_watch (self->idle_channel, G_IO_IN | G_IO_HUP,
-                  polyhymnia_mpd_client_accept_idle_channel,
-                  self);
 }
 
 void
@@ -1316,24 +1336,6 @@ polyhymnia_mpd_client_set_volume(PolyhymniaMpdClient *self,
   g_return_if_fail (self->main_mpd_connection != NULL);
 
   if (!mpd_run_set_volume (self->main_mpd_connection, volume))
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-  }
-}
-
-void
-polyhymnia_mpd_client_stop_playback(PolyhymniaMpdClient *self,
-                                    GError              **error)
-{
-  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
-  g_return_if_fail (error == NULL || *error == NULL);
-  g_return_if_fail (self->main_mpd_connection != NULL);
-
-  if (!mpd_run_stop(self->main_mpd_connection))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
