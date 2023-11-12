@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaQueuePane" parent="GtkWidget">
+    <child>
+      <object class="AdwToolbarView" id="root_toolbar_view">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <child type="start">
+              <object class="GtkButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">playlist-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Add to playlist</property>
+                <property name="visible">false</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <property name="title-widget">
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Queue</property>
+                <style>
+                  <class name="title"/>
+                </style>
+              </object>
+            </property>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">x-circular-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Clear queue</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_clear_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <property name="show-end-title-buttons">false</property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="GtkScrolledWindow" id="queue_page_content" />
+        </property>
+        <child type="bottom">
+          <object class="GtkActionBar" id="queue_action_bar">
+            <child type="start">
+              <object class="GtkButton" id="play_button">
+                <property name="icon-name">play-large-symbolic</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_play_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <child type="start">
+              <object class="GtkButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">big-x-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Remove from queue</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_remove_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="has-tooltip">true</property>
+                <property name="icon-name">edit-select-none-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Clear selection</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_clear_selection_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <property name="revealed">false</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+
+  <object class="GtkListView" id="queue_list_view">
+    <property name="factory">
+      <object class="GtkBuilderListItemFactory" id="track_factory">
+        <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+      </object>
+    </property>
+    <property name="model">
+    <object class="GtkMultiSelection" id="queue_selection_model">
+      <signal name="selection-changed"
+        handler="polyhymnia_queue_pane_selection_changed"
+        swapped="true" />
+    </object>
+    </property>
+    <property name="show-separators">true</property>
+  </object>
+  <object class="AdwStatusPage" id="queue_status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="notify::initialized"
+      handler="polyhymnia_queue_pane_mpd_client_initialized"
+      swapped="true" />
+    <signal name="queue-modified"
+      handler="polyhymnia_queue_pane_mpd_queue_modified"
+      swapped="true" />
+  </object>
+
+</interface>

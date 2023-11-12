@@ -186,51 +186,10 @@
       </object>
     </child>
     <child type="sidebar">
-      <object class="AdwToolbarView" id="queue_toolbar_view">
-        <child type="top">
-          <object class="AdwHeaderBar">
-            <property name="title-widget">
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">Queue</property>
-                <style>
-                  <class name="title"/>
-                </style>
-              </object>
-            </property>
-            <child type="end">
-              <object class="GtkButton">
-                <property name="has-tooltip">true</property>
-                <property name="icon-name">playlist-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Add to playlist</property>
-                <property name="visible">false</property>
-    		<signal name="clicked"
-    		  handler="polyhymnia_window_queue_to_playlist_button_clicked"
-    		  swapped="true" />
-              </object>
-            </child>
-            <property name="show-end-title-buttons">false</property>
-          </object>
-        </child>
-        <property name="content">
-          <object class="GtkScrolledWindow" id="queue_page_content" />
-        </property>
-        <child type="bottom">
-          <object class="GtkActionBar">
-            <child type="end">
-              <object class="GtkButton">
-                <property name="has-tooltip">true</property>
-                <property name="icon-name">x-circular-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Clear</property>
-    		<signal name="clicked"
-    		  handler="polyhymnia_window_clear_queue_button_clicked"
-    		  swapped="true" />
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
+      <object class="PolyhymniaQueuePane" />
     </child>
     <property name="collapsed">true</property>
+    <property name="max-sidebar-width">300</property>
     <property name="sidebar-position">end</property>
   </object>
 
@@ -347,22 +306,12 @@
     </property>
   </object>
 
-  <object class="GtkListView" id="queue_list_view">
-    <property name="factory">track_factory</property>
-    <property name="model">queue_selection_model</property>
-    <property name="show-separators">true</property>
-  </object>
-  <object class="AdwStatusPage" id="queue_status_page" />
-
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"
       handler="polyhymnia_window_mpd_database_updated"
       swapped="true" />
     <signal name="notify::initialized"
       handler="polyhymnia_window_mpd_client_initialized"
-      swapped="true" />
-    <signal name="queue-modified"
-      handler="polyhymnia_window_mpd_queue_modified"
       swapped="true" />
   </object>
 
@@ -396,8 +345,5 @@
     <signal name="selection-changed"
       handler="polyhymnia_window_track_selection_changed"
       swapped="true" />
-  </object>
-
-  <object class="GtkNoSelection" id="queue_selection_model">
   </object>
 </interface>
