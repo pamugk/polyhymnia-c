@@ -25,9 +25,14 @@ polyhymnia_mpd_client_append_artist_to_queue(PolyhymniaMpdClient *self,
                                              GError              **error);
 
 gint
-polyhymnia_mpd_client_append_to_queue(PolyhymniaMpdClient *self,
-                                      const gchar         *song_uri,
-                                      GError              **error);
+polyhymnia_mpd_client_append_song_to_queue(PolyhymniaMpdClient *self,
+                                           const gchar         *song_uri,
+                                           GError              **error);
+
+void
+polyhymnia_mpd_client_append_songs_to_queue(PolyhymniaMpdClient *self,
+                                            GPtrArray           *songs_uri,
+                                            GError              **error);
 
 void
 polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
@@ -51,6 +56,11 @@ gint
 polyhymnia_mpd_client_play_song(PolyhymniaMpdClient *self,
                                 const gchar         *song_uri,
                                 GError              **error);
+
+void
+polyhymnia_mpd_client_play_songs(PolyhymniaMpdClient *self,
+                                 GPtrArray           *songs_uri,
+                                 GError              **error);
 
 void
 polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,

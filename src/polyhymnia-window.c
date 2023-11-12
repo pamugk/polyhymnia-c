@@ -72,6 +72,9 @@ static void
 polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
                                         PolyhymniaMpdClient *user_data);
 
+static GPtrArray *
+polyhymnia_window_get_selected_tracks (PolyhymniaWindow *self);
+
 static void
 polyhymnia_window_play_tracks_button_clicked (PolyhymniaWindow *self,
                                               GtkButton        *user_data);
@@ -188,35 +191,23 @@ static void
 polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
                                                       GtkButton        *user_data)
 {
-  GError            *error = NULL;
-  GListModel        *track_list_model;
-  GtkBitset         *selected_tracks;
-  GtkSelectionModel *track_selection_model;
+  GError    *error = NULL;
+  GPtrArray *songs_uri;
 
   g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  track_list_model = G_LIST_MODEL (self->track_selection_model);
-  track_selection_model = GTK_SELECTION_MODEL (self->track_selection_model);
-  selected_tracks = gtk_selection_model_get_selection (track_selection_model);
+  songs_uri = polyhymnia_window_get_selected_tracks (self);
+  polyhymnia_mpd_client_append_songs_to_queue (self->mpd_client, songs_uri, &error);
+  g_ptr_array_unref (songs_uri);
 
-  for (guint i = 0; i < gtk_bitset_get_size (selected_tracks); i++)
+  if (error != NULL)
   {
-    guint track_index = gtk_bitset_get_nth (selected_tracks, i);
-    const PolyhymniaTrack *track = g_list_model_get_item (track_list_model,
-                                                          track_index);
-    const gchar *track_uri = polyhymnia_track_get_uri (track);
-    polyhymnia_mpd_client_append_to_queue (self->mpd_client, track_uri,
-                                           &error);
-    if (error != NULL)
-    {
-      g_warning("Failed to add track %s into queue: %s\n", track_uri, error->message);
-      g_error_free (error);
-      error = NULL;
-    }
+    g_warning("Failed to add tracks into queue: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
   }
 
-  gtk_bitset_unref (selected_tracks);
-  gtk_selection_model_unselect_all (track_selection_model);
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->track_selection_model));
 }
 
 static void
@@ -430,49 +421,45 @@ polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
   polyhymnia_window_content_init (self);
 }
 
-static void
-polyhymnia_window_play_tracks_button_clicked (PolyhymniaWindow *self,
-                                              GtkButton        *user_data)
+static GPtrArray *
+polyhymnia_window_get_selected_tracks (PolyhymniaWindow *self)
 {
-  GError            *error = NULL;
-  GListModel        *track_list_model;
   GtkBitset         *selected_tracks;
-  GtkSelectionModel *track_selection_model;
+  GPtrArray         *songs_uri;
 
-  g_assert (POLYHYMNIA_IS_WINDOW (self));
-
-  //polyhymnia_mpd_client_clear_queue (self->mpd_client, &error);
-  //if (error != NULL)
-  //{
-  //  g_warning("Failed to clear queue: %s\n", error->message);
-  //  g_error_free (error);
-  //  error = NULL;
-  //}
-
-  track_list_model = G_LIST_MODEL (self->track_selection_model);
-  track_selection_model = GTK_SELECTION_MODEL (self->track_selection_model);
-  selected_tracks = gtk_selection_model_get_selection (track_selection_model);
+  selected_tracks = gtk_selection_model_get_selection (
+                      GTK_SELECTION_MODEL (self->track_selection_model));
+  songs_uri = g_ptr_array_sized_new (gtk_bitset_get_size (selected_tracks));
 
   for (guint i = 0; i < gtk_bitset_get_size (selected_tracks); i++)
   {
     guint track_index = gtk_bitset_get_nth (selected_tracks, i);
-    const PolyhymniaTrack *track = g_list_model_get_item (track_list_model,
-                                                          track_index);
-    const gchar *track_uri = polyhymnia_track_get_uri (track);
-    polyhymnia_mpd_client_append_to_queue (self->mpd_client, track_uri,
-                                           &error);
-    if (error != NULL)
-    {
-      g_warning("Failed to add track %s into queue: %s\n", track_uri, error->message);
-      g_error_free (error);
-      error = NULL;
-    }
+    const PolyhymniaTrack *track;
+    track = g_list_model_get_item (G_LIST_MODEL (self->track_selection_model),
+                                   track_index);
+    g_ptr_array_add (songs_uri, (gpointer) polyhymnia_track_get_uri (track));
   }
+  gtk_bitset_unref (selected_tracks);
 
-  polyhymnia_mpd_client_play (self->mpd_client, &error);
+  return songs_uri;
+}
+
+static void
+polyhymnia_window_play_tracks_button_clicked (PolyhymniaWindow *self,
+                                              GtkButton        *user_data)
+{
+  GError    *error = NULL;
+  GPtrArray *songs_uri;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  songs_uri = polyhymnia_window_get_selected_tracks (self);
+  polyhymnia_mpd_client_play_songs (self->mpd_client, songs_uri, &error);
+  g_ptr_array_unref (songs_uri);
+
   if (error != NULL)
   {
-    g_warning("Failed to start playback: %s\n", error->message);
+    g_warning("Failed to play tracks: %s\n", error->message);
     g_error_free (error);
     error = NULL;
   }
