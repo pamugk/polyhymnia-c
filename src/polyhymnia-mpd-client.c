@@ -2,6 +2,7 @@
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-player.h"
+#include "polyhymnia-mpd-client-queue.h"
 
 #include <mpd/client.h>
 

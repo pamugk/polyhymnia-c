@@ -8,6 +8,7 @@ polyhymnia_sources = [
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',
   'polyhymnia-preferences-window.c',
+  'polyhymnia-queue-pane.c',
   'polyhymnia-track.c',
   'polyhymnia-window.c',
 ]

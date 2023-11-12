@@ -159,6 +159,7 @@ polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
   polyhymnia_player_bar_elapsed_seconds (self, NULL, self->player);
   polyhymnia_player_bar_state (self, NULL, self->player);
 }
+
 /* Instance methods */
 GtkWidget *
 polyhymnia_player_bar_get_queue_toggle_button (const PolyhymniaPlayerBar *self)
