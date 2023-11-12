@@ -14,6 +14,11 @@ polyhymnia_mpd_client_delete_from_queue(PolyhymniaMpdClient *self,
                                         guint               id,
                                         GError              **error);
 
+void
+polyhymnia_mpd_client_delete_songs_from_queue(PolyhymniaMpdClient *self,
+                                              GArray              *ids,
+                                              GError              **error);
+
 GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error);

@@ -705,6 +705,33 @@ polyhymnia_mpd_client_delete_from_queue(PolyhymniaMpdClient *self,
   }
 }
 
+void
+polyhymnia_mpd_client_delete_songs_from_queue(PolyhymniaMpdClient *self,
+                                              GArray              *ids,
+                                              GError              **error)
+{
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  mpd_command_list_begin(self->main_mpd_connection, FALSE);
+  for (guint i = 0; i < ids->len; i++)
+  {
+    mpd_send_delete_id (self->main_mpd_connection, g_array_index (ids, guint, i));
+  }
+  mpd_command_list_end(self->main_mpd_connection);
+
+  if (!mpd_response_finish (self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
 PolyhymniaPlayerPlaybackOptions
 polyhymnia_mpd_client_get_playback_options(PolyhymniaMpdClient *self,
                                            GError              **error)
