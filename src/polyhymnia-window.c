@@ -158,7 +158,7 @@ polyhymnia_window_init (PolyhymniaWindow *self)
   g_object_bind_property (polyhymnia_player_bar_get_queue_toggle_button (self->player_bar),
                           "active",
                           self->content, "show-sidebar",
-                          G_BINDING_SYNC_CREATE);
+                          G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
 
   self->album_model = g_list_store_new (POLYHYMNIA_TYPE_ALBUM);
   gtk_no_selection_set_model (self->album_selection_model,
