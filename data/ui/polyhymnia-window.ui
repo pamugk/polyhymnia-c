@@ -249,9 +249,76 @@
       <object class="AdwNavigationPage">
         <property name="child">
           <object class="AdwToolbarView" id="track_toolbar_view">
-            <child type="top">
+            <property name="content">
+              <object class="GtkScrolledWindow">
+                <property name="child">
+                  <object class="GtkColumnView">
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="expand">true</property>
+                        <property name="factory">
+                          <object class="GtkBuilderListItemFactory">
+                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-title-column.ui</property>
+                          </object>
+                        </property>
+                      	<property name="resizable">false</property>
+                        <property name="title">Title</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="expand">true</property>
+                        <property name="factory">
+                          <object class="GtkBuilderListItemFactory">
+                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-artist-column.ui</property>
+                          </object>
+                        </property>
+                      	<property name="resizable">false</property>
+                        <property name="title">Artist</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="expand">true</property>
+                        <property name="factory">
+                          <object class="GtkBuilderListItemFactory">
+                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-album-column.ui</property>
+                          </object>
+                        </property>
+                      	<property name="resizable">false</property>
+                        <property name="title">Album</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="expand">false</property>
+                        <property name="factory">
+                          <object class="GtkBuilderListItemFactory">
+                            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-duration-column.ui</property>
+                          </object>
+                        </property>
+                      	<property name="resizable">false</property>
+                        <property name="title">Duration</property>
+                      </object>
+                    </child>
+                    <property name="model">track_selection_model</property>
+                    <property name="show-column-separators">true</property>
+                    <property name="show-row-separators">true</property>
+                  </object>
+                </property>
+              </object>
+            </property>
+            <child type="bottom">
               <object class="GtkActionBar">
-                <child type="end">
+                <child type="start">
+	          <object class="GtkButton">
+                    <property name="icon-name">play-large-symbolic</property>
+                    <signal name="clicked"
+                      handler="polyhymnia_window_play_tracks_button_clicked"
+                      swapped="true" />
+	          </object>
+                </child>
+                <child type="start">
 	          <object class="GtkButton">
                     <property name="icon-name">plus-symbolic</property>
                     <signal name="clicked"
@@ -261,26 +328,15 @@
                 </child>
                 <child type="end">
 	          <object class="GtkButton">
-                    <property name="icon-name">play-large-symbolic</property>
+                    <property name="icon-name">edit-select-none-symbolic</property>
                     <signal name="clicked"
-                      handler="polyhymnia_window_play_tracks_button_clicked"
+                      handler="polyhymnia_window_play_clear_track_selection_button_clicked"
                       swapped="true" />
 	          </object>
                 </child>
               </object>
             </child>
-            <property name="content">
-              <object class="GtkScrolledWindow">
-                <property name="child">
-                  <object class="GtkListView">
-                    <property name="factory">track_factory</property>
-                    <property name="model">track_selection_model</property>
-                    <property name="show-separators">true</property>
-                  </object>
-                </property>
-              </object>
-            </property>
-            <property name="reveal-top-bars">false</property>
+            <property name="reveal-bottom-bars">false</property>
           </object>
         </property>
         <property name="title" translatable="yes">Songs</property>
@@ -337,9 +393,6 @@
       <object class="GtkStringList" id="genre_model">
       </object>
     </property>
-  </object>
-  <object class="GtkBuilderListItemFactory" id="track_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
   </object>
   <object class="GtkMultiSelection" id="track_selection_model">
     <signal name="selection-changed"

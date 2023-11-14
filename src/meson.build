@@ -20,7 +20,7 @@ polyhymnia_enum_headers = [
 enums = gnome.mkenums_simple('polyhymnia-enums', sources : polyhymnia_enum_headers)
 
 polyhymnia_deps = [
-  dependency('gtk4'),
+  dependency('gtk4', version: '>= 4.12'),
   dependency('libadwaita-1', version: '>= 1.4'),
   dependency('libmpdclient', version: '>= 2.20'),
 ]

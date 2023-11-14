@@ -58,6 +58,10 @@ polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
                                                       GtkButton        *user_data);
 
 static void
+polyhymnia_window_play_clear_track_selection_button_clicked (PolyhymniaWindow *self,
+                                                      GtkButton        *user_data);
+
+static void
 polyhymnia_window_content_clear (PolyhymniaWindow *self);
 
 static void
@@ -138,6 +142,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_add_tracks_to_queue_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_play_clear_track_selection_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_database_updated);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_client_initialized);
@@ -207,6 +213,13 @@ polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
     error = NULL;
   }
 
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->track_selection_model));
+}
+
+static void
+polyhymnia_window_play_clear_track_selection_button_clicked (PolyhymniaWindow *self,
+                                                      GtkButton        *user_data)
+{
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->track_selection_model));
 }
 
@@ -477,7 +490,7 @@ polyhymnia_window_track_selection_changed (PolyhymniaWindow  *self,
 
   g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  adw_toolbar_view_set_reveal_top_bars (self->track_toolbar_view,
-                                        !gtk_bitset_is_empty (selection));
+  adw_toolbar_view_set_reveal_bottom_bars (self->track_toolbar_view,
+                                           !gtk_bitset_is_empty (selection));
   gtk_bitset_unref (selection);
 }
