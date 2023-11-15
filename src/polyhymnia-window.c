@@ -1,10 +1,12 @@
 
 #include "config.h"
 
+#include "polyhymnia-window.h"
+
+#include "polyhymnia-album-page.h"
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-player-bar.h"
 #include "polyhymnia-queue-pane.h"
-#include "polyhymnia-window.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -56,6 +58,11 @@ G_DEFINE_FINAL_TYPE (PolyhymniaWindow, polyhymnia_window, ADW_TYPE_APPLICATION_W
 static void
 polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
                                                       GtkButton        *user_data);
+
+static void
+polyhymnia_window_album_clicked (PolyhymniaWindow *self,
+                                 guint            position,
+                                 GtkGridView      *user_data);
 
 static void
 polyhymnia_window_play_clear_track_selection_button_clicked (PolyhymniaWindow *self,
@@ -142,6 +149,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_add_tracks_to_queue_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_album_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_play_clear_track_selection_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_database_updated);
@@ -214,6 +223,24 @@ polyhymnia_window_add_tracks_to_queue_button_clicked (PolyhymniaWindow *self,
   }
 
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->track_selection_model));
+}
+
+static void
+polyhymnia_window_album_clicked (PolyhymniaWindow *self,
+                                 guint            position,
+                                 GtkGridView      *user_data)
+{
+  const PolyhymniaAlbum *album;
+  PolyhymniaAlbumPage *album_page;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  album = g_list_model_get_item (G_LIST_MODEL (self->album_model), position);
+  album_page = g_object_new (POLYHYMNIA_TYPE_ALBUM_PAGE,
+                             "album-title", polyhymnia_album_get_title (album),
+                             NULL);
+  adw_navigation_view_push (self->album_navigation_view,
+                            ADW_NAVIGATION_PAGE (album_page));
 }
 
 static void

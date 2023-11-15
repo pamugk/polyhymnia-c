@@ -11,6 +11,8 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-genre-grid-item.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-list-item.ui</file>
 
+    <file preprocess="xml-stripblanks">ui/polyhymnia-album-page.ui</file>
+
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-window.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-queue-pane.ui</file>

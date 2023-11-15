@@ -202,6 +202,10 @@
               <object class="GtkGridView">
                 <property name="factory">album_factory</property>
                 <property name="model">album_selection_model</property>
+                <property name="single-click-activate">true</property>
+                <signal name="activate"
+                  handler="polyhymnia_window_album_clicked"
+                  swapped="true" />
               </object>
             </property>
           </object>

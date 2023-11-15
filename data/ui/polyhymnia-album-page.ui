@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaAlbumPage" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="AdwToolbarView" id="root_toolbar_view">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-end-title-buttons">false</property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="GtkScrolledWindow" id="tracks_content" />
+        </property>
+      </object>
+    </property>
+  </template>
+
+  <object class="GtkListView" id="tracks_list_view">
+    <property name="factory">
+      <object class="GtkBuilderListItemFactory">
+        <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+      </object>
+    </property>
+    <property name="model">
+      <object class="GtkMultiSelection" id="tracks_selection_model" />
+    </property>
+    <property name="show-separators">true</property>
+  </object>
+  <object class="AdwStatusPage" id="tracks_status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="database-updated"
+      handler="polyhymnia_album_page_mpd_database_updated"
+      swapped="true" />
+    <signal name="notify::initialized"
+      handler="polyhymnia_album_page_mpd_client_initialized"
+      swapped="true" />
+  </object>
+</interface>

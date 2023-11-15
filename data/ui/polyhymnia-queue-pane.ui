@@ -86,11 +86,11 @@
       </object>
     </property>
     <property name="model">
-    <object class="GtkMultiSelection" id="queue_selection_model">
-      <signal name="selection-changed"
-        handler="polyhymnia_queue_pane_selection_changed"
-        swapped="true" />
-    </object>
+      <object class="GtkMultiSelection" id="queue_selection_model">
+        <signal name="selection-changed"
+          handler="polyhymnia_queue_pane_selection_changed"
+          swapped="true" />
+      </object>
     </property>
     <property name="show-separators">true</property>
   </object>

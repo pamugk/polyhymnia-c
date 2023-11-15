@@ -38,6 +38,11 @@ void
 polyhymnia_mpd_client_connect(PolyhymniaMpdClient *self,
                               GError             **error);
 
+GPtrArray *
+polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
+                                       const gchar         *album,
+                                       GError              **error);
+
 void
 polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
                             GError              **error);

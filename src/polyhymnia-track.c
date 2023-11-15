@@ -6,10 +6,13 @@
 typedef enum
 {
   PROP_ID = 1,
-  PROP_POSITION,
+  PROP_QUEUE_POSITION,
   PROP_URI,
   PROP_TITLE,
+  PROP_DISC,
+  PROP_ALBUM_POSITION,
   PROP_ALBUM,
+  PROP_ALBUM_ARTIST,
   PROP_ARTIST,
   PROP_DURATION,
   PROP_DURATION_READABLE,
@@ -22,10 +25,13 @@ struct _PolyhymniaTrack
 
   /* Data */
   guint id;
-  guint position;
+  guint queue_position;
   gchar *uri;
   gchar *title;
+  guint disc;
+  guint album_position;
   gchar *album;
+  gchar *album_artist;
   gchar *artist;
   guint duration;
   gchar *duration_readable;
@@ -44,6 +50,7 @@ polyhymnia_track_finalize (GObject *gobject)
   g_free (self->uri);
   g_free (self->title);
   g_free (self->album);
+  g_free (self->album_artist);
   g_free (self->artist);
   g_free (self->duration_readable);
 
@@ -63,8 +70,8 @@ polyhymnia_track_get_property (GObject    *object,
     case PROP_ID:
       g_value_set_uint (value, self->id);
       break;
-    case PROP_POSITION:
-      g_value_set_uint (value, self->position);
+    case PROP_QUEUE_POSITION:
+      g_value_set_uint (value, self->queue_position);
       break;
     case PROP_URI:
       g_value_set_string (value, self->uri);
@@ -72,8 +79,17 @@ polyhymnia_track_get_property (GObject    *object,
     case PROP_TITLE:
       g_value_set_string (value, self->title);
       break;
+    case PROP_DISC:
+      g_value_set_uint (value, self->disc);
+      break;
+    case PROP_ALBUM_POSITION:
+      g_value_set_uint (value, self->album_position);
+      break;
     case PROP_ALBUM:
       g_value_set_string (value, self->album);
+      break;
+    case PROP_ALBUM_ARTIST:
+      g_value_set_string (value, self->album_artist);
       break;
     case PROP_ARTIST:
       g_value_set_string (value, self->artist);
@@ -104,8 +120,8 @@ polyhymnia_track_set_property (GObject      *object,
     case PROP_ID:
       self->id = g_value_get_uint (value);
       break;
-    case PROP_POSITION:
-      self->position = g_value_get_uint (value);
+    case PROP_QUEUE_POSITION:
+      self->queue_position = g_value_get_uint (value);
       break;
     case PROP_URI:
       g_set_str (&(self->uri), g_value_get_string (value));
@@ -113,8 +129,17 @@ polyhymnia_track_set_property (GObject      *object,
     case PROP_TITLE:
       g_set_str (&(self->title), g_value_get_string (value));
       break;
+    case PROP_DISC:
+      self->disc = g_value_get_uint (value);
+      break;
+    case PROP_ALBUM_POSITION:
+      self->album_position = g_value_get_uint (value);
+      break;
     case PROP_ALBUM:
       g_set_str (&(self->album), g_value_get_string (value));
+      break;
+    case PROP_ALBUM_ARTIST:
+      g_set_str (&(self->album_artist), g_value_get_string (value));
       break;
     case PROP_ARTIST:
       g_set_str (&(self->artist), g_value_get_string (value));
@@ -152,9 +177,9 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
                        G_MAXUINT,
                        0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
-  obj_properties[PROP_POSITION] =
-    g_param_spec_uint ("position",
-                       "Position",
+  obj_properties[PROP_QUEUE_POSITION] =
+    g_param_spec_uint ("queue-position",
+                       "Queue position",
                        "Track position (in a queue)",
                        0,
                        G_MAXUINT,
@@ -172,16 +197,38 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
                           "Track title",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_DISC] =
+    g_param_spec_uint ("disc",
+                       "Disc",
+                       "Disc number of an album that track belongs to",
+                       0,
+                       G_MAXUINT,
+                       0,
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_ALBUM_POSITION] =
+    g_param_spec_uint ("album-position",
+                       "Album position",
+                       "Track position (in an album)",
+                       0,
+                       G_MAXUINT,
+                       0,
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUM] =
     g_param_spec_string ("album",
                           "Album",
                           "Title of source album",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_ALBUM_ARTIST] =
+    g_param_spec_string ("album-artist",
+                          "Album artist",
+                          "Name of a main album artist",
+                          NULL,
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ARTIST] =
     g_param_spec_string ("artist",
                           "Artist",
-                          "Name of an artist",
+                          "Name of an artist performing track",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_DURATION] =
