@@ -798,15 +798,27 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
     const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
     if (title != NULL && !g_str_equal (title, ""))
     {
+      const gchar *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
       const gchar *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
       const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
-      GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
+      const gchar *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
+      guint64 disc_number = 0;
+      GObject *track_object;
+
+      if (disc != NULL)
+      {
+        g_ascii_string_to_unsigned (disc, 10, 0, G_MAXUINT, &disc_number, NULL);
+      }
+
+      track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                             "uri", mpd_song_get_uri (track),
                                             "title", title,
-                                            "disc", 0,
-                                            "album-position", 0,
+                                            "disc", (guint) disc_number,
+                                            "album-position", album_position,
                                             "album-artist", album_artist,
-                                            "artist", artist,
+                                            "artist",
+                                            g_str_equal (album_artist, artist)
+                                              ? NULL : artist,
                                             "duration", mpd_song_get_duration (track),
                                             NULL);
       g_ptr_array_add(results, track_object);

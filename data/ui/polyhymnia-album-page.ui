@@ -17,18 +17,62 @@
     </property>
   </template>
 
-  <object class="GtkListView" id="tracks_list_view">
-    <property name="factory">
-      <object class="GtkBuilderListItemFactory">
-        <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+  <object class="GtkColumnView" id="tracks_column_view">
+    <child>
+      <object class="GtkColumnViewColumn">
+        <property name="expand">false</property>
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-album-position-column.ui</property>
+          </object>
+        </property>
+        <property name="resizable">false</property>
       </object>
-    </property>
+    </child>
+    <child>
+      <object class="GtkColumnViewColumn">
+        <property name="expand">true</property>
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-title-simple-column.ui</property>
+          </object>
+        </property>
+        <property name="resizable">false</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkColumnViewColumn">
+        <property name="expand">true</property>
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-artist-column.ui</property>
+          </object>
+        </property>
+      	<property name="resizable">false</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkColumnViewColumn">
+        <property name="expand">false</property>
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-duration-column.ui</property>
+          </object>
+        </property>
+      	<property name="resizable">false</property>
+      </object>
+    </child>
     <property name="model">
-      <object class="GtkMultiSelection" id="tracks_selection_model" />
+      <object class="GtkNoSelection" id="tracks_selection_model"/>
     </property>
-    <property name="show-separators">true</property>
+    <property name="show-column-separators">false</property>
+    <property name="show-row-separators">true</property>
   </object>
   <object class="AdwStatusPage" id="tracks_status_page" />
+
+  <object class="GtkBuilderListItemFactory" id="disc_header_factory">
+    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-disc-header.ui</property>
+  </object>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"

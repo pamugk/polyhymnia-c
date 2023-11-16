@@ -29,7 +29,7 @@ struct _PolyhymniaTrack
   gchar *uri;
   gchar *title;
   guint disc;
-  guint album_position;
+  gchar *album_position;
   gchar *album;
   gchar *album_artist;
   gchar *artist;
@@ -49,6 +49,7 @@ polyhymnia_track_finalize (GObject *gobject)
 
   g_free (self->uri);
   g_free (self->title);
+  g_free (self->album_position);
   g_free (self->album);
   g_free (self->album_artist);
   g_free (self->artist);
@@ -83,7 +84,7 @@ polyhymnia_track_get_property (GObject    *object,
       g_value_set_uint (value, self->disc);
       break;
     case PROP_ALBUM_POSITION:
-      g_value_set_uint (value, self->album_position);
+      g_value_set_string (value, self->album_position);
       break;
     case PROP_ALBUM:
       g_value_set_string (value, self->album);
@@ -133,7 +134,7 @@ polyhymnia_track_set_property (GObject      *object,
       self->disc = g_value_get_uint (value);
       break;
     case PROP_ALBUM_POSITION:
-      self->album_position = g_value_get_uint (value);
+      g_set_str (&(self->album_position), g_value_get_string (value));
       break;
     case PROP_ALBUM:
       g_set_str (&(self->album), g_value_get_string (value));
@@ -206,13 +207,11 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
                        0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUM_POSITION] =
-    g_param_spec_uint ("album-position",
-                       "Album position",
-                       "Track position (in an album)",
-                       0,
-                       G_MAXUINT,
-                       0,
-                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+    g_param_spec_string ("album-position",
+                         "Album position",
+                         "Track position (in an album)",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUM] =
     g_param_spec_string ("album",
                           "Album",
@@ -261,6 +260,12 @@ const gchar *
 polyhymnia_track_get_artist (const PolyhymniaTrack *self)
 {
   return self->artist;
+}
+
+guint
+polyhymnia_track_get_disc (const PolyhymniaTrack *self)
+{
+  return self->disc;
 }
 
 guint

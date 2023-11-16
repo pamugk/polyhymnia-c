@@ -20,16 +20,17 @@ struct _PolyhymniaAlbumPage
   AdwNavigationPage  parent_instance;
 
   /* Template widgets */
-  AdwToolbarView      *root_toolbar_view;
-  GtkScrolledWindow   *tracks_content;
-  GtkListView         *tracks_list_view;
-  AdwStatusPage       *tracks_status_page;
+  AdwToolbarView            *root_toolbar_view;
+  GtkScrolledWindow         *tracks_content;
+  GtkColumnView             *tracks_column_view;
+  AdwStatusPage             *tracks_status_page;
 
   /* Template objects */
-  PolyhymniaMpdClient *mpd_client;
+  PolyhymniaMpdClient       *mpd_client;
 
-  GListStore          *tracks_model;
-  GtkMultiSelection   *tracks_selection_model;
+  GtkBuilderListItemFactory *disc_header_factory;
+  GListStore                *tracks_model;
+  GtkNoSelection            *tracks_selection_model;
 
   /* Instance properties */
   gchar *album_title;
@@ -50,6 +51,9 @@ polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
                                             PolyhymniaMpdClient *user_data);
 
 /* Private function declarations */
+static gchar *
+get_disc_title (GtkListHeader *header, PolyhymniaTrack *item);
+
 static void
 polyhymnia_album_page_fill (PolyhymniaAlbumPage *self);
 
@@ -144,12 +148,15 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_content);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_list_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_column_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_status_page);
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, disc_header_factory);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_selection_model);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           get_disc_title);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_page_mpd_database_updated);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -162,8 +169,8 @@ polyhymnia_album_page_init (PolyhymniaAlbumPage *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
-  gtk_multi_selection_set_model (self->tracks_selection_model,
-                                 G_LIST_MODEL (self->tracks_model));
+  gtk_no_selection_set_model (self->tracks_selection_model,
+                              G_LIST_MODEL (self->tracks_model));
 }
 
 /* Event handler implementations */
@@ -194,6 +201,22 @@ polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
 }
 
 /* Private function declarations */
+static gchar *
+get_disc_title (GtkListHeader *header, PolyhymniaTrack *item)
+{
+  if (item == NULL)
+  {
+    return NULL;
+  }
+  else
+  {
+    guint disc = polyhymnia_track_get_disc (item);
+    return disc == 0
+      ? g_strdup (_("Disc  —"))
+      : g_strdup_printf (_("Disc %d"), disc);
+  }
+}
+
 static void
 polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
 {
@@ -227,11 +250,29 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
   }
   else
   {
+    guint last_seen_disc = polyhymnia_track_get_disc (g_ptr_array_index (tracks, 0));
+    gboolean multidisc_album = FALSE;
+    for (guint i = 1; i < tracks->len; i++)
+    {
+      guint current_disc = polyhymnia_track_get_disc (g_ptr_array_index (tracks, i));
+      multidisc_album = multidisc_album || last_seen_disc != current_disc;
+      last_seen_disc = current_disc;
+    }
+    if (multidisc_album)
+    {
+      gtk_column_view_set_header_factory (self->tracks_column_view,
+                                          GTK_LIST_ITEM_FACTORY (self->disc_header_factory));
+    }
+    else
+    {
+      gtk_column_view_set_header_factory (self->tracks_column_view, NULL);
+    }
+
     g_list_store_splice (self->tracks_model, 0,
                           g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
                           tracks->pdata, tracks->len);
     g_ptr_array_free (tracks, TRUE);
     gtk_scrolled_window_set_child (self->tracks_content,
-                                   GTK_WIDGET (self->tracks_list_view));
+                                   GTK_WIDGET (self->tracks_column_view));
   }
 }

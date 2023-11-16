@@ -2,9 +2,13 @@
 <gresources>
   <gresource prefix="/com/github/pamugk/polyhymnia">
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-album-column.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-track-album-position-column.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-artist-column.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-duration-column.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-title-column.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-track-title-simple-column.ui</file>
+
+    <file preprocess="xml-stripblanks">ui/polyhymnia-album-disc-header.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-album-grid-item.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-artist-grid-item.ui</file>
