@@ -42,13 +42,22 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* Event handler declarations */
 static void
-polyhymnia_album_page_mpd_client_initialized (PolyhymniaAlbumPage    *self,
+polyhymnia_album_page_mpd_client_initialized (PolyhymniaAlbumPage *self,
                                               GParamSpec          *pspec,
                                               PolyhymniaMpdClient *user_data);
 
 static void
 polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
                                             PolyhymniaMpdClient *user_data);
+
+static void
+polyhymnia_album_page_add_album_to_queue_button_clicked (PolyhymniaAlbumPage *self,
+                                                         GtkButton        *user_data);
+
+static void
+polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
+                                                 GtkButton        *user_data);
+
 
 /* Private function declarations */
 static gchar *
@@ -161,6 +170,11 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
                                            polyhymnia_album_page_mpd_database_updated);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_page_mpd_client_initialized);
+
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_album_page_add_album_to_queue_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_album_page_play_album_button_clicked);
 }
 
 static void
@@ -200,6 +214,44 @@ polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
   polyhymnia_album_page_fill (self);
 }
 
+static void
+polyhymnia_album_page_add_album_to_queue_button_clicked (PolyhymniaAlbumPage *self,
+                                                         GtkButton        *user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
+
+  polyhymnia_mpd_client_append_album_to_queue (self->mpd_client,
+                                               self->album_title, &error);
+
+  if (error != NULL)
+  {
+    g_warning("Failed to add album into queue: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+}
+
+static void
+polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
+                                                 GtkButton        *user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
+
+  polyhymnia_mpd_client_play_album (self->mpd_client,
+                                    self->album_title, &error);
+
+  if (error != NULL)
+  {
+    g_warning("Failed to start playing album: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+}
+
 /* Private function declarations */
 static gchar *
 get_disc_title (GtkListHeader *header, PolyhymniaTrack *item)
@@ -212,7 +264,7 @@ get_disc_title (GtkListHeader *header, PolyhymniaTrack *item)
   {
     guint disc = polyhymnia_track_get_disc (item);
     return disc == 0
-      ? g_strdup (_("Disc  —"))
+      ? g_strdup (_("Disc —"))
       : g_strdup_printf (_("Disc %d"), disc);
   }
 }

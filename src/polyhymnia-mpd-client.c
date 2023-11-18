@@ -817,7 +817,7 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
                                             "album-position", album_position,
                                             "album-artist", album_artist,
                                             "artist",
-                                            g_str_equal (album_artist, artist)
+                                            g_strcmp0 (album_artist, artist) == 0
                                               ? NULL : artist,
                                             "duration", mpd_song_get_duration (track),
                                             NULL);
@@ -1162,8 +1162,9 @@ polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
 }
 
 gboolean
-polyhymnia_mpd_client_is_initialized (const PolyhymniaMpdClient *self)
+polyhymnia_mpd_client_is_initialized (PolyhymniaMpdClient *self)
 {
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), FALSE);
   return self->initialized;
 }
 

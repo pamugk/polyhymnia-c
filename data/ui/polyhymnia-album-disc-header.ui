@@ -9,7 +9,6 @@
             <lookup name="item">GtkListHeader</lookup>
           </closure>
         </binding>
-        <property name="label" translatable="yes">Disc </property>
         <property name="xalign">0</property>
       </object>
     </property>

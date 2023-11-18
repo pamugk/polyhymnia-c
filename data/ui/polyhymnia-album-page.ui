@@ -7,6 +7,22 @@
       <object class="AdwToolbarView" id="root_toolbar_view">
         <child type="top">
           <object class="AdwHeaderBar">
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">plus-symbolic</property>
+                <signal name="clicked"
+                  handler="polyhymnia_album_page_add_album_to_queue_button_clicked"
+                  swapped="true" />
+	      </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">play-large-symbolic</property>
+                  <signal name="clicked"
+                    handler="polyhymnia_album_page_play_album_button_clicked"
+                    swapped="true" />
+	      </object>
+            </child>
             <property name="show-end-title-buttons">false</property>
           </object>
         </child>

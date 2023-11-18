@@ -1,7 +1,11 @@
 data/com.github.pamugk.polyhymnia.desktop.in
 data/com.github.pamugk.polyhymnia.appdata.xml.in
 data/com.github.pamugk.polyhymnia.gschema.xml
+data/ui/polyhymnia-queue-pane.ui
+data/ui/polyhymnia-player-bar.ui
 data/ui/polyhymnia-preferences-window.ui
 data/ui/polyhymnia-window.ui
 src/main.c
+src/polyhymnia-album-page.c
+src/polyhymnia-queue-pane.c
 src/polyhymnia-window.c
