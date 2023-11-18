@@ -94,3 +94,11 @@ static void
 polyhymnia_artist_init (PolyhymniaArtist *self)
 {
 }
+
+/* Instance methods */
+const gchar *
+polyhymnia_artist_get_name (PolyhymniaArtist *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_ARTIST (self), NULL);
+  return self->name;
+}

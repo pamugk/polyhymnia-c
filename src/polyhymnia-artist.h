@@ -9,4 +9,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaArtist, polyhymnia_artist, POLYHYMNIA, ARTIST, GObject)
 
+const gchar *
+polyhymnia_artist_get_name (PolyhymniaArtist *self);
+
 G_END_DECLS

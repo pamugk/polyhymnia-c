@@ -4,13 +4,13 @@
   <template class="GtkListItem">
     <property name="child">
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
+        <property name="orientation">horizontal</property>
         <property name="spacing">4</property>
 	<child>
 	  <object class="AdwAvatar">
 	    <property name="icon-name">music-artist-symbolic</property>
 	    <property name="show-initials">false</property>
-	    <property name="size">140</property>
+	    <property name="size">70</property>
 	    <property name="text"
 	    	bind-source="name_label"
                 bind-property="label"
@@ -30,9 +30,6 @@
 	    <property name="ellipsize">end</property>
 	  </object>
 	</child>
-        <style>
-          <class name="card"/>
-        </style>
       </object>
     </property>
   </template>
