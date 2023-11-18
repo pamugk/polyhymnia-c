@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaArtistPage" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="AdwToolbarView" id="root_toolbar_view">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">plus-symbolic</property>
+                <signal name="clicked"
+                  handler="polyhymnia_artist_page_add_artist_to_queue_button_clicked"
+                  swapped="true" />
+	      </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">play-large-symbolic</property>
+                  <signal name="clicked"
+                    handler="polyhymnia_artist_page_play_artist_button_clicked"
+                    swapped="true" />
+	      </object>
+            </child>
+            <property name="show-end-title-buttons">false</property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="GtkScrolledWindow" id="content" />
+        </property>
+      </object>
+    </property>
+  </template>
+
+  <object class="AdwStatusPage" id="status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="database-updated"
+      handler="polyhymnia_artist_page_mpd_database_updated"
+      swapped="true" />
+    <signal name="notify::initialized"
+      handler="polyhymnia_artist_page_mpd_client_initialized"
+      swapped="true" />
+  </object>
+</interface>

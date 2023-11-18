@@ -17,6 +17,7 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-list-item.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-album-page.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-artist-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-artists-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-tracks-page.ui</file>
 

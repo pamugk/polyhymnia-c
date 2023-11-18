@@ -14,6 +14,12 @@ typedef enum
   N_PROPERTIES,
 } PolyhymniaArtistsPageProperty;
 
+typedef enum
+{
+  SIGNAL_NAVIGATE = 1,
+  N_SIGNALS,
+} PolyhymniaArtistsPageSignal;
+
 struct _PolyhymniaArtistsPage
 {
   AdwNavigationPage  parent_instance;
@@ -39,7 +45,14 @@ G_DEFINE_FINAL_TYPE (PolyhymniaArtistsPage, polyhymnia_artists_page, ADW_TYPE_NA
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+static guint obj_signals[N_SIGNALS] = { 0, };
+
 /* Event handler declarations */
+static void
+polyhymnia_artists_page_artist_clicked (PolyhymniaArtistsPage *self,
+                                        guint                 position,
+                                        GtkListView           *user_data);
+
 static void
 polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
                                                   guint               position,
@@ -116,8 +129,11 @@ polyhymnia_artists_page_set_property (GObject      *object,
 static void
 polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
 {
+  GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
+  GType          type = G_TYPE_FROM_CLASS (gobject_class);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+  GType navigate_param_types[1] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_artists_page_dispose;
   gobject_class->get_property = polyhymnia_artists_page_get_property;
@@ -134,6 +150,13 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
                                      N_PROPERTIES,
                                      obj_properties);
 
+  obj_signals[SIGNAL_NAVIGATE] =
+     g_signal_newv ("navigate", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, navigate_param_types);
+
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-artists-page.ui");
 
@@ -149,6 +172,8 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_selection_model);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_artist_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_artists_page_artist_selection_changed);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -174,6 +199,20 @@ polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 }
 
 /* Event handler functions implementation */
+static void
+polyhymnia_artists_page_artist_clicked (PolyhymniaArtistsPage *self,
+                                        guint                 position,
+                                        GtkListView           *user_data)
+{
+  PolyhymniaArtist *artist;
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+  artist = g_list_model_get_item (G_LIST_MODEL (self->artist_model), position);
+  g_signal_emit (self, obj_signals[SIGNAL_NAVIGATE], 0,
+                 polyhymnia_artist_get_name (artist));
+}
+
 static void
 polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
                                                   guint                 position,

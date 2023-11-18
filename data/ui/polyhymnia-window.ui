@@ -133,7 +133,11 @@
                         <property name="child">
                           <object class="AdwNavigationView" id="artist_navigation_view">
                             <child>
-                              <object class="PolyhymniaArtistsPage" id="artists_page" />
+                              <object class="PolyhymniaArtistsPage" id="artists_page">
+                                <signal name="navigate"
+                                  handler="polyhymnia_window_navigate_artist"
+                                  swapped="true" />
+                              </object>
                             </child>
                           </object>
                         </property>
@@ -209,8 +213,14 @@
           <object class="GtkScrolledWindow">
             <property name="child">
               <object class="GtkGridView">
-                <property name="factory">album_factory</property>
-                <property name="model">album_selection_model</property>
+                <property name="factory">
+                  <object class="GtkBuilderListItemFactory">
+                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
+                  </object>
+                </property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="album_selection_model" />
+                </property>
                 <property name="single-click-activate">true</property>
                 <signal name="activate"
                   handler="polyhymnia_window_album_clicked"
@@ -230,8 +240,18 @@
           <object class="GtkScrolledWindow">
             <property name="child">
               <object class="GtkGridView">
-                <property name="factory">genre_factory</property>
-                <property name="model">genre_selection_model</property>
+                <property name="factory">
+                  <object class="GtkBuilderListItemFactory" id="genre_factory">
+                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+                  </object>
+                </property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="genre_selection_model">
+                    <property name="model">
+                      <object class="GtkStringList" id="genre_model" />
+                    </property>
+                  </object>
+                </property>
               </object>
             </property>
           </object>
@@ -268,22 +288,5 @@
 
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
-  </object>
-
-  <object class="GtkBuilderListItemFactory" id="album_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
-  </object>
-  <object class="GtkNoSelection" id="album_selection_model" />
-  <object class="GtkBuilderListItemFactory" id="artist_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-list-item.ui</property>
-  </object>
-  <object class="GtkBuilderListItemFactory" id="genre_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
-  </object>
-  <object class="GtkNoSelection" id="genre_selection_model">
-    <property name="model">
-      <object class="GtkStringList" id="genre_model">
-      </object>
-    </property>
   </object>
 </interface>

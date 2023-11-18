@@ -57,7 +57,6 @@ static void
 polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
                                                  GtkButton        *user_data);
 
-
 /* Private function declarations */
 static gchar *
 get_disc_title (GtkListHeader *header, PolyhymniaTrack *item);

@@ -10,7 +10,7 @@
 	  <object class="AdwAvatar">
 	    <property name="icon-name">music-artist-symbolic</property>
 	    <property name="show-initials">false</property>
-	    <property name="size">70</property>
+	    <property name="size">36</property>
 	    <property name="text"
 	    	bind-source="name_label"
                 bind-property="label"
@@ -24,9 +24,6 @@
 	        <lookup name="item">GtkListItem</lookup>
 	      </lookup>
 	    </binding>
-	    <style>
-	      <class name="heading"/>
-	    </style>
 	    <property name="ellipsize">end</property>
 	  </object>
 	</child>

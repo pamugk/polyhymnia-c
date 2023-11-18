@@ -4,6 +4,7 @@
 #include "polyhymnia-window.h"
 
 #include "polyhymnia-album-page.h"
+#include "polyhymnia-artist-page.h"
 #include "polyhymnia-artists-page.h"
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-player-bar.h"
@@ -26,6 +27,8 @@ struct _PolyhymniaWindow
   AdwBin                   *album_stack_page_content;
   AdwNavigationView        *album_navigation_view;
   AdwStatusPage            *albums_status_page;
+
+  AdwNavigationView        *artist_navigation_view;
 
   AdwBin                   *genre_stack_page_content;
   AdwNavigationView        *genre_navigation_view;
@@ -64,6 +67,11 @@ static void
 polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
                                         PolyhymniaMpdClient *user_data);
 
+static void
+polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
+                                   const gchar           *artist_name,
+                                   PolyhymniaArtistsPage *user_data);
+
 /* Class stuff */
 static void
 polyhymnia_window_dispose(GObject *gobject)
@@ -94,6 +102,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, album_stack_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, album_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artist_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genre_stack_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genre_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, genres_status_page);
@@ -111,6 +120,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
                                            polyhymnia_window_mpd_database_updated);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_client_initialized);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_navigate_artist);
 }
 
 static void
@@ -299,4 +310,20 @@ polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
                                database_updated_toast);
   polyhymnia_window_content_clear (self);
   polyhymnia_window_content_init (self);
+}
+
+static void
+polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
+                                   const gchar           *artist_name,
+                                   PolyhymniaArtistsPage *user_data)
+{
+  PolyhymniaArtistPage *artist_page;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  artist_page = g_object_new (POLYHYMNIA_TYPE_ARTIST_PAGE,
+                              "artist-name", artist_name,
+                              NULL);
+  adw_navigation_view_push (self->artist_navigation_view,
+                            ADW_NAVIGATION_PAGE (artist_page));
 }

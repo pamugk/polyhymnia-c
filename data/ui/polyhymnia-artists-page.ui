@@ -27,6 +27,9 @@
                       swapped="true" />
                   </object>
                 </property>
+                <signal name="activate"
+                  handler="polyhymnia_artists_page_artist_clicked"
+                  swapped="true" />
               </object>
             </property>
           </object>
