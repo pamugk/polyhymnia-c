@@ -13,6 +13,7 @@ polyhymnia_sources = [
   'polyhymnia-property-section.c',
   'polyhymnia-queue-pane.c',
   'polyhymnia-track.c',
+  'polyhymnia-tracks-page.c',
   'polyhymnia-window.c',
 ]
 

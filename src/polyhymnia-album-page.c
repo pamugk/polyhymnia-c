@@ -7,7 +7,6 @@
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
-
 /* Type metadata */
 typedef enum
 {
