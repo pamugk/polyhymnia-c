@@ -9,4 +9,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaAlbum, polyhymnia_album, POLYHYMNIA, ALBUM, GObject)
 
+const gchar *
+polyhymnia_album_get_title (const PolyhymniaAlbum *self);
+
 G_END_DECLS

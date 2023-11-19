@@ -10,6 +10,7 @@
         <condition>max-width: 550sp</condition>
         <setter object="header_bar" property="title-widget"/>
         <setter object="library_split_view" property="collapsed">true</setter>
+        <setter object="artists_page" property="collapsed-view">true</setter>
         <setter object="switcher_bar" property="reveal">true</setter>
       </object>
     </child>
@@ -130,7 +131,15 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="child">
-                          <object class="AdwBin" id="artist_stack_page_content" />
+                          <object class="AdwNavigationView" id="artist_navigation_view">
+                            <child>
+                              <object class="PolyhymniaArtistsPage" id="artists_page">
+                                <signal name="navigate"
+                                  handler="polyhymnia_window_navigate_artist"
+                                  swapped="true" />
+                              </object>
+                            </child>
+                          </object>
                         </property>
                         <property name="name">artists_page</property>
                         <property name="title" translatable="yes">Artists</property>
@@ -148,7 +157,11 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="child">
-                          <object class="AdwBin" id="track_stack_page_content" />
+                          <object class="AdwNavigationView">
+                            <child>
+                              <object class="PolyhymniaTracksPage" />
+                            </child>
+                          </object>
                         </property>
                         <property name="name">songs_page</property>
                         <property name="title" translatable="yes">Songs</property>
@@ -200,30 +213,23 @@
           <object class="GtkScrolledWindow">
             <property name="child">
               <object class="GtkGridView">
-                <property name="factory">album_factory</property>
-                <property name="model">album_selection_model</property>
+                <property name="factory">
+                  <object class="GtkBuilderListItemFactory">
+                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
+                  </object>
+                </property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="album_selection_model" />
+                </property>
+                <property name="single-click-activate">true</property>
+                <signal name="activate"
+                  handler="polyhymnia_window_album_clicked"
+                  swapped="true" />
               </object>
             </property>
           </object>
         </property>
         <property name="title" translatable="yes">Albums</property>
-      </object>
-    </child>
-  </object>
-  <object class="AdwNavigationView" id="artist_navigation_view">
-    <child>
-      <object class="AdwNavigationPage">
-        <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkGridView">
-                <property name="factory">artist_factory</property>
-                <property name="model">artist_selection_model</property>
-              </object>
-            </property>
-          </object>
-        </property>
-        <property name="title" translatable="yes">Artists</property>
       </object>
     </child>
   </object>
@@ -234,8 +240,18 @@
           <object class="GtkScrolledWindow">
             <property name="child">
               <object class="GtkGridView">
-                <property name="factory">genre_factory</property>
-                <property name="model">genre_selection_model</property>
+                <property name="factory">
+                  <object class="GtkBuilderListItemFactory" id="genre_factory">
+                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+                  </object>
+                </property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="genre_selection_model">
+                    <property name="model">
+                      <object class="GtkStringList" id="genre_model" />
+                    </property>
+                  </object>
+                </property>
               </object>
             </property>
           </object>
@@ -244,54 +260,9 @@
       </object>
     </child>
   </object>
-  <object class="AdwNavigationView" id="track_navigation_view">
-    <child>
-      <object class="AdwNavigationPage">
-        <property name="child">
-          <object class="AdwToolbarView" id="track_toolbar_view">
-            <child type="top">
-              <object class="GtkActionBar">
-                <child type="end">
-	          <object class="GtkButton">
-                    <property name="icon-name">plus-symbolic</property>
-                    <signal name="clicked"
-                      handler="polyhymnia_window_add_tracks_to_queue_button_clicked"
-                      swapped="true" />
-	          </object>
-                </child>
-                <child type="end">
-	          <object class="GtkButton">
-                    <property name="icon-name">play-large-symbolic</property>
-                    <signal name="clicked"
-                      handler="polyhymnia_window_play_tracks_button_clicked"
-                      swapped="true" />
-	          </object>
-                </child>
-              </object>
-            </child>
-            <property name="content">
-              <object class="GtkScrolledWindow">
-                <property name="child">
-                  <object class="GtkListView">
-                    <property name="factory">track_factory</property>
-                    <property name="model">track_selection_model</property>
-                    <property name="show-separators">true</property>
-                  </object>
-                </property>
-              </object>
-            </property>
-            <property name="reveal-top-bars">false</property>
-          </object>
-        </property>
-        <property name="title" translatable="yes">Songs</property>
-      </object>
-    </child>
-  </object>
 
   <object class="AdwStatusPage" id="albums_status_page" />
-  <object class="AdwStatusPage" id="artists_status_page" />
   <object class="AdwStatusPage" id="genres_status_page" />
-  <object class="AdwStatusPage" id="tracks_status_page" />
 
   <object class="AdwStatusPage" id="no_mpd_connection_page">
     <property name="description" translatable="yes">Check your MPD setup and try again</property>
@@ -317,33 +288,5 @@
 
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
-  </object>
-
-  <object class="GtkBuilderListItemFactory" id="album_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
-  </object>
-  <object class="GtkNoSelection" id="album_selection_model">
-  </object>
-  <object class="GtkBuilderListItemFactory" id="artist_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-artist-grid-item.ui</property>
-  </object>
-  <object class="GtkNoSelection" id="artist_selection_model">
-  </object>
-  <object class="GtkBuilderListItemFactory" id="genre_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
-  </object>
-  <object class="GtkNoSelection" id="genre_selection_model">
-    <property name="model">
-      <object class="GtkStringList" id="genre_model">
-      </object>
-    </property>
-  </object>
-  <object class="GtkBuilderListItemFactory" id="track_factory">
-    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
-  </object>
-  <object class="GtkMultiSelection" id="track_selection_model">
-    <signal name="selection-changed"
-      handler="polyhymnia_window_track_selection_changed"
-      swapped="true" />
   </object>
 </interface>

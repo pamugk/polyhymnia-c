@@ -126,3 +126,9 @@ static void
 polyhymnia_album_init (PolyhymniaAlbum *self)
 {
 }
+
+const gchar *
+polyhymnia_album_get_title (const PolyhymniaAlbum *self)
+{
+  return self->title;
+}

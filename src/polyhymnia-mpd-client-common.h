@@ -19,6 +19,6 @@ typedef enum
 GQuark polyhymnia_mpd_client_error_quark(void);
 
 gboolean
-polyhymnia_mpd_client_is_initialized (const PolyhymniaMpdClient *self);
+polyhymnia_mpd_client_is_initialized (PolyhymniaMpdClient *self);
 
 G_END_DECLS

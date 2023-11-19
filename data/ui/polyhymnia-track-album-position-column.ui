@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkLabel">
+        <binding name="label">
+          <lookup name="album-position" type="PolyhymniaTrack">
+            <lookup name="item">GtkListItem</lookup>
+          </lookup>
+	</binding>
+        <property name="width-chars">3</property>
+        <property name="xalign">1</property>
+        <property name="yalign">0.5</property>
+        <style>
+          <class name="numeric"/>
+        </style>
+      </object>
+    </property>
+  </template>
+</interface>

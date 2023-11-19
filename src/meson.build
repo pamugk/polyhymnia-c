@@ -1,6 +1,9 @@
 polyhymnia_sources = [
   'main.c',
   'polyhymnia-album.c',
+  'polyhymnia-album-page.c',
+  'polyhymnia-artist-page.c',
+  'polyhymnia-artists-page.c',
   'polyhymnia-artist.c',
   'polyhymnia-application.c',
   'polyhymnia-format-utils.c',
@@ -8,8 +11,10 @@ polyhymnia_sources = [
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',
   'polyhymnia-preferences-window.c',
+  'polyhymnia-property-section.c',
   'polyhymnia-queue-pane.c',
   'polyhymnia-track.c',
+  'polyhymnia-tracks-page.c',
   'polyhymnia-window.c',
 ]
 
@@ -20,7 +25,7 @@ polyhymnia_enum_headers = [
 enums = gnome.mkenums_simple('polyhymnia-enums', sources : polyhymnia_enum_headers)
 
 polyhymnia_deps = [
-  dependency('gtk4'),
+  dependency('gtk4', version: '>= 4.12'),
   dependency('libadwaita-1', version: '>= 1.4'),
   dependency('libmpdclient', version: '>= 2.20'),
 ]

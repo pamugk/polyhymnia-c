@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">horizontal</property>
+        <property name="spacing">20</property>
+        <child>
+          <object class="GtkImage" id="album_cover_image">
+            <property name="icon-name">image-missing-symbolic</property>
+            <property name="pixel-size">50</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="track_label">
+	    <binding name="label">
+	      <lookup name="title" type="PolyhymniaTrack">
+	        <lookup name="item">GtkListItem</lookup>
+	      </lookup>
+	    </binding>
+            <property name="ellipsize">end</property>
+            <property name="xalign">0</property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface>

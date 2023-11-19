@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="GtkListHeader">
+    <property name="child">
+      <object class="GtkLabel">
+        <binding name="label">
+          <closure type="gchararray" function="get_disc_title">
+            <lookup name="item">GtkListHeader</lookup>
+          </closure>
+        </binding>
+        <property name="xalign">0</property>
+      </object>
+    </property>
+  </template>
+</interface>
