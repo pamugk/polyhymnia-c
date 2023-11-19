@@ -19,12 +19,15 @@ struct _PolyhymniaArtistPage
   AdwNavigationPage  parent_instance;
 
   /* Template widgets */
-  AdwToolbarView            *root_toolbar_view;
-  GtkScrolledWindow         *content;
-  AdwStatusPage             *status_page;
+  AdwToolbarView      *root_toolbar_view;
+  GtkScrolledWindow   *content;
+  GtkColumnView       *tracks_column_view;
+  AdwStatusPage       *status_page;
 
   /* Template objects */
-  PolyhymniaMpdClient       *mpd_client;
+  PolyhymniaMpdClient *mpd_client;
+  GListStore          *tracks_model;
+  GtkNoSelection      *tracks_selection_model;
 
   /* Instance properties */
   gchar *artist_name;
@@ -147,9 +150,11 @@ polyhymnia_artist_page_class_init (PolyhymniaArtistPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_column_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, mpd_client);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_selection_model);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_artist_page_add_artist_to_queue_button_clicked);
@@ -164,7 +169,12 @@ polyhymnia_artist_page_class_init (PolyhymniaArtistPageClass *klass)
 static void
 polyhymnia_artist_page_init (PolyhymniaArtistPage *self)
 {
+  self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
+
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  gtk_no_selection_set_model (self->tracks_selection_model,
+                              G_LIST_MODEL (self->tracks_model));
 }
 
 /* Event handler implementations */
@@ -181,6 +191,7 @@ polyhymnia_artist_page_mpd_client_initialized (PolyhymniaArtistPage *self,
   }
   else
   {
+    g_list_store_remove_all (self->tracks_model);
   }
 }
 
@@ -235,4 +246,40 @@ static void
 polyhymnia_artist_page_fill (PolyhymniaArtistPage *self)
 {
   GError    *error = NULL;
+  GPtrArray *tracks;
+
+  tracks = polyhymnia_mpd_client_get_artist_discography (self->mpd_client,
+                                                         self->artist_name,
+                                                         &error);
+  if (error != NULL)
+  {
+    g_list_store_remove_all (self->tracks_model);
+    g_object_set (G_OBJECT (self->status_page),
+                  "description", _("Failed to get an artist"),
+                  NULL);
+    gtk_scrolled_window_set_child (self->content,
+                                    GTK_WIDGET (self->status_page));
+    g_warning("Failed to find an album: %s", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else if (tracks->len == 0)
+  {
+    g_ptr_array_free (tracks, TRUE);
+    g_list_store_remove_all (self->tracks_model);
+    g_object_set (G_OBJECT (self->status_page),
+                  "description", _("Artist not found"),
+                  NULL);
+    gtk_scrolled_window_set_child (self->content,
+                                    GTK_WIDGET (self->status_page));
+  }
+  else
+  {
+    g_list_store_splice (self->tracks_model, 0,
+                          g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
+                          tracks->pdata, tracks->len);
+    g_ptr_array_free (tracks, TRUE);
+    gtk_scrolled_window_set_child (self->content,
+                                   GTK_WIDGET (self->tracks_column_view));
+  }
 }

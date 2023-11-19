@@ -178,9 +178,9 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
 static void
 polyhymnia_album_page_init (PolyhymniaAlbumPage *self)
 {
+  self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
   gtk_no_selection_set_model (self->tracks_selection_model,
                               G_LIST_MODEL (self->tracks_model));
 }

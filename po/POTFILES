@@ -10,6 +10,7 @@ data/ui/polyhymnia-tracks-page.ui
 data/ui/polyhymnia-window.ui
 src/main.c
 src/polyhymnia-album-page.c
+src/polyhymnia-artist-page.c
 src/polyhymnia-artists-page.c
 src/polyhymnia-queue-pane.c
 src/polyhymnia-tracks-page.c
