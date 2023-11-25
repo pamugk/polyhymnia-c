@@ -39,6 +39,7 @@ struct _PolyhymniaArtistsPage
   GtkSingleSelection     *artist_selection_model;
   GListStore             *artist_tracks_model;
   GtkNoSelection         *artist_tracks_selection_model;
+  GtkSortListModel       *artist_tracks_sort_model;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaArtistsPage, polyhymnia_artists_page, ADW_TYPE_NAVIGATION_PAGE)
@@ -171,6 +172,7 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_selection_model);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_sort_model);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_artists_page_artist_clicked);
@@ -192,8 +194,8 @@ polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 
   gtk_single_selection_set_model (self->artist_selection_model,
                                   G_LIST_MODEL (self->artist_model));
-  gtk_no_selection_set_model (self->artist_tracks_selection_model,
-                              G_LIST_MODEL (self->artist_tracks_model));
+  gtk_sort_list_model_set_model (self->artist_tracks_sort_model,
+                                 G_LIST_MODEL (self->artist_tracks_model));
 
   polyhymnia_artists_page_mpd_client_initialized (self, NULL, self->mpd_client);
 }
@@ -370,3 +372,4 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                                    GTK_WIDGET (self->artists_split_view));
   }
 }
+

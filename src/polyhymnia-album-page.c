@@ -30,6 +30,7 @@ struct _PolyhymniaAlbumPage
   GtkBuilderListItemFactory *disc_header_factory;
   GListStore                *tracks_model;
   GtkNoSelection            *tracks_selection_model;
+  GtkSortListModel          *tracks_sort_model;
 
   /* Instance properties */
   gchar *album_title;
@@ -161,9 +162,12 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, disc_header_factory);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_selection_model);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_sort_model);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            get_disc_title);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_track_get_disc);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_page_mpd_database_updated);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -181,8 +185,8 @@ polyhymnia_album_page_init (PolyhymniaAlbumPage *self)
   self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  gtk_no_selection_set_model (self->tracks_selection_model,
-                              G_LIST_MODEL (self->tracks_model));
+  gtk_sort_list_model_set_model (self->tracks_sort_model,
+                                 G_LIST_MODEL (self->tracks_model));
 }
 
 /* Event handler implementations */

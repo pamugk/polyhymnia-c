@@ -12,8 +12,11 @@ typedef enum
   PROP_DISC,
   PROP_ALBUM_POSITION,
   PROP_ALBUM,
+  PROP_ALBUM_SORT,
   PROP_ALBUM_ARTIST,
   PROP_ARTIST,
+  PROP_DATE,
+  PROP_ORIGINAL_DATE,
   PROP_DURATION,
   PROP_DURATION_READABLE,
   N_PROPERTIES,
@@ -31,8 +34,11 @@ struct _PolyhymniaTrack
   guint disc;
   gchar *album_position;
   gchar *album;
+  gchar *album_sort;
   gchar *album_artist;
   gchar *artist;
+  gchar *date;
+  gchar *original_date;
   guint duration;
   gchar *duration_readable;
 };
@@ -51,8 +57,11 @@ polyhymnia_track_finalize (GObject *gobject)
   g_free (self->title);
   g_free (self->album_position);
   g_free (self->album);
+  g_free (self->album_sort);
   g_free (self->album_artist);
   g_free (self->artist);
+  g_free (self->date);
+  g_free (self->original_date);
   g_free (self->duration_readable);
 
   G_OBJECT_CLASS (polyhymnia_track_parent_class)->finalize (gobject);
@@ -89,11 +98,20 @@ polyhymnia_track_get_property (GObject    *object,
     case PROP_ALBUM:
       g_value_set_string (value, self->album);
       break;
+    case PROP_ALBUM_SORT:
+      g_value_set_string (value, self->album_sort);
+      break;
     case PROP_ALBUM_ARTIST:
       g_value_set_string (value, self->album_artist);
       break;
     case PROP_ARTIST:
       g_value_set_string (value, self->artist);
+      break;
+    case PROP_DATE:
+      g_value_set_string (value, self->date);
+      break;
+    case PROP_ORIGINAL_DATE:
+      g_value_set_string (value, self->original_date);
       break;
     case PROP_DURATION:
       g_value_set_uint (value, self->duration);
@@ -139,11 +157,20 @@ polyhymnia_track_set_property (GObject      *object,
     case PROP_ALBUM:
       g_set_str (&(self->album), g_value_get_string (value));
       break;
+    case PROP_ALBUM_SORT:
+      g_set_str (&(self->album_sort), g_value_get_string (value));
+      break;
     case PROP_ALBUM_ARTIST:
       g_set_str (&(self->album_artist), g_value_get_string (value));
       break;
     case PROP_ARTIST:
       g_set_str (&(self->artist), g_value_get_string (value));
+      break;
+    case PROP_DATE:
+      g_set_str (&(self->date), g_value_get_string (value));
+      break;
+    case PROP_ORIGINAL_DATE:
+      g_set_str (&(self->original_date), g_value_get_string (value));
       break;
     case PROP_DURATION:
       g_free (self->duration_readable);
@@ -218,6 +245,12 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
                           "Title of source album",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_ALBUM_SORT] =
+    g_param_spec_string ("album-sort",
+                          "Album (sort)",
+                          "Title of source album, suitable for sort",
+                          NULL,
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUM_ARTIST] =
     g_param_spec_string ("album-artist",
                           "Album artist",
@@ -228,6 +261,18 @@ polyhymnia_track_class_init (PolyhymniaTrackClass *klass)
     g_param_spec_string ("artist",
                           "Artist",
                           "Name of an artist performing track",
+                          NULL,
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_DATE] =
+    g_param_spec_string ("date",
+                          "Date",
+                          "Date of track release",
+                          NULL,
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_ORIGINAL_DATE] =
+    g_param_spec_string ("original-date",
+                          "Original date",
+                          "Date of original track version release",
                           NULL,
                           G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_DURATION] =
