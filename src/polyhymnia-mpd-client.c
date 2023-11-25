@@ -867,7 +867,7 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
   }
   if (!mpd_search_add_tag_constraint (self->main_mpd_connection,
                                       MPD_OPERATOR_DEFAULT,
-                                      MPD_TAG_ARTIST,
+                                      MPD_TAG_ALBUM_ARTIST,
                                       artist))
   {
     mpd_search_cancel (self->main_mpd_connection);
@@ -909,12 +909,27 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
     if (title != NULL && !g_str_equal (title, ""))
     {
       const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const gchar *album_sort = mpd_song_get_tag (track, MPD_TAG_ALBUM_SORT, 0);
       const gchar *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
       const gchar *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
       const gchar *track_artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const gchar *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
+            gchar *date_parsed = NULL;
       const gchar *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
+      const gchar *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
       guint64 disc_number = 0;
       GObject *track_object;
+
+      if (date != NULL)
+      {
+        GDateTime *release_date = g_date_time_new_from_iso8601 (date, NULL);
+        if (release_date != NULL)
+        {
+          gint year = g_date_time_get_year (release_date);
+          date_parsed = g_strdup_printf ("%d", year);
+          date = date_parsed;
+        }
+      }
 
       if (disc != NULL)
       {
@@ -925,13 +940,20 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
                                    "uri", mpd_song_get_uri (track),
                                    "title", title,
                                    "album", album,
+                                   "album-sort", album_sort,
                                    "disc", (guint) disc_number,
                                    "album-position", album_position,
                                    "album-artist", album_artist,
-                                   "artist", track_artist,
+                                   "artist",
+                                   g_strcmp0 (album_artist, track_artist) == 0
+                                   ? NULL : track_artist,
+                                   "date", date,
+                                   "original-date", original_date,
                                    "duration", mpd_song_get_duration (track),
                                    NULL);
       g_ptr_array_add(results, track_object);
+
+      g_free (date_parsed);
     }
     mpd_song_free(track);
   }
