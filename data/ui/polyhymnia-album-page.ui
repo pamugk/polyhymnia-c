@@ -79,7 +79,20 @@
       </object>
     </child>
     <property name="model">
-      <object class="GtkNoSelection" id="tracks_selection_model"/>
+      <object class="GtkNoSelection" id="tracks_selection_model">
+        <property name="model">
+          <object class="GtkSortListModel" id="tracks_sort_model">
+            <property name="section-sorter">
+              <object class="GtkNumericSorter">
+                <property name="expression">
+              	  <closure type="guint64" function="polyhymnia_track_get_disc" />
+              	</property>
+              	<property name="sort-order">ascending</property>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
     </property>
     <property name="show-column-separators">false</property>
     <property name="show-row-separators">true</property>
