@@ -91,6 +91,7 @@ polyhymnia_player_bar_dispose(GObject *gobject)
 {
   PolyhymniaPlayerBar *self = POLYHYMNIA_PLAYER_BAR (gobject);
 
+  g_clear_object (&(self->current_track_album_cover));
   gtk_widget_unparent (GTK_WIDGET (self->root_action_bar));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PLAYER_BAR);
 

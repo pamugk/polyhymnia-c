@@ -302,9 +302,21 @@ polyhymnia_track_init (PolyhymniaTrack *self)
 
 /* Instance methods */
 const gchar *
+polyhymnia_track_get_album_artist (const PolyhymniaTrack *self)
+{
+  return self->album_artist;
+}
+
+const gchar *
 polyhymnia_track_get_artist (const PolyhymniaTrack *self)
 {
   return self->artist;
+}
+
+const gchar *
+polyhymnia_track_get_date (const PolyhymniaTrack *self)
+{
+  return self->date;
 }
 
 guint
