@@ -4,6 +4,7 @@
 #include "polyhymnia-artists-page.h"
 
 #include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-images.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -23,6 +24,9 @@ typedef enum
 struct _PolyhymniaArtistsPage
 {
   AdwNavigationPage  parent_instance;
+
+  /* Stored UI state */
+  GHashTable             *album_covers;
 
   /* Template widgets */
   AdwNavigationSplitView *artists_split_view;
@@ -73,6 +77,10 @@ polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage *self,
 static void
 polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self);
 
+static void
+polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
+                                     GPtrArray             *tracks);
+
 /* Class stuff */
 static void
 polyhymnia_artists_page_dispose(GObject *gobject)
@@ -81,6 +89,7 @@ polyhymnia_artists_page_dispose(GObject *gobject)
 
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ARTISTS_PAGE);
+  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
 
   G_OBJECT_CLASS (polyhymnia_artists_page_parent_class)->dispose (gobject);
 }
@@ -188,6 +197,8 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
 static void
 polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 {
+  self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                              g_free, g_object_unref);
   self->artist_model = g_list_store_new (POLYHYMNIA_TYPE_ARTIST);
   self->artist_tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
 
@@ -228,6 +239,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
 
   selected_artists = gtk_selection_model_get_selection (user_data);
 
+  g_hash_table_remove_all (self->album_covers);
   if (gtk_bitset_get_size (selected_artists) == 0)
   {
     g_object_set (G_OBJECT (self->artist_discography_status_page),
@@ -290,6 +302,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
                             g_list_model_get_n_items (G_LIST_MODEL (self->artist_tracks_model)),
                             selected_artist_tracks->pdata,
                             selected_artist_tracks->len);
+      polyhymnia_artists_page_fill_covers (self, selected_artist_tracks);
       gtk_scrolled_window_set_child (self->artist_discography_scrolled_window,
                                      GTK_WIDGET(self->artist_discography_column_view));
       gtk_column_view_scroll_to (self->artist_discography_column_view, 0, NULL,
@@ -315,6 +328,7 @@ polyhymnia_artists_page_mpd_client_initialized (PolyhymniaArtistsPage *self,
   }
   else
   {
+    g_hash_table_remove_all (self->album_covers);
     g_list_store_remove_all (self->artist_tracks_model);
     g_list_store_remove_all (self->artist_model);
   }
@@ -371,6 +385,49 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
     g_ptr_array_free (artists, TRUE);
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
                                    GTK_WIDGET (self->artists_split_view));
+  }
+}
+
+static void
+polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
+                                     GPtrArray             *tracks)
+{
+  GError *error = NULL;
+  for (int i = 0; i < tracks->len; i++)
+  {
+    const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+    const gchar *album = polyhymnia_track_get_album (track);
+    if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+    {
+      GBytes *cover;
+      cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                          polyhymnia_track_get_uri (track),
+                                                          &error);
+      if (error != NULL)
+      {
+        g_warning ("Failed to get album cover: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+      }
+      else if (cover != NULL)
+      {
+        GdkTexture *album_cover;
+        album_cover = gdk_texture_new_from_bytes (cover, &error);
+        if (error != NULL)
+        {
+          g_warning ("Failed to convert album cover: %s\n", error->message);
+          g_error_free (error);
+          error = NULL;
+          g_bytes_unref (cover);
+        }
+        else
+        {
+          g_hash_table_insert (self->album_covers,
+                               g_strdup (album),
+                               album_cover);
+        }
+      }
+    }
   }
 }
 

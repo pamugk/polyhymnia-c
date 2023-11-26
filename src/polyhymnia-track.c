@@ -302,6 +302,12 @@ polyhymnia_track_init (PolyhymniaTrack *self)
 
 /* Instance methods */
 const gchar *
+polyhymnia_track_get_album (const PolyhymniaTrack *self)
+{
+  return self->album;
+}
+
+const gchar *
 polyhymnia_track_get_album_artist (const PolyhymniaTrack *self)
 {
   return self->album_artist;

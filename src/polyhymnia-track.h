@@ -10,6 +10,9 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (PolyhymniaTrack, polyhymnia_track, POLYHYMNIA, TRACK, GObject)
 
 const gchar *
+polyhymnia_track_get_album (const PolyhymniaTrack *self);
+
+const gchar *
 polyhymnia_track_get_album_artist (const PolyhymniaTrack *self);
 
 const gchar *

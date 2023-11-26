@@ -384,7 +384,9 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
     gchar *total_duration_translated;
     guint hours;
     guint minutes;
-    gchar *statistics = g_strdup_printf (g_dngettext(GETTEXT_PACKAGE, "%d song", "%d songs", tracks->len),
+    gchar *statistics = g_strdup_printf (g_dngettext(GETTEXT_PACKAGE,
+                                                     "%d song", "%d songs",
+                                                     tracks->len),
                                          tracks->len);
     gboolean multidisc_album = FALSE;
     for (guint i = 1; i < tracks->len; i++)
