@@ -212,7 +212,6 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
         g_warning ("Failed to convert current track cover: %s\n", error->message);
         g_error_free (error);
         error = NULL;
-        g_bytes_unref (cover);
         gtk_image_set_from_icon_name (self->current_track_cover_image,
                                       "image-missing-symbolic");
       }
@@ -221,6 +220,7 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
         gtk_image_set_from_paintable (self->current_track_cover_image,
                                       GDK_PAINTABLE (self->current_track_album_cover));
       }
+      g_bytes_unref (cover);
     }
 
     gtk_label_set_text (self->playback_total_label,
@@ -332,3 +332,4 @@ polyhymnia_player_bar_state_to_icon(PolyhymniaPlayerPlaybackStatus state)
     return "play-large-symbolic";
   }
 }
+

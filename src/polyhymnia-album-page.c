@@ -324,7 +324,6 @@ polyhymnia_album_page_fill_header (PolyhymniaAlbumPage *self,
       g_warning ("Failed to convert album cover: %s\n", error->message);
       g_error_free (error);
       error = NULL;
-      g_bytes_unref (cover);
       gtk_image_set_from_icon_name (self->cover_image,
                                     "cd-symbolic");
     }
@@ -333,6 +332,7 @@ polyhymnia_album_page_fill_header (PolyhymniaAlbumPage *self,
       gtk_image_set_from_paintable (self->cover_image,
                                     GDK_PAINTABLE (self->album_cover));
     }
+    g_bytes_unref (cover);
   }
   else
   {

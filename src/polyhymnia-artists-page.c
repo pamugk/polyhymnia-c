@@ -546,7 +546,6 @@ polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
           g_warning ("Failed to convert album cover: %s\n", error->message);
           g_error_free (error);
           error = NULL;
-          g_bytes_unref (cover);
         }
         else
         {
@@ -554,6 +553,7 @@ polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
                                g_strdup (album),
                                album_cover);
         }
+        g_bytes_unref (cover);
       }
     }
   }
