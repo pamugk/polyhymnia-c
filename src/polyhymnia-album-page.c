@@ -33,6 +33,9 @@ struct _PolyhymniaAlbumPage
   GtkScrolledWindow         *tracks_content_scroll;
   GtkColumnView             *tracks_column_view;
 
+  GtkLabel                  *statistics_label;
+  GtkLabel                  *duration_label;
+
   AdwStatusPage             *tracks_status_page;
 
   /* Template objects */
@@ -175,6 +178,10 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_content_scroll);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_column_view);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, statistics_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, duration_label);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, disc_header_factory);
@@ -215,6 +222,7 @@ polyhymnia_album_page_mpd_client_initialized (PolyhymniaAlbumPage   *self,
 {
   g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
 
+  g_clear_object (&(self->album_cover));
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     polyhymnia_album_page_fill (self);
@@ -231,6 +239,7 @@ polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
 {
   g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
 
+  g_clear_object (&(self->album_cover));
   polyhymnia_album_page_fill (self);
 }
 
@@ -291,8 +300,8 @@ get_disc_title (GtkListHeader *header, PolyhymniaTrack *item)
 
 // TODO: take a bit less error-prone approach?
 static void
-polyhymnia_album_page_fill_info (PolyhymniaAlbumPage *self,
-                                 PolyhymniaTrack     *any_track)
+polyhymnia_album_page_fill_header (PolyhymniaAlbumPage *self,
+                                   PolyhymniaTrack     *any_track)
 {
   GError *error = NULL;
   GBytes *cover;
@@ -371,13 +380,34 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
   {
     PolyhymniaTrack *any_track = g_ptr_array_index (tracks, 0);
     guint last_seen_disc = polyhymnia_track_get_disc (any_track);
+    guint total_duration = polyhymnia_track_get_duration (any_track);
+    gchar *total_duration_translated;
+    guint hours;
+    guint minutes;
+    gchar *statistics = g_strdup_printf (g_dngettext(GETTEXT_PACKAGE, "%d song", "%d songs", tracks->len),
+                                         tracks->len);
     gboolean multidisc_album = FALSE;
     for (guint i = 1; i < tracks->len; i++)
     {
-      guint current_disc = polyhymnia_track_get_disc (g_ptr_array_index (tracks, i));
+      const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+      guint current_disc = polyhymnia_track_get_disc (track);
       multidisc_album = multidisc_album || last_seen_disc != current_disc;
       last_seen_disc = current_disc;
+      total_duration += polyhymnia_track_get_duration (track);
     }
+
+    minutes = (total_duration % 3600) / 60;
+    hours = total_duration / 3600;
+    if (hours > 0)
+    {
+      total_duration_translated = g_strdup_printf (_("%d h. %d min."),
+                                                   hours, minutes);
+    }
+    else
+    {
+      total_duration_translated = g_strdup_printf (_("%d min."), minutes);
+    }
+
     if (multidisc_album)
     {
       gtk_column_view_set_header_factory (self->tracks_column_view,
@@ -387,7 +417,13 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
     {
       gtk_column_view_set_header_factory (self->tracks_column_view, NULL);
     }
-    polyhymnia_album_page_fill_info (self, any_track);
+
+    polyhymnia_album_page_fill_header (self, any_track);
+
+    gtk_label_set_text (self->statistics_label, statistics);
+    gtk_label_set_text (self->duration_label, total_duration_translated);
+    g_free (total_duration_translated);
+    g_free (statistics);
 
     g_list_store_splice (self->tracks_model, 0,
                           g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),

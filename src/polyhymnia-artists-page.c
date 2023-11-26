@@ -167,6 +167,7 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_scrolled_window);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_column_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artists_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, mpd_client);
 
