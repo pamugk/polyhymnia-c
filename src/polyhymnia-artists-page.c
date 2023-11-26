@@ -314,8 +314,6 @@ polyhymnia_artists_page_album_header_teardown (PolyhymniaArtistsPage    *self,
                                                GtkSignalListItemFactory *user_data)
 {
   g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
-
-  gtk_list_header_set_child (object, NULL);
 }
 
 static void
@@ -327,7 +325,6 @@ polyhymnia_artists_page_album_header_unbind (PolyhymniaArtistsPage    *self,
   GtkWidget *album_cover;
   GtkWidget *album_label;
   GtkWidget *date_label;
-  PolyhymniaTrack *track;
 
   g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
 
@@ -558,4 +555,5 @@ polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
     }
   }
 }
+
 

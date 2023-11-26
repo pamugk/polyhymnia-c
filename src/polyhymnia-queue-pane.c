@@ -416,8 +416,6 @@ polyhymnia_queue_pane_track_teardown (PolyhymniaQueuePane      *self,
                                       GtkSignalListItemFactory *user_data)
 {
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
-
-  gtk_list_item_set_child (object, NULL);
 }
 
 static void
@@ -531,4 +529,3 @@ polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
     }
   }
 }
-
