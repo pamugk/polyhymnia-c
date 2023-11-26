@@ -6,6 +6,7 @@
 #include <libadwaita-1/adwaita.h>
 
 #include "polyhymnia-mpd-client-queue.h"
+#include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-track.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -14,6 +15,9 @@
 struct _PolyhymniaQueuePane
 {
   GtkWidget  parent_instance;
+
+  /* Stored UI state */
+  GHashTable             *album_covers;
 
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
@@ -67,10 +71,33 @@ polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
                                          guint                position,
                                          guint                n_items,
                                          GtkSelectionModel    *user_data);
+static void
+polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
+                                  GtkListItem              *object,
+                                  GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_queue_pane_track_setup (PolyhymniaQueuePane      *self,
+                                   GtkListItem              *object,
+                                   GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_queue_pane_track_teardown (PolyhymniaQueuePane      *self,
+                                      GtkListItem              *object,
+                                      GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_queue_pane_track_unbind (PolyhymniaQueuePane      *self,
+                                    GtkListItem              *object,
+                                    GtkSignalListItemFactory *user_data);
 
 /* Private methods*/
 static void
 polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self);
+
+static void
+polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
+                                   GPtrArray             *tracks);
 
 /* Class stuff */
 static void
@@ -80,6 +107,7 @@ polyhymnia_queue_pane_dispose(GObject *gobject)
 
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_QUEUE_PANE);
+  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
 
   G_OBJECT_CLASS (polyhymnia_queue_pane_parent_class)->dispose (gobject);
 }
@@ -120,6 +148,14 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                            polyhymnia_queue_pane_remove_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_selection_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_track_bind);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_track_setup);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_track_teardown);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_track_unbind);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_mpd_client_initialized);
@@ -130,9 +166,12 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
 static void
 polyhymnia_queue_pane_init (PolyhymniaQueuePane *self)
 {
+  self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                              g_free, g_object_unref);
+  self->queue_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
+
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  self->queue_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
   gtk_multi_selection_set_model (self->queue_selection_model,
                                  G_LIST_MODEL (self->queue_model));
 
@@ -178,6 +217,7 @@ polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
   }
   else
   {
+    g_hash_table_remove_all (self->album_covers);
     g_list_store_remove_all (self->queue_model);
   }
 }
@@ -188,7 +228,6 @@ polyhymnia_queue_pane_mpd_queue_modified (PolyhymniaQueuePane *self,
 {
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
 
-  g_list_store_remove_all (self->queue_model);
   polyhymnia_queue_pane_fill (self);
 }
 
@@ -282,6 +321,128 @@ polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
   gtk_bitset_unref (selection);
 }
 
+static void
+polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
+                                  GtkListItem              *object,
+                                  GtkSignalListItemFactory *user_data)
+{
+  const gchar *album;
+  GtkGrid  *track_root;
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  track_root = GTK_GRID (gtk_list_item_get_child (object));
+  track = gtk_list_item_get_item (object);
+
+  album = polyhymnia_track_get_album (track);
+  if (album != NULL && g_hash_table_contains (self->album_covers, album))
+  {
+    gtk_image_set_from_paintable (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
+                                  g_hash_table_lookup (self->album_covers, album));
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
+                                  "image-missing-symbolic");
+  }
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 1, 0)),
+                      polyhymnia_track_get_title (track));
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 1, 1)),
+                      polyhymnia_track_get_artist (track));
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 2, 1)),
+                      polyhymnia_track_get_album (track));
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 3, 0)),
+                      polyhymnia_track_get_duration_readable (track));
+}
+
+static void
+polyhymnia_queue_pane_track_setup (PolyhymniaQueuePane      *self,
+                                   GtkListItem              *object,
+                                   GtkSignalListItemFactory *user_data)
+{
+  GtkGrid  *track_root;
+  GtkImage *album_cover;
+  GtkLabel *track_label;
+  GtkLabel *artist_label;
+  GtkLabel *album_label;
+  GtkLabel *duration_label;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  track_root = GTK_GRID (gtk_grid_new ());
+  gtk_grid_set_column_spacing (track_root, 4);
+  gtk_grid_set_row_spacing (track_root, 2);
+
+  album_cover = GTK_IMAGE (gtk_image_new ());
+  gtk_image_set_pixel_size (album_cover, 50);
+  gtk_widget_set_valign (GTK_WIDGET (album_cover), GTK_ALIGN_CENTER);
+
+  track_label = GTK_LABEL (gtk_label_new (NULL));
+  gtk_label_set_ellipsize (track_label, PANGO_ELLIPSIZE_END);
+  gtk_widget_add_css_class (GTK_WIDGET (track_label), "heading");
+  gtk_label_set_xalign (track_label, 0);
+  gtk_widget_set_hexpand (GTK_WIDGET (track_label), TRUE);
+
+  artist_label = GTK_LABEL (gtk_label_new (NULL));
+  gtk_label_set_ellipsize (artist_label, PANGO_ELLIPSIZE_END);
+  gtk_widget_add_css_class (GTK_WIDGET (artist_label), "caption");
+  gtk_label_set_xalign (artist_label, 0);
+
+  album_label = GTK_LABEL (gtk_label_new (NULL));
+  gtk_label_set_ellipsize (album_label, PANGO_ELLIPSIZE_END);
+  gtk_widget_add_css_class (GTK_WIDGET (album_label), "caption");
+  gtk_label_set_xalign (album_label, 0);
+  gtk_widget_set_hexpand (GTK_WIDGET (album_label), TRUE);
+
+  duration_label = GTK_LABEL (gtk_label_new (NULL));
+  gtk_label_set_ellipsize (duration_label, PANGO_ELLIPSIZE_END);
+  gtk_widget_add_css_class (GTK_WIDGET (duration_label), "numeric");
+  gtk_label_set_xalign (duration_label, 1);
+  gtk_label_set_yalign (duration_label, 0.5);
+
+  gtk_grid_attach (track_root, GTK_WIDGET (album_cover), 0, 0, 1, 2);
+  gtk_grid_attach (track_root, GTK_WIDGET (track_label), 1, 0, 2, 1);
+  gtk_grid_attach (track_root, GTK_WIDGET (artist_label), 1, 1, 1, 1);
+  gtk_grid_attach (track_root, GTK_WIDGET (album_label), 2, 1, 1, 1);
+  gtk_grid_attach (track_root, GTK_WIDGET (duration_label), 3, 0, 1, 2);
+
+  gtk_list_item_set_child (object, GTK_WIDGET (track_root));
+}
+
+static void
+polyhymnia_queue_pane_track_teardown (PolyhymniaQueuePane      *self,
+                                      GtkListItem              *object,
+                                      GtkSignalListItemFactory *user_data)
+{
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  gtk_list_item_set_child (object, NULL);
+}
+
+static void
+polyhymnia_queue_pane_track_unbind (PolyhymniaQueuePane      *self,
+                                    GtkListItem              *object,
+                                    GtkSignalListItemFactory *user_data)
+{
+  GtkGrid  *track_root;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  track_root = GTK_GRID (gtk_list_item_get_child (object));
+
+  gtk_image_set_from_paintable (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
+                                NULL);
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 1, 0)),
+                      NULL);
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 1, 1)),
+                      NULL);
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 2, 1)),
+                      NULL);
+  gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 3, 0)),
+                      NULL);
+}
+
 /* Private methods implementation */
 static void
 polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
@@ -289,6 +450,7 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
   GError *error = NULL;
   GPtrArray *queue = polyhymnia_mpd_client_get_queue (self->mpd_client,
                                                       &error);
+  g_hash_table_remove_all (self->album_covers);
   if (error != NULL)
   {
     g_object_set (G_OBJECT (self->queue_status_page),
@@ -315,15 +477,57 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
   }
   else
   {
-    for (int i = 0; i < queue->len; i++)
-    {
-      PolyhymniaTrack *queue_track = g_ptr_array_index(queue, i);
-      g_list_store_append (self->queue_model, queue_track);
-    }
+    polyhymnia_queue_pane_fill_covers (self, queue);
+    g_list_store_splice (self->queue_model, 0,
+                          g_list_model_get_n_items (G_LIST_MODEL (self->queue_model)),
+                          queue->pdata, queue->len);
     g_ptr_array_free (queue, TRUE);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_list_view));
     adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
     adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
+  }
+}
+
+static void
+polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
+                                   GPtrArray             *tracks)
+{
+  GError *error = NULL;
+  for (int i = 0; i < tracks->len; i++)
+  {
+    const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+    const gchar *album = polyhymnia_track_get_album (track);
+    if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+    {
+      GBytes *cover;
+      cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                          polyhymnia_track_get_uri (track),
+                                                          &error);
+      if (error != NULL)
+      {
+        g_warning ("Failed to get album cover: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+      }
+      else if (cover != NULL)
+      {
+        GdkTexture *album_cover;
+        album_cover = gdk_texture_new_from_bytes (cover, &error);
+        if (error != NULL)
+        {
+          g_warning ("Failed to convert album cover: %s\n", error->message);
+          g_error_free (error);
+          error = NULL;
+          g_bytes_unref (cover);
+        }
+        else
+        {
+          g_hash_table_insert (self->album_covers,
+                               g_strdup (album),
+                               album_cover);
+        }
+      }
+    }
   }
 }

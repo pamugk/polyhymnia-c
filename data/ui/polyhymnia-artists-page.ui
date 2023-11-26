@@ -95,18 +95,18 @@
     </child>
     <property name="header-factory">
       <object class="GtkSignalListItemFactory">
-      <signal name="setup"
-        handler="polyhymnia_artists_page_album_header_setup"
-        swapped="true" />
-      <signal name="bind"
-        handler="polyhymnia_artists_page_album_header_bind"
-        swapped="true" />
-      <signal name="unbind"
-        handler="polyhymnia_artists_page_album_header_unbind"
-        swapped="true" />
-      <signal name="teardown"
-        handler="polyhymnia_artists_page_album_header_teardown"
-        swapped="true" />
+        <signal name="setup"
+          handler="polyhymnia_artists_page_album_header_setup"
+          swapped="true" />
+        <signal name="bind"
+          handler="polyhymnia_artists_page_album_header_bind"
+          swapped="true" />
+        <signal name="unbind"
+          handler="polyhymnia_artists_page_album_header_unbind"
+          swapped="true" />
+        <signal name="teardown"
+          handler="polyhymnia_artists_page_album_header_teardown"
+          swapped="true" />
       </object>
     </property>
     <property name="model">
