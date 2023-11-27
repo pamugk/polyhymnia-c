@@ -801,9 +801,24 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
       const gchar *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
       const gchar *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
       const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const gchar *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
+            gchar *date_parsed = NULL;
       const gchar *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
+      const gchar *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
       guint64 disc_number = 0;
       GObject *track_object;
+
+      if (date != NULL)
+      {
+        GDateTime *release_date = g_date_time_new_from_iso8601 (date, NULL);
+        if (release_date != NULL)
+        {
+          gint year = g_date_time_get_year (release_date);
+          date_parsed = g_strdup_printf ("%d", year);
+          date = date_parsed;
+          g_date_time_unref (release_date);
+        }
+      }
 
       if (disc != NULL)
       {
@@ -819,9 +834,13 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
                                             "artist",
                                             g_strcmp0 (album_artist, artist) == 0
                                               ? NULL : artist,
+                                            "date", date,
+                                            "original-date", original_date,
                                             "duration", mpd_song_get_duration (track),
                                             NULL);
       g_ptr_array_add(results, track_object);
+
+      g_free (date_parsed);
     }
     mpd_song_free(track);
   }
@@ -928,6 +947,7 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
           gint year = g_date_time_get_year (release_date);
           date_parsed = g_strdup_printf ("%d", year);
           date = date_parsed;
+          g_date_time_unref (release_date);
         }
       }
 

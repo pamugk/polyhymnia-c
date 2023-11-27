@@ -4,6 +4,7 @@
 #include "polyhymnia-artists-page.h"
 
 #include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-images.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -23,6 +24,9 @@ typedef enum
 struct _PolyhymniaArtistsPage
 {
   AdwNavigationPage  parent_instance;
+
+  /* Stored UI state */
+  GHashTable             *album_covers;
 
   /* Template widgets */
   AdwNavigationSplitView *artists_split_view;
@@ -50,6 +54,26 @@ static guint obj_signals[N_SIGNALS] = { 0, };
 
 /* Event handler declarations */
 static void
+polyhymnia_artists_page_album_header_bind (PolyhymniaArtistsPage    *self,
+                                           GtkListHeader            *object,
+                                           GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_artists_page_album_header_setup (PolyhymniaArtistsPage    *self,
+                                            GtkListHeader            *object,
+                                            GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_artists_page_album_header_teardown (PolyhymniaArtistsPage    *self,
+                                               GtkListHeader            *object,
+                                               GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_artists_page_album_header_unbind (PolyhymniaArtistsPage    *self,
+                                             GtkListHeader            *object,
+                                             GtkSignalListItemFactory *user_data);
+
+static void
 polyhymnia_artists_page_artist_clicked (PolyhymniaArtistsPage *self,
                                         guint                 position,
                                         GtkListView           *user_data);
@@ -73,6 +97,10 @@ polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage *self,
 static void
 polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self);
 
+static void
+polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
+                                     GPtrArray             *tracks);
+
 /* Class stuff */
 static void
 polyhymnia_artists_page_dispose(GObject *gobject)
@@ -81,6 +109,7 @@ polyhymnia_artists_page_dispose(GObject *gobject)
 
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ARTISTS_PAGE);
+  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
 
   G_OBJECT_CLASS (polyhymnia_artists_page_parent_class)->dispose (gobject);
 }
@@ -167,6 +196,7 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_scrolled_window);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_column_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_discography_status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artists_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, mpd_client);
 
@@ -174,6 +204,14 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_sort_model);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_album_header_bind);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_album_header_setup);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_album_header_teardown);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_album_header_unbind);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_artists_page_artist_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -187,6 +225,8 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
 static void
 polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 {
+  self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                              g_free, g_object_unref);
   self->artist_model = g_list_store_new (POLYHYMNIA_TYPE_ARTIST);
   self->artist_tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
 
@@ -201,6 +241,103 @@ polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 }
 
 /* Event handler functions implementation */
+static void
+polyhymnia_artists_page_album_header_bind (PolyhymniaArtistsPage    *self,
+                                           GtkListHeader            *object,
+                                           GtkSignalListItemFactory *user_data)
+{
+  GtkWidget *album_header;
+  GtkWidget *album_cover;
+  GtkWidget *album_label;
+  GtkWidget *date_label;
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+  album_header = gtk_list_header_get_child (object);
+  track = gtk_list_header_get_item (object);
+
+  if (track != NULL)
+  {
+    const gchar *album = polyhymnia_track_get_album (track);
+    album_cover = gtk_widget_get_first_child (album_header);
+    album_label = gtk_widget_get_next_sibling (album_cover);
+    date_label = gtk_widget_get_next_sibling (album_label);
+
+    if (album != NULL && g_hash_table_contains (self->album_covers, album))
+    {
+      gtk_image_set_from_paintable (GTK_IMAGE (album_cover),
+                                    g_hash_table_lookup (self->album_covers, album));
+    }
+    else
+    {
+      gtk_image_set_from_icon_name (GTK_IMAGE (album_cover), "cd-symbolic");
+    }
+
+    gtk_label_set_text (GTK_LABEL (album_label), album);
+    gtk_label_set_text (GTK_LABEL (date_label),
+                        polyhymnia_track_get_date (track));
+  }
+}
+
+static void
+polyhymnia_artists_page_album_header_setup (PolyhymniaArtistsPage    *self,
+                                            GtkListHeader            *object,
+                                            GtkSignalListItemFactory *user_data)
+{
+  GtkBox    *album_header;
+  GtkImage  *album_cover;
+  GtkWidget *album_label;
+  GtkWidget *date_label;
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+  album_header = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 16));
+
+  album_cover = GTK_IMAGE (gtk_image_new ());
+  gtk_image_set_pixel_size (album_cover, 250);
+  album_label = gtk_label_new (NULL);
+  gtk_widget_set_valign (album_label, GTK_ALIGN_END);
+  date_label = gtk_label_new (NULL);
+  gtk_widget_set_valign (date_label, GTK_ALIGN_END);
+
+  gtk_box_append (album_header, GTK_WIDGET (album_cover));
+  gtk_box_append (album_header, album_label);
+  gtk_box_append (album_header, date_label);
+
+  gtk_list_header_set_child (object, GTK_WIDGET (album_header));
+}
+
+static void
+polyhymnia_artists_page_album_header_teardown (PolyhymniaArtistsPage    *self,
+                                               GtkListHeader            *object,
+                                               GtkSignalListItemFactory *user_data)
+{
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+}
+
+static void
+polyhymnia_artists_page_album_header_unbind (PolyhymniaArtistsPage    *self,
+                                             GtkListHeader            *object,
+                                             GtkSignalListItemFactory *user_data)
+{
+  GtkWidget *album_header;
+  GtkWidget *album_cover;
+  GtkWidget *album_label;
+  GtkWidget *date_label;
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+  album_header = gtk_list_header_get_child (object);
+  album_cover = gtk_widget_get_first_child (album_header);
+  album_label = gtk_widget_get_next_sibling (album_cover);
+  date_label = gtk_widget_get_next_sibling (album_label);
+
+  gtk_image_set_from_paintable (GTK_IMAGE (album_cover), NULL);
+  gtk_label_set_text (GTK_LABEL (album_label), NULL);
+  gtk_label_set_text (GTK_LABEL (date_label), NULL);
+}
+
 static void
 polyhymnia_artists_page_artist_clicked (PolyhymniaArtistsPage *self,
                                         guint                 position,
@@ -227,6 +364,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
 
   selected_artists = gtk_selection_model_get_selection (user_data);
 
+  g_hash_table_remove_all (self->album_covers);
   if (gtk_bitset_get_size (selected_artists) == 0)
   {
     g_object_set (G_OBJECT (self->artist_discography_status_page),
@@ -285,6 +423,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
     }
     else
     {
+      polyhymnia_artists_page_fill_covers (self, selected_artist_tracks);
       g_list_store_splice (self->artist_tracks_model, 0,
                             g_list_model_get_n_items (G_LIST_MODEL (self->artist_tracks_model)),
                             selected_artist_tracks->pdata,
@@ -314,6 +453,7 @@ polyhymnia_artists_page_mpd_client_initialized (PolyhymniaArtistsPage *self,
   }
   else
   {
+    g_hash_table_remove_all (self->album_covers);
     g_list_store_remove_all (self->artist_tracks_model);
     g_list_store_remove_all (self->artist_model);
   }
@@ -372,4 +512,48 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                                    GTK_WIDGET (self->artists_split_view));
   }
 }
+
+static void
+polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
+                                     GPtrArray             *tracks)
+{
+  GError *error = NULL;
+  for (int i = 0; i < tracks->len; i++)
+  {
+    const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+    const gchar *album = polyhymnia_track_get_album (track);
+    if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+    {
+      GBytes *cover;
+      cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                          polyhymnia_track_get_uri (track),
+                                                          &error);
+      if (error != NULL)
+      {
+        g_warning ("Failed to get album cover: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+      }
+      else if (cover != NULL)
+      {
+        GdkTexture *album_cover;
+        album_cover = gdk_texture_new_from_bytes (cover, &error);
+        if (error != NULL)
+        {
+          g_warning ("Failed to convert album cover: %s\n", error->message);
+          g_error_free (error);
+          error = NULL;
+        }
+        else
+        {
+          g_hash_table_insert (self->album_covers,
+                               g_strdup (album),
+                               album_cover);
+        }
+        g_bytes_unref (cover);
+      }
+    }
+  }
+}
+
 

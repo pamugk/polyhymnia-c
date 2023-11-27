@@ -81,8 +81,19 @@
 
   <object class="GtkListView" id="queue_list_view">
     <property name="factory">
-      <object class="GtkBuilderListItemFactory" id="track_factory">
-        <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-list-item.ui</property>
+      <object class="GtkSignalListItemFactory">
+        <signal name="setup"
+          handler="polyhymnia_queue_pane_track_setup"
+          swapped="true" />
+        <signal name="bind"
+          handler="polyhymnia_queue_pane_track_bind"
+          swapped="true" />
+        <signal name="unbind"
+          handler="polyhymnia_queue_pane_track_unbind"
+          swapped="true" />
+        <signal name="teardown"
+          handler="polyhymnia_queue_pane_track_teardown"
+          swapped="true" />
       </object>
     </property>
     <property name="model">

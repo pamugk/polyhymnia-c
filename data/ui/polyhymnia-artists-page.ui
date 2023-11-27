@@ -65,7 +65,7 @@
         <property name="expand">true</property>
         <property name="factory">
           <object class="GtkBuilderListItemFactory">
-            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-title-column.ui</property>
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-title-simple-column.ui</property>
           </object>
         </property>
         <property name="resizable">false</property>
@@ -94,8 +94,19 @@
       </object>
     </child>
     <property name="header-factory">
-      <object class="GtkBuilderListItemFactory">
-        <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-header.ui</property>
+      <object class="GtkSignalListItemFactory">
+        <signal name="setup"
+          handler="polyhymnia_artists_page_album_header_setup"
+          swapped="true" />
+        <signal name="bind"
+          handler="polyhymnia_artists_page_album_header_bind"
+          swapped="true" />
+        <signal name="unbind"
+          handler="polyhymnia_artists_page_album_header_unbind"
+          swapped="true" />
+        <signal name="teardown"
+          handler="polyhymnia_artists_page_album_header_teardown"
+          swapped="true" />
       </object>
     </property>
     <property name="model">

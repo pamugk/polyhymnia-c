@@ -4,6 +4,7 @@
 #include "polyhymnia-album-page.h"
 
 #include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-images.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -18,10 +19,23 @@ struct _PolyhymniaAlbumPage
 {
   AdwNavigationPage  parent_instance;
 
+  /* Stored UI state */
+  GdkTexture                *album_cover;
+
   /* Template widgets */
   AdwToolbarView            *root_toolbar_view;
-  GtkScrolledWindow         *tracks_content;
+  AdwBreakpointBin          *root_content;
+
+  GtkImage                  *cover_image;
+  GtkLabel                  *artist_label;
+  GtkLabel                  *year_label;
+
+  GtkScrolledWindow         *tracks_content_scroll;
   GtkColumnView             *tracks_column_view;
+
+  GtkLabel                  *statistics_label;
+  GtkLabel                  *duration_label;
+
   AdwStatusPage             *tracks_status_page;
 
   /* Template objects */
@@ -82,6 +96,7 @@ polyhymnia_album_page_dispose(GObject *gobject)
 {
   PolyhymniaAlbumPage *self = POLYHYMNIA_ALBUM_PAGE (gobject);
 
+  g_clear_object (&(self->album_cover));
   g_clear_pointer (&(self->album_title), g_free);
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ALBUM_PAGE);
@@ -155,8 +170,18 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-album-page.ui");
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, root_toolbar_view);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, root_content);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, cover_image);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, artist_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, year_label);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_content_scroll);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_column_view);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, statistics_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, duration_label);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, tracks_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumPage, disc_header_factory);
@@ -197,6 +222,7 @@ polyhymnia_album_page_mpd_client_initialized (PolyhymniaAlbumPage   *self,
 {
   g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
 
+  g_clear_object (&(self->album_cover));
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     polyhymnia_album_page_fill (self);
@@ -213,6 +239,7 @@ polyhymnia_album_page_mpd_database_updated (PolyhymniaAlbumPage    *self,
 {
   g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
 
+  g_clear_object (&(self->album_cover));
   polyhymnia_album_page_fill (self);
 }
 
@@ -271,6 +298,53 @@ get_disc_title (GtkListHeader *header, PolyhymniaTrack *item)
   }
 }
 
+// TODO: take a bit less error-prone approach?
+static void
+polyhymnia_album_page_fill_header (PolyhymniaAlbumPage *self,
+                                   PolyhymniaTrack     *any_track)
+{
+  GError *error = NULL;
+  GBytes *cover;
+  cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                      polyhymnia_track_get_uri (any_track),
+                                                      &error);
+  if (error != NULL)
+  {
+    g_warning ("Failed to get album cover: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+    gtk_image_set_from_icon_name (self->cover_image,
+                                  "cd-symbolic");
+  }
+  else if (cover != NULL)
+  {
+    self->album_cover = gdk_texture_new_from_bytes (cover, &error);
+    if (error != NULL)
+    {
+      g_warning ("Failed to convert album cover: %s\n", error->message);
+      g_error_free (error);
+      error = NULL;
+      gtk_image_set_from_icon_name (self->cover_image,
+                                    "cd-symbolic");
+    }
+    else
+    {
+      gtk_image_set_from_paintable (self->cover_image,
+                                    GDK_PAINTABLE (self->album_cover));
+    }
+    g_bytes_unref (cover);
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (self->cover_image,
+                                  "cd-symbolic");
+  }
+
+  gtk_label_set_text (self->artist_label,
+                      polyhymnia_track_get_album_artist (any_track));
+  gtk_label_set_text (self->year_label, polyhymnia_track_get_date (any_track));
+}
+
 static void
 polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
 {
@@ -286,8 +360,8 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
     g_object_set (G_OBJECT (self->tracks_status_page),
                   "description", _("Failed to get an album"),
                   NULL);
-    gtk_scrolled_window_set_child (self->tracks_content,
-                                    GTK_WIDGET (self->tracks_status_page));
+    adw_toolbar_view_set_content (self->root_toolbar_view,
+                                  GTK_WIDGET (self->tracks_status_page));
     g_warning("Failed to find an album: %s", error->message);
     g_error_free (error);
     error = NULL;
@@ -299,19 +373,43 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
     g_object_set (G_OBJECT (self->tracks_status_page),
                   "description", _("Album not found"),
                   NULL);
-    gtk_scrolled_window_set_child (self->tracks_content,
-                                    GTK_WIDGET (self->tracks_status_page));
+    adw_toolbar_view_set_content (self->root_toolbar_view,
+                                  GTK_WIDGET (self->tracks_status_page));
   }
   else
   {
-    guint last_seen_disc = polyhymnia_track_get_disc (g_ptr_array_index (tracks, 0));
+    PolyhymniaTrack *any_track = g_ptr_array_index (tracks, 0);
+    guint last_seen_disc = polyhymnia_track_get_disc (any_track);
+    guint total_duration = polyhymnia_track_get_duration (any_track);
+    gchar *total_duration_translated;
+    guint hours;
+    guint minutes;
+    gchar *statistics = g_strdup_printf (g_dngettext(GETTEXT_PACKAGE,
+                                                     "%d song", "%d songs",
+                                                     tracks->len),
+                                         tracks->len);
     gboolean multidisc_album = FALSE;
     for (guint i = 1; i < tracks->len; i++)
     {
-      guint current_disc = polyhymnia_track_get_disc (g_ptr_array_index (tracks, i));
+      const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+      guint current_disc = polyhymnia_track_get_disc (track);
       multidisc_album = multidisc_album || last_seen_disc != current_disc;
       last_seen_disc = current_disc;
+      total_duration += polyhymnia_track_get_duration (track);
     }
+
+    minutes = (total_duration % 3600) / 60;
+    hours = total_duration / 3600;
+    if (hours > 0)
+    {
+      total_duration_translated = g_strdup_printf (_("%d h. %d min."),
+                                                   hours, minutes);
+    }
+    else
+    {
+      total_duration_translated = g_strdup_printf (_("%d min."), minutes);
+    }
+
     if (multidisc_album)
     {
       gtk_column_view_set_header_factory (self->tracks_column_view,
@@ -322,11 +420,18 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
       gtk_column_view_set_header_factory (self->tracks_column_view, NULL);
     }
 
+    polyhymnia_album_page_fill_header (self, any_track);
+
+    gtk_label_set_text (self->statistics_label, statistics);
+    gtk_label_set_text (self->duration_label, total_duration_translated);
+    g_free (total_duration_translated);
+    g_free (statistics);
+
     g_list_store_splice (self->tracks_model, 0,
                           g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
                           tracks->pdata, tracks->len);
     g_ptr_array_free (tracks, TRUE);
-    gtk_scrolled_window_set_child (self->tracks_content,
-                                   GTK_WIDGET (self->tracks_column_view));
+    adw_toolbar_view_set_content (self->root_toolbar_view,
+                                  GTK_WIDGET (self->root_content));
   }
 }
