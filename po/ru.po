@@ -20,7 +20,7 @@ msgstr ""
 
 #: data/com.github.pamugk.polyhymnia.desktop.in:3
 msgid "Polyhymnia"
-msgstr ""
+msgstr "Polyhymnia"
 
 #: data/com.github.pamugk.polyhymnia.appdata.xml.in:7
 msgid "No description"
@@ -236,7 +236,7 @@ msgid "Album not found"
 msgstr "Альбом не найден"
 
 #: src/polyhymnia-album-page.c:387
-#, fuzzy, c-format
+#, c-format
 msgid "%d song"
 msgid_plural "%d songs"
 msgstr[0] "%d песня"
