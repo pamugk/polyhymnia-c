@@ -12,7 +12,6 @@
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>
                 <property name="tooltip-text" translatable="yes">Add to playlist</property>
-                <property name="visible">false</property>
     		<signal name="clicked"
     		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
     		  swapped="true" />

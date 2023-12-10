@@ -29,6 +29,11 @@ polyhymnia_mpd_client_play_song_from_queue(PolyhymniaMpdClient *self,
                                            GError              **error);
 
 void
+polyhymnia_mpd_client_save_queue_as_playlist (PolyhymniaMpdClient *self,
+                                              const gchar         *name,
+                                              GError              **error);
+
+void
 polyhymnia_mpd_client_swap_songs_in_queue(PolyhymniaMpdClient *self,
                                           guint               id1,
                                           guint               id2,

@@ -265,7 +265,16 @@ static void
 polyhymnia_queue_pane_queue_to_playlist_button_clicked (PolyhymniaQueuePane *self,
                                                         GtkButton           *user_data)
 {
-
+  GError *error = NULL;
+  polyhymnia_mpd_client_save_queue_as_playlist (self->mpd_client,
+                                                "Test playlist",
+                                                &error);
+  if (error != NULL)
+  {
+    g_warning("Failed to save queue as playlist: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
 }
 
 static void
