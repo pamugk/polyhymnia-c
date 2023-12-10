@@ -461,6 +461,7 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
     g_warning("Queue fetch failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
+    g_list_store_remove_all (self->queue_model);
   }
   else if (queue->len == 0)
   {
@@ -472,6 +473,7 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
     adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, FALSE);
     gtk_scrolled_window_set_child (self->queue_page_content,
                                    GTK_WIDGET (self->queue_status_page));
+    g_list_store_remove_all (self->queue_model);
   }
   else
   {
@@ -529,3 +531,4 @@ polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
     }
   }
 }
+

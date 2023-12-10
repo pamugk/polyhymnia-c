@@ -489,6 +489,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
     g_warning("Search for artists failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
+    g_list_store_remove_all (self->artist_model);
   }
   else if (artists->len == 0)
   {
@@ -500,6 +501,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                   NULL);
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
                                    GTK_WIDGET (self->artists_status_page));
+    g_list_store_remove_all (self->artist_model);
   }
   else
   {
@@ -555,5 +557,3 @@ polyhymnia_artists_page_fill_covers (PolyhymniaArtistsPage *self,
     }
   }
 }
-
-

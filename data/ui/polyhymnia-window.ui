@@ -170,6 +170,15 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="child">
+                          <object class="AdwBin" id="playlist_stack_page_content" />
+                        </property>
+                        <property name="name">playlists_page</property>
+                        <property name="title" translatable="yes">Playlists</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
                           <object class="AdwBin" id="genre_stack_page_content" />
                         </property>
                         <property name="name">genres_page</property>
@@ -260,9 +269,37 @@
       </object>
     </child>
   </object>
+  <object class="AdwNavigationView" id="playlist_navigation_view">
+    <child>
+      <object class="AdwNavigationPage">
+        <property name="child">
+          <object class="GtkScrolledWindow">
+            <property name="child">
+              <object class="GtkGridView">
+                <property name="factory">
+                  <object class="GtkBuilderListItemFactory" id="playlist_factory">
+                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+                  </object>
+                </property>
+                <property name="model">
+                  <object class="GtkNoSelection" id="playlist_selection_model">
+                    <property name="model">
+                      <object class="GtkStringList" id="playlist_model" />
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </property>
+        <property name="title" translatable="yes">Genres</property>
+      </object>
+    </child>
+  </object>
 
   <object class="AdwStatusPage" id="albums_status_page" />
   <object class="AdwStatusPage" id="genres_status_page" />
+  <object class="AdwStatusPage" id="playlists_status_page" />
 
   <object class="AdwStatusPage" id="no_mpd_connection_page">
     <property name="description" translatable="yes">Check your MPD setup and try again</property>

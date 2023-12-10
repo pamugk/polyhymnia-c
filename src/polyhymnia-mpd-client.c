@@ -2,6 +2,7 @@
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-player.h"
+#include "polyhymnia-mpd-client-playlists.h"
 #include "polyhymnia-mpd-client-queue.h"
 
 #include <mpd/client.h>
@@ -1970,8 +1971,7 @@ polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
     return NULL;
   }
 
-  results = g_ptr_array_new ();
-  g_ptr_array_set_free_func (results, g_free);
+  results = g_ptr_array_new_null_terminated (0, g_free, TRUE);
   while ((pair = mpd_recv_pair_tag(self->main_mpd_connection,
 				    MPD_TAG_GENRE)) != NULL)
   {
@@ -1981,6 +1981,59 @@ polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
       g_ptr_array_add (results, genre);
     }
     mpd_return_pair(self->main_mpd_connection, pair);
+  }
+
+  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->main_mpd_connection))
+  {
+    g_ptr_array_free (results, TRUE);
+    results = NULL;
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+
+  return results;
+}
+
+GPtrArray *
+polyhymnia_mpd_client_search_playlists(PolyhymniaMpdClient *self,
+                                       GError              **error)
+{
+  GError *inner_error = NULL;
+  struct mpd_playlist *playlist;
+  GPtrArray * results;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return NULL;
+  }
+
+  if (!mpd_send_list_playlists (self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+
+  results = g_ptr_array_new_null_terminated (0, g_free, TRUE);
+  while ((playlist = mpd_recv_playlist (self->main_mpd_connection)) != NULL)
+  {
+    g_ptr_array_add (results, g_strdup (mpd_playlist_get_path (playlist)));
+    mpd_playlist_free (playlist);
   }
 
   if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
