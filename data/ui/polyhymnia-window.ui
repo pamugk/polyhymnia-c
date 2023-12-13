@@ -288,6 +288,10 @@
                     </property>
                   </object>
                 </property>
+                <property name="single-click-activate">true</property>
+                <signal name="activate"
+                  handler="polyhymnia_window_playlist_clicked"
+                  swapped="true" />
               </object>
             </property>
           </object>
@@ -320,6 +324,9 @@
       swapped="true" />
     <signal name="notify::initialized"
       handler="polyhymnia_window_mpd_client_initialized"
+      swapped="true" />
+    <signal name="stored-playlist-modified"
+      handler="polyhymnia_window_mpd_playlists_changed"
       swapped="true" />
   </object>
 

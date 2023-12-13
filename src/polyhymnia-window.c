@@ -9,6 +9,7 @@
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-playlists.h"
 #include "polyhymnia-player-bar.h"
+#include "polyhymnia-playlist-page.h"
 #include "polyhymnia-queue-pane.h"
 #include "polyhymnia-tracks-page.h"
 
@@ -72,9 +73,20 @@ polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
                                         PolyhymniaMpdClient *user_data);
 
 static void
+polyhymnia_window_mpd_playlists_changed (PolyhymniaWindow    *self,
+                                         PolyhymniaMpdClient *user_data);
+
+static void
 polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
                                    const gchar           *artist_name,
                                    PolyhymniaArtistsPage *user_data);
+static void
+polyhymnia_window_playlist_clicked (PolyhymniaWindow *self,
+                                    guint            position,
+                                    GtkGridView      *user_data);
+
+static void
+polyhymnia_window_playlists_init (PolyhymniaWindow *self);
 
 /* Class stuff */
 static void
@@ -130,7 +142,11 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_mpd_playlists_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_navigate_artist);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_playlist_clicked);
 }
 
 static void
@@ -195,7 +211,6 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
 
   GPtrArray *albums;
   GPtrArray *genres;
-  GPtrArray *playlists;
 
   albums = polyhymnia_mpd_client_search_albums (self->mpd_client, &error);
   if (error != NULL)
@@ -274,6 +289,101 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
     adw_bin_set_child (self->genre_stack_page_content,
                        GTK_WIDGET (self->genre_navigation_view));
   }
+}
+
+static void
+polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
+                                          GParamSpec          *pspec,
+                                          PolyhymniaMpdClient *user_data)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  if (polyhymnia_mpd_client_is_initialized (user_data))
+  {
+    adw_toast_overlay_set_child (self->root_toast_overlay,
+                                 GTK_WIDGET (self->content));
+    polyhymnia_window_content_init (self);
+    polyhymnia_window_playlists_init (self);
+  }
+  else
+  {
+    adw_toast_overlay_set_child (self->root_toast_overlay,
+                                 GTK_WIDGET (self->no_mpd_connection_page));
+    g_list_store_remove_all (self->album_model);
+    gtk_string_list_splice (self->genre_model,
+                            0, g_list_model_get_n_items (G_LIST_MODEL (self->genre_model)),
+                            NULL);
+    gtk_string_list_splice (self->playlist_model,
+                            0, g_list_model_get_n_items (G_LIST_MODEL (self->playlist_model)),
+                            NULL);
+  }
+}
+
+static void
+polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
+                                        PolyhymniaMpdClient *user_data)
+{
+  AdwToast *database_updated_toast = adw_toast_new (_("Library has been updated"));
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  adw_toast_overlay_add_toast (self->root_toast_overlay,
+                               database_updated_toast);
+  polyhymnia_window_content_init (self);
+}
+
+static void
+polyhymnia_window_mpd_playlists_changed (PolyhymniaWindow    *self,
+                                         PolyhymniaMpdClient *user_data)
+{
+  AdwToast *playlists_updated_toast = adw_toast_new (_("Stored playlists have changed"));
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  adw_toast_overlay_add_toast (self->root_toast_overlay,
+                               playlists_updated_toast);
+  polyhymnia_window_playlists_init (self);
+}
+
+static void
+polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
+                                   const gchar           *artist_name,
+                                   PolyhymniaArtistsPage *user_data)
+{
+  PolyhymniaArtistPage *artist_page;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  artist_page = g_object_new (POLYHYMNIA_TYPE_ARTIST_PAGE,
+                              "artist-name", artist_name,
+                              NULL);
+  adw_navigation_view_push (self->artist_navigation_view,
+                            ADW_NAVIGATION_PAGE (artist_page));
+}
+
+static void
+polyhymnia_window_playlist_clicked (PolyhymniaWindow *self,
+                                    guint            position,
+                                    GtkGridView      *user_data)
+{
+  const gchar *playlist_title;
+  PolyhymniaPlaylistPage *playlist_page;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  playlist_title = gtk_string_list_get_string (self->playlist_model, position);
+  playlist_page = g_object_new (POLYHYMNIA_TYPE_PLAYLIST_PAGE,
+                                "playlist-title", playlist_title,
+                                NULL);
+  adw_navigation_view_push (self->playlist_navigation_view,
+                            ADW_NAVIGATION_PAGE (playlist_page));
+}
+
+static void
+polyhymnia_window_playlists_init (PolyhymniaWindow *self)
+{
+  GError *error = NULL;
+  GPtrArray *playlists;
 
   playlists = polyhymnia_mpd_client_search_playlists (self->mpd_client, &error);
   if (error != NULL)
@@ -314,60 +424,4 @@ polyhymnia_window_content_init (PolyhymniaWindow *self)
     adw_bin_set_child (self->playlist_stack_page_content,
                        GTK_WIDGET (self->playlist_navigation_view));
   }
-}
-
-static void
-polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
-                                          GParamSpec          *pspec,
-                                          PolyhymniaMpdClient *user_data)
-{
-  g_assert (POLYHYMNIA_IS_WINDOW (self));
-
-  if (polyhymnia_mpd_client_is_initialized (user_data))
-  {
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->content));
-    polyhymnia_window_content_init (self);
-  }
-  else
-  {
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->no_mpd_connection_page));
-    g_list_store_remove_all (self->album_model);
-    gtk_string_list_splice (self->genre_model,
-                            0, g_list_model_get_n_items (G_LIST_MODEL (self->genre_model)),
-                            NULL);
-    gtk_string_list_splice (self->playlist_model,
-                            0, g_list_model_get_n_items (G_LIST_MODEL (self->playlist_model)),
-                            NULL);
-  }
-}
-
-static void
-polyhymnia_window_mpd_database_updated (PolyhymniaWindow    *self,
-                                        PolyhymniaMpdClient *user_data)
-{
-  AdwToast *database_updated_toast = adw_toast_new (_("Library has been updated"));
-
-  g_assert (POLYHYMNIA_IS_WINDOW (self));
-
-  adw_toast_overlay_add_toast (self->root_toast_overlay,
-                               database_updated_toast);
-  polyhymnia_window_content_init (self);
-}
-
-static void
-polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
-                                   const gchar           *artist_name,
-                                   PolyhymniaArtistsPage *user_data)
-{
-  PolyhymniaArtistPage *artist_page;
-
-  g_assert (POLYHYMNIA_IS_WINDOW (self));
-
-  artist_page = g_object_new (POLYHYMNIA_TYPE_ARTIST_PAGE,
-                              "artist-name", artist_name,
-                              NULL);
-  adw_navigation_view_push (self->artist_navigation_view,
-                            ADW_NAVIGATION_PAGE (artist_page));
 }
