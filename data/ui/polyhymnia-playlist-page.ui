@@ -33,8 +33,19 @@
               <object class="GtkColumnViewColumn">
                 <property name="expand">true</property>
                 <property name="factory">
-                  <object class="GtkBuilderListItemFactory">
-                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-title-column.ui</property>
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="setup"
+                      handler="polyhymnia_playlist_page_track_title_column_setup"
+                      swapped="true" />
+                    <signal name="bind"
+                      handler="polyhymnia_playlist_page_track_title_column_bind"
+                      swapped="true" />
+                    <signal name="unbind"
+                      handler="polyhymnia_playlist_page_track_title_column_unbind"
+                      swapped="true" />
+                    <signal name="teardown"
+                      handler="polyhymnia_playlist_page_track_title_column_teardown"
+                      swapped="true" />
                   </object>
                 </property>
                 <property name="resizable">false</property>

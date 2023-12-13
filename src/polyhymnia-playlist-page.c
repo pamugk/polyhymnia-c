@@ -3,6 +3,7 @@
 
 #include "polyhymnia-playlist-page.h"
 
+#include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-playlists.h"
 #include "polyhymnia-track.h"
 
@@ -18,6 +19,9 @@ typedef enum
 struct _PolyhymniaPlaylistPage
 {
   AdwNavigationPage  parent_instance;
+
+  /* Stored UI state */
+  GHashTable                *album_covers;
 
   /* Template widgets */
   AdwToolbarView            *root_toolbar_view;
@@ -45,12 +49,32 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 /* Event handler declarations */
 static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
-                                                 GParamSpec          *pspec,
-                                                 PolyhymniaMpdClient *user_data);
+                                                 GParamSpec             *pspec,
+                                                 PolyhymniaMpdClient    *user_data);
 
 static void
 polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
-                                                PolyhymniaMpdClient *user_data);
+                                                PolyhymniaMpdClient    *user_data);
+
+static void
+polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage    *self,
+                                                  GtkListItem              *object,
+                                                  GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_playlist_page_track_title_column_setup (PolyhymniaPlaylistPage   *self,
+                                                    GtkListItem              *object,
+                                                    GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_playlist_page_track_title_column_teardown (PolyhymniaPlaylistPage    *self,
+                                                      GtkListItem              *object,
+                                                      GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage    *self,
+                                                    GtkListItem              *object,
+                                                    GtkSignalListItemFactory *user_data);
 
 /* Private function declarations */
 static void
@@ -73,9 +97,10 @@ polyhymnia_playlist_page_dispose(GObject *gobject)
 {
   PolyhymniaPlaylistPage *self = POLYHYMNIA_PLAYLIST_PAGE (gobject);
 
-  g_clear_pointer (&(self->playlist_title), g_free);
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PLAYLIST_PAGE);
+  g_clear_pointer (&(self->playlist_title), g_free);
+  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
 
   G_OBJECT_CLASS (polyhymnia_playlist_page_parent_class)->dispose (gobject);
 }
@@ -157,6 +182,15 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, tracks_selection_model);
 
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_track_title_column_bind);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_track_title_column_setup);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_track_title_column_teardown);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_track_title_column_unbind);
+
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_mpd_playlists_changed);
@@ -165,6 +199,8 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
 static void
 polyhymnia_playlist_page_init (PolyhymniaPlaylistPage *self)
 {
+  self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                              g_free, g_object_unref);
   self->tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
   gtk_widget_init_template (GTK_WIDGET (self));
 
@@ -174,9 +210,9 @@ polyhymnia_playlist_page_init (PolyhymniaPlaylistPage *self)
 
 /* Event handler implementations */
 static void
-polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage   *self,
-                                                 GParamSpec            *pspec,
-                                                 PolyhymniaMpdClient   *user_data)
+polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
+                                                 GParamSpec             *pspec,
+                                                 PolyhymniaMpdClient    *user_data)
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
 
@@ -187,15 +223,102 @@ polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage   *self,
   else
   {
     g_list_store_remove_all (self->tracks_model);
+    g_hash_table_remove_all (self->album_covers);
   }
 }
 
 static void
 polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
-                                                PolyhymniaMpdClient *user_data)
+                                                PolyhymniaMpdClient    *user_data)
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
   polyhymnia_playlist_page_fill (self);
+}
+
+static void
+polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage    *self,
+                                                  GtkListItem              *object,
+                                                  GtkSignalListItemFactory *user_data)
+{
+  const gchar *album;
+  PolyhymniaTrack *track;
+
+  GtkWidget *album_cover;
+  GtkWidget *track_root;
+  GtkWidget *track_label;
+
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+
+  track_root = gtk_list_item_get_child (object);
+  album_cover = gtk_widget_get_first_child (track_root);
+  track_label = gtk_widget_get_next_sibling (album_cover);
+
+  track = gtk_list_item_get_item (object);
+
+  album = polyhymnia_track_get_album (track);
+  if (album != NULL && g_hash_table_contains (self->album_covers, album))
+  {
+    gtk_image_set_from_paintable (GTK_IMAGE (album_cover),
+                                  g_hash_table_lookup (self->album_covers, album));
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (GTK_IMAGE (album_cover),
+                                  "image-missing-symbolic");
+  }
+  gtk_label_set_text (GTK_LABEL (track_label),
+                      polyhymnia_track_get_title (track));
+}
+
+static void
+polyhymnia_playlist_page_track_title_column_setup (PolyhymniaPlaylistPage   *self,
+                                                    GtkListItem              *object,
+                                                    GtkSignalListItemFactory *user_data)
+{
+  GtkBox *track_root;
+  GtkImage  *album_cover;
+  GtkLabel  *track_label;
+
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+
+  track_root = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 20));
+
+  album_cover = GTK_IMAGE (gtk_image_new ());
+  gtk_image_set_pixel_size (album_cover, 50);
+  gtk_widget_set_valign (GTK_WIDGET (album_cover), GTK_ALIGN_CENTER);
+
+  track_label = GTK_LABEL (gtk_label_new (NULL));
+  gtk_label_set_ellipsize (track_label, PANGO_ELLIPSIZE_END);
+  gtk_label_set_xalign (track_label, 0);
+
+  gtk_box_append (track_root, GTK_WIDGET (album_cover));
+  gtk_box_append (track_root, GTK_WIDGET (track_label));
+
+  gtk_list_item_set_child (object, GTK_WIDGET (track_root));
+}
+
+static void
+polyhymnia_playlist_page_track_title_column_teardown (PolyhymniaPlaylistPage    *self,
+                                                      GtkListItem              *object,
+                                                      GtkSignalListItemFactory *user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+}
+
+static void
+polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage    *self,
+                                                    GtkListItem              *object,
+                                                    GtkSignalListItemFactory *user_data)
+{
+  GtkWidget *track_root;
+  GtkWidget *album_cover;
+
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+
+  track_root = gtk_list_item_get_child (object);
+  album_cover = gtk_widget_get_first_child (track_root);
+  gtk_image_set_from_paintable (GTK_IMAGE (album_cover), NULL);
+  gtk_label_set_text (GTK_LABEL (gtk_widget_get_next_sibling (album_cover)), NULL);
 }
 
 /* Private function declarations */
@@ -211,6 +334,7 @@ polyhymnia_playlist_page_fill (PolyhymniaPlaylistPage *self)
   if (error != NULL)
   {
     g_list_store_remove_all (self->tracks_model);
+    g_hash_table_remove_all (self->album_covers);
     g_object_set (G_OBJECT (self->tracks_status_page),
                   "description", _("Failed to get a playlist"),
                   "icon-name", NULL,
@@ -225,6 +349,7 @@ polyhymnia_playlist_page_fill (PolyhymniaPlaylistPage *self)
   {
     g_ptr_array_free (tracks, TRUE);
     g_list_store_remove_all (self->tracks_model);
+    g_hash_table_remove_all (self->album_covers);
     g_object_set (G_OBJECT (self->tracks_status_page),
                   "description", _("Playlist is empty"),
                   "icon-name", "playlist2-symbolic",
@@ -245,7 +370,39 @@ polyhymnia_playlist_page_fill (PolyhymniaPlaylistPage *self)
     for (guint i = 0; i < tracks->len; i++)
     {
       const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+      const gchar *album = polyhymnia_track_get_album (track);
       total_duration += polyhymnia_track_get_duration (track);
+      if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+      {
+        GBytes *cover;
+        cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                            polyhymnia_track_get_uri (track),
+                                                            &error);
+       if (error != NULL)
+        {
+          g_warning ("Failed to get album cover: %s\n", error->message);
+          g_error_free (error);
+          error = NULL;
+        }
+        else if (cover != NULL)
+        {
+          GdkTexture *album_cover;
+          album_cover = gdk_texture_new_from_bytes (cover, &error);
+          if (error != NULL)
+          {
+            g_warning ("Failed to convert album cover: %s\n", error->message);
+            g_error_free (error);
+            error = NULL;
+          }
+          else
+          {
+            g_hash_table_insert (self->album_covers,
+                                g_strdup (album),
+                                album_cover);
+          }
+          g_bytes_unref (cover);
+        }
+      }
     }
 
     minutes = (total_duration % 3600) / 60;
