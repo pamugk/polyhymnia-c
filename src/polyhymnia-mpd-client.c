@@ -581,9 +581,9 @@ polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
 }
 
 void
-polyhymnia_mpd_client_add_playlist_to_queue (PolyhymniaMpdClient *self,
-                                             const gchar         *name,
-                                             GError              **error)
+polyhymnia_mpd_client_append_playlist_to_queue (PolyhymniaMpdClient *self,
+                                                const gchar         *name,
+                                                GError              **error)
 {
   GError *inner_error = NULL;
 
@@ -1809,6 +1809,39 @@ polyhymnia_mpd_client_play_next(PolyhymniaMpdClient *self,
                  "failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
     mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+void
+polyhymnia_mpd_client_play_playlist (PolyhymniaMpdClient *self,
+                                     const gchar         *name,
+                                     GError              **error)
+{
+  GError *inner_error = NULL;
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_clear_queue (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
+    return;
+  }
+
+  polyhymnia_mpd_client_append_playlist_to_queue (self, name, &inner_error);
+  if (inner_error == NULL)
+  {
+    polyhymnia_mpd_client_play (self, &inner_error);
+  }
+
+  if (inner_error != NULL)
+  {
+    g_propagate_error(error, inner_error);
   }
 }
 

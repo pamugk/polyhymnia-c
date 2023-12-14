@@ -8,9 +8,9 @@
 G_BEGIN_DECLS
 
 void
-polyhymnia_mpd_client_add_playlist_to_queue (PolyhymniaMpdClient *self,
-                                             const gchar         *name,
-                                             GError              **error);
+polyhymnia_mpd_client_append_playlist_to_queue (PolyhymniaMpdClient *self,
+                                                const gchar         *name,
+                                                GError              **error);
 
 void
 polyhymnia_mpd_client_add_to_playlist (PolyhymniaMpdClient *self,
@@ -32,6 +32,11 @@ GPtrArray *
 polyhymnia_mpd_client_get_playlist_tracks (PolyhymniaMpdClient *self,
                                            const gchar         *name,
                                            GError              **error);
+
+void
+polyhymnia_mpd_client_play_playlist (PolyhymniaMpdClient *self,
+                                     const gchar         *name,
+                                     GError              **error);
 
 void
 polyhymnia_mpd_client_rename_playlist (PolyhymniaMpdClient *self,

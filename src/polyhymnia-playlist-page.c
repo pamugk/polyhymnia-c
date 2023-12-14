@@ -48,6 +48,10 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* Event handler declarations */
 static void
+polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylistPage *self,
+                                                               GtkButton              *user_data);
+
+static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
                                                  GParamSpec             *pspec,
                                                  PolyhymniaMpdClient    *user_data);
@@ -55,6 +59,10 @@ polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
 static void
 polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
                                                 PolyhymniaMpdClient    *user_data);
+
+static void
+polyhymnia_playlist_page_play_playlist_button_clicked (PolyhymniaPlaylistPage *self,
+                                                       GtkButton              *user_data);
 
 static void
 polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage    *self,
@@ -182,6 +190,10 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, tracks_selection_model);
 
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_add_playlist_to_queue_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_play_playlist_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_track_title_column_bind);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_track_title_column_setup);
@@ -210,6 +222,25 @@ polyhymnia_playlist_page_init (PolyhymniaPlaylistPage *self)
 
 /* Event handler implementations */
 static void
+polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylistPage *self,
+                                                               GtkButton              *user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+
+  polyhymnia_mpd_client_append_playlist_to_queue (self->mpd_client,
+                                                  self->playlist_title, &error);
+
+  if (error != NULL)
+  {
+    g_warning("Failed to add playlist into queue: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+}
+
+static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
                                                  GParamSpec             *pspec,
                                                  PolyhymniaMpdClient    *user_data)
@@ -233,6 +264,25 @@ polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
   polyhymnia_playlist_page_fill (self);
+}
+
+static void
+polyhymnia_playlist_page_play_playlist_button_clicked (PolyhymniaPlaylistPage *self,
+                                                       GtkButton              *user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+
+  polyhymnia_mpd_client_play_playlist (self->mpd_client,
+                                       self->playlist_title, &error);
+
+  if (error != NULL)
+  {
+    g_warning("Failed to start playing playlist: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
 }
 
 static void
