@@ -8,13 +8,12 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <child type="start">
-              <object class="GtkButton">
+              <object class="GtkMenuButton">
+                <property name="direction">left</property>
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>
+                <property name="popover">new_playlist_popover</property>
                 <property name="tooltip-text" translatable="yes">Add to playlist</property>
-    		<signal name="clicked"
-    		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
-    		  swapped="true" />
               </object>
             </child>
             <property name="title-widget">
@@ -77,6 +76,52 @@
       </object>
     </child>
   </template>
+
+  <object class="GtkPopover" id="new_playlist_popover">
+    <property name="child">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">New playlist</property>
+	    <style>
+	      <class name="heading"/>
+	    </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <child>
+              <object class="GtkEntry"/>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Create</property>
+                <property name="sensitive">false</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+            <property name="orientation">orientation</property>
+            <property name="spacing">8</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Playlist with such name already exists.</property>
+            <property name="visible">false</property>
+	    <style>
+	      <class name="caption"/>
+	      <class name="dim-label"/>
+	    </style>
+          </object>
+        </child>
+        <property name="orientation">vertical</property>
+        <property name="spacing">4</property>
+      </object>
+    </property>
+    <property name="position">left</property>
+  </object>
 
   <object class="GtkListView" id="queue_list_view">
     <property name="factory">
