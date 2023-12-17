@@ -18,14 +18,19 @@ struct _PolyhymniaQueuePane
 
   /* Stored UI state */
   GHashTable             *album_covers;
+  GHashTable             *known_playlists;
 
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
+  GtkPopover          *new_playlist_popover;
+  GtkEntry            *new_playlist_title_entry;
   GtkActionBar        *queue_action_bar;
   GtkListView         *queue_list_view;
   GtkScrolledWindow   *queue_page_content;
   AdwStatusPage       *queue_status_page;
   GtkButton           *play_button;
+  GtkLabel            *playlist_exists_label;
+  GtkButton           *save_playlist_button;
 
   /* Template objects */
   GListStore          *queue_model;
@@ -53,6 +58,14 @@ polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
 static void
 polyhymnia_queue_pane_mpd_queue_modified (PolyhymniaQueuePane *self,
                                           PolyhymniaMpdClient *user_data);
+
+static void
+polyhymnia_queue_pane_new_playlist_popover_closed (PolyhymniaQueuePane *self,
+                                                   GtkPopover          *user_data);
+
+static void
+polyhymnia_queue_pane_new_playlist_title_changed (PolyhymniaQueuePane *self,
+                                                  GtkEntry            *user_data);
 
 static void
 polyhymnia_queue_pane_play_button_clicked (PolyhymniaQueuePane *self,
@@ -108,6 +121,7 @@ polyhymnia_queue_pane_dispose(GObject *gobject)
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_QUEUE_PANE);
   g_clear_pointer (&(self->album_covers), g_hash_table_unref);
+  g_clear_pointer (&(self->known_playlists), g_hash_table_unref);
 
   G_OBJECT_CLASS (polyhymnia_queue_pane_parent_class)->dispose (gobject);
 }
@@ -126,11 +140,15 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-queue-pane.ui");
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, root_toolbar_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, new_playlist_popover);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, new_playlist_title_entry);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_action_bar);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_list_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, play_button);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, playlist_exists_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, save_playlist_button);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_selection_model);
 
@@ -140,6 +158,10 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                            polyhymnia_queue_pane_clear_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_clear_selection_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_new_playlist_popover_closed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_new_playlist_title_changed);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_play_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -168,6 +190,8 @@ polyhymnia_queue_pane_init (PolyhymniaQueuePane *self)
 {
   self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                               g_free, g_object_unref);
+  self->known_playlists = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                 g_free, g_object_unref);
   self->queue_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
 
   gtk_widget_init_template (GTK_WIDGET (self));
@@ -232,6 +256,36 @@ polyhymnia_queue_pane_mpd_queue_modified (PolyhymniaQueuePane *self,
 }
 
 static void
+polyhymnia_queue_pane_new_playlist_popover_closed (PolyhymniaQueuePane *self,
+                                                   GtkPopover          *user_data)
+{
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  gtk_editable_set_text (GTK_EDITABLE (self->new_playlist_title_entry), "");
+}
+
+static void
+polyhymnia_queue_pane_new_playlist_title_changed (PolyhymniaQueuePane *self,
+                                                  GtkEntry            *user_data)
+{
+  const gchar *new_playlist_title;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  new_playlist_title = gtk_editable_get_text (GTK_EDITABLE (self->new_playlist_title_entry));
+  if (g_str_equal (new_playlist_title, "")) {
+    gtk_widget_set_sensitive (GTK_WIDGET (self->save_playlist_button), FALSE);
+    gtk_widget_set_visible (GTK_WIDGET (self->playlist_exists_label), FALSE);
+  } else if (g_hash_table_contains (self->known_playlists, new_playlist_title)) {
+    gtk_widget_set_sensitive (GTK_WIDGET (self->save_playlist_button), FALSE);
+    gtk_widget_set_visible (GTK_WIDGET (self->playlist_exists_label), TRUE);
+  } else {
+    gtk_widget_set_sensitive (GTK_WIDGET (self->save_playlist_button), TRUE);
+    gtk_widget_set_visible (GTK_WIDGET (self->playlist_exists_label), FALSE);
+  }
+}
+
+static void
 polyhymnia_queue_pane_play_button_clicked (PolyhymniaQueuePane *self,
                                            GtkButton           *user_data)
 {
@@ -266,15 +320,17 @@ polyhymnia_queue_pane_queue_to_playlist_button_clicked (PolyhymniaQueuePane *sel
                                                         GtkButton           *user_data)
 {
   GError *error = NULL;
-  //polyhymnia_mpd_client_save_queue_as_playlist (self->mpd_client,
-  //                                              "Test playlist",
-  //                                              &error);
+  polyhymnia_mpd_client_save_queue_as_playlist (self->mpd_client,
+                                                gtk_editable_get_text (GTK_EDITABLE (self->new_playlist_title_entry)),
+                                                &error);
   if (error != NULL)
   {
     g_warning("Failed to save queue as playlist: %s\n", error->message);
     g_error_free (error);
     error = NULL;
   }
+
+  gtk_popover_popdown (self->new_playlist_popover);
 }
 
 static void

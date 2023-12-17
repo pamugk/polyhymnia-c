@@ -78,6 +78,9 @@
   </template>
 
   <object class="GtkPopover" id="new_playlist_popover">
+    <signal name="closed"
+      handler="polyhymnia_queue_pane_new_playlist_popover_closed"
+      swapped="true" />
     <property name="child">
       <object class="GtkBox">
         <child>
@@ -91,23 +94,30 @@
         <child>
           <object class="GtkBox">
             <child>
-              <object class="GtkEntry"/>
+              <object class="GtkEntry" id="new_playlist_title_entry">
+    		<signal name="changed"
+    		  handler="polyhymnia_queue_pane_new_playlist_title_changed"
+    		  swapped="true" />
+              </object>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="save_playlist_button">
                 <property name="label" translatable="yes">Create</property>
                 <property name="sensitive">false</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
+    		  swapped="true" />
                 <style>
                   <class name="suggested-action"/>
                 </style>
               </object>
             </child>
-            <property name="orientation">orientation</property>
+            <property name="orientation">horizontal</property>
             <property name="spacing">8</property>
           </object>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="playlist_exists_label">
             <property name="label" translatable="yes">Playlist with such name already exists.</property>
             <property name="visible">false</property>
 	    <style>
