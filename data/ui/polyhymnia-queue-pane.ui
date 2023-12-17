@@ -120,6 +120,7 @@
           <object class="GtkLabel" id="playlist_exists_label">
             <property name="label" translatable="yes">Playlist with such name already exists.</property>
             <property name="visible">false</property>
+            <property name="xalign">0</property>
 	    <style>
 	      <class name="caption"/>
 	      <class name="dim-label"/>
@@ -167,6 +168,9 @@
       swapped="true" />
     <signal name="queue-modified"
       handler="polyhymnia_queue_pane_mpd_queue_modified"
+      swapped="true" />
+    <signal name="stored-playlist-modified"
+      handler="polyhymnia_queue_pane_mpd_playlists_changed"
       swapped="true" />
   </object>
 
