@@ -10,6 +10,7 @@ polyhymnia_sources = [
   'polyhymnia-mpd-client.c',
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',
+  'polyhymnia-playlist-page.c',
   'polyhymnia-preferences-window.c',
   'polyhymnia-queue-pane.c',
   'polyhymnia-track.c',

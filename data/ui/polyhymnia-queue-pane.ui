@@ -8,14 +8,12 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <child type="start">
-              <object class="GtkButton">
+              <object class="GtkMenuButton">
+                <property name="direction">left</property>
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>
+                <property name="popover">new_playlist_popover</property>
                 <property name="tooltip-text" translatable="yes">Add to playlist</property>
-                <property name="visible">false</property>
-    		<signal name="clicked"
-    		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
-    		  swapped="true" />
               </object>
             </child>
             <property name="title-widget">
@@ -79,6 +77,64 @@
     </child>
   </template>
 
+  <object class="GtkPopover" id="new_playlist_popover">
+    <signal name="closed"
+      handler="polyhymnia_queue_pane_new_playlist_popover_closed"
+      swapped="true" />
+    <property name="child">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">New playlist</property>
+	    <style>
+	      <class name="heading"/>
+	    </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <child>
+              <object class="GtkEntry" id="new_playlist_title_entry">
+                <property name="max-width-chars">250</property>
+    		<signal name="changed"
+    		  handler="polyhymnia_queue_pane_new_playlist_title_changed"
+    		  swapped="true" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_playlist_button">
+                <property name="label" translatable="yes">Create</property>
+                <property name="sensitive">false</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_queue_to_playlist_button_clicked"
+    		  swapped="true" />
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+            <property name="orientation">horizontal</property>
+            <property name="spacing">8</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="playlist_exists_label">
+            <property name="label" translatable="yes">Playlist with such name already exists.</property>
+            <property name="visible">false</property>
+            <property name="xalign">0</property>
+	    <style>
+	      <class name="caption"/>
+	      <class name="dim-label"/>
+	    </style>
+          </object>
+        </child>
+        <property name="orientation">vertical</property>
+        <property name="spacing">4</property>
+      </object>
+    </property>
+    <property name="position">left</property>
+  </object>
+
   <object class="GtkListView" id="queue_list_view">
     <property name="factory">
       <object class="GtkSignalListItemFactory">
@@ -113,6 +169,9 @@
       swapped="true" />
     <signal name="queue-modified"
       handler="polyhymnia_queue_pane_mpd_queue_modified"
+      swapped="true" />
+    <signal name="stored-playlist-modified"
+      handler="polyhymnia_queue_pane_mpd_playlists_changed"
       swapped="true" />
   </object>
 

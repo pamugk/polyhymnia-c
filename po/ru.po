@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-26 12:44+0500\n"
+"POT-Creation-Date: 2023-12-23 18:55+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,29 +31,73 @@ msgstr "Без описания"
 msgid "Artists"
 msgstr "Исполнители"
 
-#: data/ui/polyhymnia-queue-pane.ui:14
+#: data/ui/polyhymnia-queue-pane.ui:16
 msgid "Add to playlist"
 msgstr "Добавить в плейлист"
 
-#: data/ui/polyhymnia-queue-pane.ui:23 data/ui/polyhymnia-player-bar.ui:158
+#: data/ui/polyhymnia-queue-pane.ui:21 data/ui/polyhymnia-player-bar.ui:158
 msgid "Queue"
 msgstr "Очередь"
 
-#: data/ui/polyhymnia-queue-pane.ui:33
+#: data/ui/polyhymnia-queue-pane.ui:31
 msgid "Clear queue"
 msgstr "Очистить очередь"
 
-#: data/ui/polyhymnia-queue-pane.ui:59
+#: data/ui/polyhymnia-queue-pane.ui:57
 msgid "Remove from queue"
 msgstr "Убрать из очереди"
 
-#: data/ui/polyhymnia-queue-pane.ui:69
+#: data/ui/polyhymnia-queue-pane.ui:67
 msgid "Clear selection"
 msgstr "Очистить выделение"
+
+#: data/ui/polyhymnia-queue-pane.ui:88
+msgid "New playlist"
+msgstr "Новый плейлист"
+
+#: data/ui/polyhymnia-queue-pane.ui:106
+msgid "Create"
+msgstr "Создать"
+
+#: data/ui/polyhymnia-queue-pane.ui:122
+msgid "Playlist with such name already exists."
+msgstr "Плейлист с таким именем уже существует."
 
 #: data/ui/polyhymnia-player-bar.ui:150
 msgid "Lyrics"
 msgstr "Текст песни"
+
+#: data/ui/polyhymnia-playlist-page.ui:66 data/ui/polyhymnia-tracks-page.ui:23
+msgid "Title"
+msgstr "Название"
+
+#: data/ui/polyhymnia-playlist-page.ui:78 data/ui/polyhymnia-tracks-page.ui:35
+msgid "Artist"
+msgstr "Исполнитель"
+
+#: data/ui/polyhymnia-playlist-page.ui:90 data/ui/polyhymnia-tracks-page.ui:47
+msgid "Album"
+msgstr "Альбом"
+
+#: data/ui/polyhymnia-playlist-page.ui:102 data/ui/polyhymnia-tracks-page.ui:59
+msgid "Duration"
+msgstr "Продолжительность"
+
+#: data/ui/polyhymnia-playlist-page.ui:140
+msgid "Playlist will be permanently deleted."
+msgstr "Плейлист будет удалён навсегда."
+
+#: data/ui/polyhymnia-playlist-page.ui:143
+msgid "Delete Playlist?"
+msgstr "Удалить плейлист?"
+
+#: data/ui/polyhymnia-playlist-page.ui:146
+msgid "_Cancel"
+msgstr "_Отменить"
+
+#: data/ui/polyhymnia-playlist-page.ui:147
+msgid "_Delete"
+msgstr "_Удалить"
 
 #: data/ui/polyhymnia-preferences-window.ui:8
 msgid "System"
@@ -82,7 +126,7 @@ msgstr "Библиотека"
 
 #: data/ui/polyhymnia-preferences-window.ui:25
 #: data/ui/polyhymnia-preferences-window.ui:100
-#: data/ui/polyhymnia-window.ui:189
+#: data/ui/polyhymnia-window.ui:198
 msgid "Radio"
 msgstr "Радио"
 
@@ -99,7 +143,7 @@ msgid "Album information that can be found in external sources"
 msgstr "Информация об альбомах, доступная во внешних источниках"
 
 #: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:154
-#: data/ui/polyhymnia-window.ui:232
+#: data/ui/polyhymnia-window.ui:241
 msgid "Albums"
 msgstr "Альбомы"
 
@@ -158,22 +202,6 @@ msgstr "Настройка обновления библиотеки"
 msgid "Scan"
 msgstr "Поиск"
 
-#: data/ui/polyhymnia-tracks-page.ui:23
-msgid "Title"
-msgstr "Название"
-
-#: data/ui/polyhymnia-tracks-page.ui:35
-msgid "Artist"
-msgstr "Исполнитель"
-
-#: data/ui/polyhymnia-tracks-page.ui:47
-msgid "Album"
-msgstr "Альбом"
-
-#: data/ui/polyhymnia-tracks-page.ui:59
-msgid "Duration"
-msgstr "Продолжительность"
-
 #: data/ui/polyhymnia-window.ui:56
 msgid "Search"
 msgstr "Искать"
@@ -194,27 +222,31 @@ msgstr "_Комбинации клавиш"
 msgid "_About Polyhymnia"
 msgstr "_О Polyhymnia"
 
-#: data/ui/polyhymnia-window.ui:176 data/ui/polyhymnia-window.ui:259
+#: data/ui/polyhymnia-window.ui:176 data/ui/polyhymnia-window.ui:300
+msgid "Playlists"
+msgstr "Плейлисты"
+
+#: data/ui/polyhymnia-window.ui:185 data/ui/polyhymnia-window.ui:268
 msgid "Genres"
 msgstr "Жанры"
 
-#: data/ui/polyhymnia-window.ui:192
+#: data/ui/polyhymnia-window.ui:201
 msgid "Check your Internet connection and try again"
 msgstr "Проверьте соединение с Интернетом и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:194
+#: data/ui/polyhymnia-window.ui:203
 msgid "No Internet connection"
 msgstr "Нет соединения с Интернетом"
 
-#: data/ui/polyhymnia-window.ui:268
+#: data/ui/polyhymnia-window.ui:310
 msgid "Check your MPD setup and try again"
 msgstr "Проверьте настройки MPD и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:270
+#: data/ui/polyhymnia-window.ui:312
 msgid "No MPD connection"
 msgstr "Нет соединения с MPD"
 
-#: data/ui/polyhymnia-window.ui:275
+#: data/ui/polyhymnia-window.ui:317
 msgid "Try again"
 msgstr "Повторить попытку"
 
@@ -235,7 +267,7 @@ msgstr "Ошибка загрузки альбома"
 msgid "Album not found"
 msgstr "Альбом не найден"
 
-#: src/polyhymnia-album-page.c:387
+#: src/polyhymnia-album-page.c:388 src/polyhymnia-playlist-page.c:487
 #, c-format
 msgid "%d song"
 msgid_plural "%d songs"
@@ -243,12 +275,12 @@ msgstr[0] "%d песня"
 msgstr[1] "%d песни"
 msgstr[2] "%d песен"
 
-#: src/polyhymnia-album-page.c:403
+#: src/polyhymnia-album-page.c:405 src/polyhymnia-playlist-page.c:532
 #, c-format
 msgid "%d h. %d min."
 msgstr "%d ч. %d мин."
 
-#: src/polyhymnia-album-page.c:408
+#: src/polyhymnia-album-page.c:410 src/polyhymnia-playlist-page.c:537
 #, c-format
 msgid "%d min."
 msgstr "%d мин."
@@ -261,43 +293,51 @@ msgstr "Ошибка загрузки исполнителя"
 msgid "Artist not found"
 msgstr "Исполнитель не найден"
 
-#: src/polyhymnia-artists-page.c:234
+#: src/polyhymnia-artists-page.c:371
 msgid "Discography of an artist will be displayed here"
 msgstr "Здесь будет отображена дискография исполнителя"
 
-#: src/polyhymnia-artists-page.c:236
+#: src/polyhymnia-artists-page.c:373
 msgid "No artist selected"
 msgstr "Исполнитель не выбран"
 
-#: src/polyhymnia-artists-page.c:266
+#: src/polyhymnia-artists-page.c:403
 msgid "Search for artist discography failed"
 msgstr "Поиск дискографии исполнителя завершился с ошибкой"
 
-#: src/polyhymnia-artists-page.c:278 src/polyhymnia-artists-page.c:358
-#: src/polyhymnia-tracks-page.c:239 src/polyhymnia-window.c:223
-#: src/polyhymnia-window.c:260
+#: src/polyhymnia-artists-page.c:415 src/polyhymnia-artists-page.c:498
+#: src/polyhymnia-tracks-page.c:239 src/polyhymnia-window.c:237
+#: src/polyhymnia-window.c:276 src/polyhymnia-window.c:422
 msgid "If something is missing, try launching library scanning"
 msgstr "Если чего-то не хватает, попробуйте запустить обновление библиотеки"
 
-#: src/polyhymnia-artists-page.c:280
+#: src/polyhymnia-artists-page.c:417
 msgid "No artist albums found"
 msgstr "Альбомов исполнителя не найдено"
 
-#: src/polyhymnia-artists-page.c:346
+#: src/polyhymnia-artists-page.c:485
 msgid "Search for artists failed"
 msgstr "Поиск исполнителей завершился с ошибкой"
 
-#: src/polyhymnia-artists-page.c:360
+#: src/polyhymnia-artists-page.c:500
 msgid "No artists found"
 msgstr "Исполнителей не найдено"
 
-#: src/polyhymnia-queue-pane.c:295
+#: src/polyhymnia-queue-pane.c:561
 msgid "Failed to fetch queue"
 msgstr "Ошибка загрузки очереди"
 
-#: src/polyhymnia-queue-pane.c:309
+#: src/polyhymnia-queue-pane.c:576
 msgid "Queue is empty"
 msgstr "Очередь пуста"
+
+#: src/polyhymnia-playlist-page.c:459
+msgid "Failed to get a playlist"
+msgstr "Ошибка загрузки плейлиста"
+
+#: src/polyhymnia-playlist-page.c:474
+msgid "Playlist is empty"
+msgstr "Плейлист пуст"
 
 #: src/polyhymnia-tracks-page.c:226
 msgid "Search for songs failed"
@@ -307,22 +347,34 @@ msgstr "Поиск песен завершился с ошибкой"
 msgid "No songs found"
 msgstr "Песен не найдено"
 
-#: src/polyhymnia-window.c:211
+#: src/polyhymnia-window.c:224
 msgid "Search for albums failed"
 msgstr "Поиск альбомов завершился с ошибкой"
 
-#: src/polyhymnia-window.c:225
+#: src/polyhymnia-window.c:239
 msgid "No albums found"
 msgstr "Альбомов не найдено"
 
-#: src/polyhymnia-window.c:248
+#: src/polyhymnia-window.c:261
 msgid "Search for genres failed"
 msgstr "Поиск жанров завершился с ошибкой"
 
-#: src/polyhymnia-window.c:262
+#: src/polyhymnia-window.c:278
 msgid "No genres found"
 msgstr "Жанров не найдено"
 
-#: src/polyhymnia-window.c:305
+#: src/polyhymnia-window.c:329
 msgid "Library has been updated"
 msgstr "Библиотека была обновлена"
+
+#: src/polyhymnia-window.c:342
+msgid "Stored playlists have changed"
+msgstr "Хранимые плейлисты были изменены"
+
+#: src/polyhymnia-window.c:408
+msgid "Search for playlists failed"
+msgstr "Поиск плейлистов завершился с ошибкой"
+
+#: src/polyhymnia-window.c:424
+msgid "No playlists found"
+msgstr "Плейлистов не найдено"

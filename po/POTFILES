@@ -5,6 +5,7 @@ data/ui/polyhymnia-album-page.ui
 data/ui/polyhymnia-artists-page.ui
 data/ui/polyhymnia-queue-pane.ui
 data/ui/polyhymnia-player-bar.ui
+data/ui/polyhymnia-playlist-page.ui
 data/ui/polyhymnia-preferences-window.ui
 data/ui/polyhymnia-tracks-page.ui
 data/ui/polyhymnia-window.ui
@@ -13,5 +14,6 @@ src/polyhymnia-album-page.c
 src/polyhymnia-artist-page.c
 src/polyhymnia-artists-page.c
 src/polyhymnia-queue-pane.c
+src/polyhymnia-playlist-page.c
 src/polyhymnia-tracks-page.c
 src/polyhymnia-window.c
