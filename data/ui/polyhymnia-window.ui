@@ -296,7 +296,8 @@
             </property>
           </object>
         </property>
-        <property name="title" translatable="yes">Genres</property>
+        <property name="tag">playlist-list</property>
+        <property name="title" translatable="yes">Playlists</property>
       </object>
     </child>
   </object>

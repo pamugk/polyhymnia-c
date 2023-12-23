@@ -16,6 +16,12 @@ typedef enum
   N_PROPERTIES,
 } PolyhymniaPlaylistPageProperty;
 
+typedef enum
+{
+  SIGNAL_DELETED = 1,
+  N_SIGNALS,
+} PolyhymniaPlaylistPageSignal;
+
 struct _PolyhymniaPlaylistPage
 {
   AdwNavigationPage  parent_instance;
@@ -24,6 +30,7 @@ struct _PolyhymniaPlaylistPage
   GHashTable                *album_covers;
 
   /* Template widgets */
+  AdwMessageDialog          *delete_dialog;
   AdwToolbarView            *root_toolbar_view;
   AdwBreakpointBin          *root_content;
 
@@ -39,6 +46,7 @@ struct _PolyhymniaPlaylistPage
   GtkNoSelection            *tracks_selection_model;
 
   /* Instance properties */
+  gboolean deleted;
   gchar *playlist_title;
 };
 
@@ -46,10 +54,21 @@ G_DEFINE_FINAL_TYPE (PolyhymniaPlaylistPage, polyhymnia_playlist_page, ADW_TYPE_
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+static guint obj_signals[N_SIGNALS] = { 0, };
+
 /* Event handler declarations */
 static void
 polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylistPage *self,
                                                                GtkButton              *user_data);
+
+static void
+polyhymnia_playlist_page_delete_dialog_completed (AdwMessageDialog       *dialog,
+                                                  GAsyncResult           *result,
+                                                  PolyhymniaPlaylistPage *self);
+
+static void
+polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage *self,
+                                                         GtkButton              *user_data);
 
 static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
@@ -158,6 +177,7 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
 
   gobject_class->constructed = polyhymnia_playlist_page_constructed;
   gobject_class->dispose = polyhymnia_playlist_page_dispose;
@@ -175,9 +195,17 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
                                      N_PROPERTIES,
                                      obj_properties);
 
+  obj_signals[SIGNAL_DELETED] =
+     g_signal_newv ("deleted", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-playlist-page.ui");
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, delete_dialog);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, root_content);
 
@@ -191,6 +219,8 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_add_playlist_to_queue_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_playlist_page_delete_playlist_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_playlist_page_play_playlist_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -241,6 +271,40 @@ polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylis
 }
 
 static void
+polyhymnia_playlist_page_delete_dialog_completed (AdwMessageDialog       *dialog,
+                                                  GAsyncResult           *result,
+                                                  PolyhymniaPlaylistPage *self)
+{
+  const char *response = adw_message_dialog_choose_finish (dialog, result);
+
+  if (g_strcmp0 (response, "delete") == 0)
+  {
+    GError *error = NULL;
+    polyhymnia_mpd_client_delete_playlist (self->mpd_client,
+                                           self->playlist_title, &error);
+    if (error == NULL)
+    {
+      g_signal_emit (self, obj_signals[SIGNAL_DELETED], 0);
+      self->deleted = TRUE;
+    } else {
+      g_warning("Failed to delete a playlist: %s", error->message);
+      g_error_free (error);
+      error = NULL;
+    }
+  }
+}
+
+static void
+polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage *self,
+                                                         GtkButton              *user_data)
+{
+  g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
+  adw_message_dialog_choose (self->delete_dialog, NULL,
+                             (GAsyncReadyCallback) polyhymnia_playlist_page_delete_dialog_completed,
+                             self);
+}
+
+static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
                                                  GParamSpec             *pspec,
                                                  PolyhymniaMpdClient    *user_data)
@@ -263,7 +327,13 @@ polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
                                                 PolyhymniaMpdClient    *user_data)
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
-  polyhymnia_playlist_page_fill (self);
+  if (self->deleted)
+  {
+    g_list_store_remove_all (self->tracks_model);
+    g_hash_table_remove_all (self->album_covers);
+  } else {
+    polyhymnia_playlist_page_fill (self);
+  }
 }
 
 static void

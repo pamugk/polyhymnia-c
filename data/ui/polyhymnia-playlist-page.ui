@@ -9,6 +9,14 @@
           <object class="AdwHeaderBar">
             <child type="end">
               <object class="GtkButton">
+                <property name="icon-name">user-trash-symbolic</property>
+                  <signal name="clicked"
+                    handler="polyhymnia_playlist_page_delete_playlist_button_clicked"
+                    swapped="true" />
+	      </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
                 <property name="icon-name">plus-symbolic</property>
                 <signal name="clicked"
                   handler="polyhymnia_playlist_page_add_playlist_to_queue_button_clicked"
@@ -127,6 +135,18 @@
     <property name="orientation">vertical</property>
   </object>
   <object class="AdwStatusPage" id="tracks_status_page" />
+
+  <object class="AdwMessageDialog" id="delete_dialog">
+  <property name="body" translatable="yes">Playlist will be permanently deleted.</property>
+  <property name="close-response">cancel</property>
+  <property name="default-response">cancel</property>
+  <property name="heading" translatable="yes">Delete Playlist?</property>
+  <property name="hide-on-close">true</property>
+  <responses>
+    <response id="cancel" translatable="yes">_Cancel</response>
+    <response id="delete" translatable="yes" appearance="destructive">_Delete</response>
+  </responses>
+</object>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="notify::initialized"

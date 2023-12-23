@@ -84,6 +84,9 @@ static void
 polyhymnia_window_playlist_clicked (PolyhymniaWindow *self,
                                     guint            position,
                                     GtkGridView      *user_data);
+static void
+polyhymnia_window_playlist_deleted (PolyhymniaWindow       *self,
+                                    PolyhymniaPlaylistPage *playlist_page);
 
 static void
 polyhymnia_window_playlists_init (PolyhymniaWindow *self);
@@ -375,8 +378,19 @@ polyhymnia_window_playlist_clicked (PolyhymniaWindow *self,
   playlist_page = g_object_new (POLYHYMNIA_TYPE_PLAYLIST_PAGE,
                                 "playlist-title", playlist_title,
                                 NULL);
+  g_signal_connect_swapped (playlist_page, "deleted",
+                            (GCallback) polyhymnia_window_playlist_deleted,
+                            self);
   adw_navigation_view_push (self->playlist_navigation_view,
                             ADW_NAVIGATION_PAGE (playlist_page));
+}
+
+static void
+polyhymnia_window_playlist_deleted (PolyhymniaWindow       *self,
+                                    PolyhymniaPlaylistPage *playlist_page)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+  adw_navigation_view_pop_to_tag (self->playlist_navigation_view, "playlist-list");
 }
 
 static void
