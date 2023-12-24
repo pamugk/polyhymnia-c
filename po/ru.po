@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-23 18:55+0500\n"
+"POT-Creation-Date: 2023-12-24 21:31+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -27,7 +27,7 @@ msgid "No description"
 msgstr "Без описания"
 
 #: data/ui/polyhymnia-artists-page.ui:6 data/ui/polyhymnia-artists-page.ui:12
-#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:145
+#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:145
 msgid "Artists"
 msgstr "Исполнители"
 
@@ -120,12 +120,12 @@ msgid "Start Page"
 msgstr "Начальная страница"
 
 #: data/ui/polyhymnia-preferences-window.ui:24
-#: data/ui/polyhymnia-preferences-window.ui:41 data/ui/polyhymnia-window.ui:121
+#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:121
 msgid "Library"
 msgstr "Библиотека"
 
 #: data/ui/polyhymnia-preferences-window.ui:25
-#: data/ui/polyhymnia-preferences-window.ui:100
+#: data/ui/polyhymnia-preferences-window.ui:106
 #: data/ui/polyhymnia-window.ui:198
 msgid "Radio"
 msgstr "Радио"
@@ -138,67 +138,75 @@ msgstr "Общие настройки приложения"
 msgid "Common"
 msgstr "Общие"
 
-#: data/ui/polyhymnia-preferences-window.ui:46
+#: data/ui/polyhymnia-preferences-window.ui:37
+msgid "Available MPD server auido outputs"
+msgstr "Доступные на сервере MPD аудиовыходы"
+
+#: data/ui/polyhymnia-preferences-window.ui:38
+msgid "Audio Outputs"
+msgstr "Аудиовыходы"
+
+#: data/ui/polyhymnia-preferences-window.ui:52
 msgid "Album information that can be found in external sources"
 msgstr "Информация об альбомах, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:154
+#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:154
 #: data/ui/polyhymnia-window.ui:241
 msgid "Albums"
 msgstr "Альбомы"
 
-#: data/ui/polyhymnia-preferences-window.ui:52
+#: data/ui/polyhymnia-preferences-window.ui:58
 msgid "Artist information that can be found in external sources"
 msgstr "Информация об исполнителях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:58
+#: data/ui/polyhymnia-preferences-window.ui:64
 msgid "Song information that can be found in external sources"
 msgstr "Информация о песнях, доступная во внешних источниках"
 
-#: data/ui/polyhymnia-preferences-window.ui:59
+#: data/ui/polyhymnia-preferences-window.ui:65
 #: data/ui/polyhymnia-tracks-page.ui:6 data/ui/polyhymnia-window.ui:167
 msgid "Songs"
 msgstr "Песни"
 
-#: data/ui/polyhymnia-preferences-window.ui:62
+#: data/ui/polyhymnia-preferences-window.ui:68
 msgid "Additional information that can be found on music from your library"
 msgstr ""
 "Дополнительные сведения, которые могут быть найдены о музыке из вашей "
 "библиотеки"
 
-#: data/ui/polyhymnia-preferences-window.ui:63
+#: data/ui/polyhymnia-preferences-window.ui:69
 msgid "Additional Information"
 msgstr "Дополнительная информация"
 
-#: data/ui/polyhymnia-preferences-window.ui:70
+#: data/ui/polyhymnia-preferences-window.ui:76
 msgid "Play Explicit Songs"
 msgstr "Воспроизводить непристойные песни"
 
-#: data/ui/polyhymnia-preferences-window.ui:75
+#: data/ui/polyhymnia-preferences-window.ui:81
 msgid "Show Explicit Album Covers"
 msgstr "Отображать непристойные обложки альбомов"
 
-#: data/ui/polyhymnia-preferences-window.ui:78
+#: data/ui/polyhymnia-preferences-window.ui:84
 msgid "The ways to control undesirable content"
 msgstr "Способы контроля нежелательного содержимого"
 
-#: data/ui/polyhymnia-preferences-window.ui:79
+#: data/ui/polyhymnia-preferences-window.ui:85
 msgid "Explicit Content"
 msgstr "Непристойное содержимое"
 
-#: data/ui/polyhymnia-preferences-window.ui:86
+#: data/ui/polyhymnia-preferences-window.ui:92
 msgid "Scan sources for new songs on application startup"
 msgstr "Выполнять поиск новых песен при запуске приложения"
 
-#: data/ui/polyhymnia-preferences-window.ui:87
+#: data/ui/polyhymnia-preferences-window.ui:93
 msgid "Scan on Startup"
 msgstr "Искать при запуске"
 
-#: data/ui/polyhymnia-preferences-window.ui:90
+#: data/ui/polyhymnia-preferences-window.ui:96
 msgid "Library update configuration"
 msgstr "Настройка обновления библиотеки"
 
-#: data/ui/polyhymnia-preferences-window.ui:91
+#: data/ui/polyhymnia-preferences-window.ui:97
 msgid "Scan"
 msgstr "Поиск"
 

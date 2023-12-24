@@ -138,3 +138,32 @@ static void
 polyhymnia_output_init (PolyhymniaOutput *self)
 {
 }
+
+/* Instance methods */
+guint
+polyhymnia_output_get_id (PolyhymniaOutput *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_OUTPUT (self), 0);
+  return self->id;
+}
+
+const gchar *
+polyhymnia_output_get_name (PolyhymniaOutput *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_OUTPUT (self), NULL);
+  return self->name;
+}
+
+const gchar *
+polyhymnia_output_get_plugin (PolyhymniaOutput *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_OUTPUT (self), NULL);
+  return self->plugin;
+}
+
+gboolean
+polyhymnia_output_get_enabled (PolyhymniaOutput *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_OUTPUT (self), FALSE);
+  return self->enabled;
+}
