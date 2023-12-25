@@ -21,6 +21,10 @@ struct _PolyhymniaPreferencesWindow
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
   GSettings           *settings;
+
+  /* UI state */
+  GPtrArray           *outputs;
+  GPtrArray           *output_rows;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaPreferencesWindow, polyhymnia_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
@@ -31,12 +35,22 @@ polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindo
                                                       GParamSpec                  *pspec,
                                                       PolyhymniaMpdClient         *user_data);
 
+static void
+polyhymnia_preferences_window_output_state_changed (PolyhymniaPreferencesWindow *self,
+                                                    GParamSpec                  *pspec,
+                                                    PolyhymniaOutput            *output);
+
+/* Private methods declarations */
+static void
+polyhymnia_preferences_window_clear_outputs (PolyhymniaPreferencesWindow *self);
+
 /* Class stuff */
 static void
 polyhymnia_preferences_window_dispose(GObject *gobject)
 {
   PolyhymniaPreferencesWindow *self = POLYHYMNIA_PREFERENCES_WINDOW (gobject);
 
+  polyhymnia_preferences_window_clear_outputs (self);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PREFERENCES_WINDOW);
 
   G_OBJECT_CLASS (polyhymnia_preferences_window_parent_class)->dispose (gobject);
@@ -101,28 +115,35 @@ polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindo
 {
   g_assert (POLYHYMNIA_IS_PREFERENCES_WINDOW (self));
 
+  polyhymnia_preferences_window_clear_outputs (self);
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     GError *error = NULL;
-    GPtrArray *outputs;
+    GPtrArray *new_outputs;
 
-    outputs = polyhymnia_mpd_client_get_outputs (self->mpd_client, &error);
+    new_outputs = polyhymnia_mpd_client_get_outputs (self->mpd_client, &error);
 
     if (error == NULL)
     {
-      for (guint i = 0; i < outputs->len; i++)
+      self->output_rows = g_ptr_array_sized_new (new_outputs->len);
+      for (guint i = 0; i < new_outputs->len; i++)
       {
-        PolyhymniaOutput *output = g_ptr_array_index (outputs, i);
+        PolyhymniaOutput *output = g_ptr_array_index (new_outputs, i);
         GtkWidget *output_row = adw_switch_row_new ();
         adw_preferences_row_set_title (ADW_PREFERENCES_ROW (output_row),
                                        polyhymnia_output_get_name (output));
         adw_action_row_set_subtitle (ADW_ACTION_ROW (output_row),
                                      polyhymnia_output_get_plugin (output));
-        adw_switch_row_set_active (ADW_SWITCH_ROW (output_row),
-                                   polyhymnia_output_get_enabled (output));
+        g_object_bind_property (output, "enabled",
+                                output_row, "active",
+                                G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
+        g_signal_connect_swapped (output, "notify::enabled",
+                                  (GCallback) polyhymnia_preferences_window_output_state_changed,
+                                  self);
         adw_preferences_group_add (self->audio_outputs_group, output_row);
+        g_ptr_array_add (self->output_rows, output_row);
       }
-      g_ptr_array_free (outputs, TRUE);
+      self->outputs = new_outputs;
     }
     else
     {
@@ -133,5 +154,49 @@ polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindo
   }
   else
   {
+  }
+}
+
+static void
+polyhymnia_preferences_window_output_state_changed (PolyhymniaPreferencesWindow *self,
+                                                    GParamSpec                  *pspec,
+                                                    PolyhymniaOutput            *output)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_PREFERENCES_WINDOW (self));
+  g_return_if_fail (POLYHYMNIA_IS_OUTPUT (output));
+
+  polyhymnia_mpd_client_toggle_output (self->mpd_client,
+                                       polyhymnia_output_get_id (output),
+                                       &error);
+
+  if (error != NULL)
+  {
+      g_warning("Failed to toggle an audio output state: %s", error->message);
+      g_error_free (error);
+      error = NULL;
+  }
+}
+
+/* Private methods implementations */
+static void
+polyhymnia_preferences_window_clear_outputs (PolyhymniaPreferencesWindow *self)
+{
+  if (self->output_rows != NULL)
+  {
+    for (int i = 0; i < self->output_rows->len; i++)
+    {
+      adw_preferences_group_remove (self->audio_outputs_group,
+                                    g_ptr_array_index (self->output_rows, i));
+    }
+    g_ptr_array_unref (self->output_rows);
+    self->output_rows = NULL;
+  }
+
+  if (self->outputs != NULL)
+  {
+    g_ptr_array_unref (self->outputs);
+    self->outputs = NULL;
   }
 }

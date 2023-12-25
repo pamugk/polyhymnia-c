@@ -127,7 +127,7 @@ polyhymnia_output_class_init (PolyhymniaOutputClass *klass)
                           "Enabled",
                           "Whether an output is enabled.",
                           FALSE,
-                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+                          G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
                                      N_PROPERTIES,

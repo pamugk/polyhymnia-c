@@ -1707,7 +1707,8 @@ polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
   }
 
   response = mpd_run_get_volume (self->main_mpd_connection);
-  if (response == -1)
+  /* Somehow -1 does also mean disabled output, and no error is registered */
+  if (response == -1 && mpd_connection_get_error (self->main_mpd_connection) != MPD_ERROR_SUCCESS)
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
@@ -1718,7 +1719,7 @@ polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
   }
   else
   {
-    volume = response;
+    volume = response >= 0 ? response : 0;
   }
 
   return volume;
