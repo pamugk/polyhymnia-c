@@ -8,6 +8,7 @@ polyhymnia_sources = [
   'polyhymnia-application.c',
   'polyhymnia-format-utils.c',
   'polyhymnia-mpd-client.c',
+  'polyhymnia-output.c',
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',
   'polyhymnia-playlist-page.c',

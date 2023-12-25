@@ -32,6 +32,12 @@
             <property name="title" translatable="yes">Common</property>
           </object>
         </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="audio_outputs_group">
+            <property name="description" translatable="yes">Available MPD server auido outputs</property>
+            <property name="title" translatable="yes">Audio Outputs</property>
+          </object>
+        </child>
       </object>
     </child>
     <child>
@@ -105,6 +111,11 @@
     <property name="modal">True</property>
   </template>
 
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="notify::initialized"
+      handler="polyhymnia_preferences_window_mpd_client_initialized"
+      swapped="true" />
+  </object>
   <object class="GSettings" id="settings">
     <property name="schema-id">com.github.pamugk.polyhymnia</property>
   </object>
