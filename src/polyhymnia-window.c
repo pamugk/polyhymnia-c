@@ -91,6 +91,10 @@ polyhymnia_window_playlist_deleted (PolyhymniaWindow       *self,
 static void
 polyhymnia_window_playlists_init (PolyhymniaWindow *self);
 
+static void
+polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
+                                       AdwSplitButton   *user_data);
+
 /* Class stuff */
 static void
 polyhymnia_window_dispose(GObject *gobject)
@@ -150,6 +154,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
                                            polyhymnia_window_navigate_artist);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_playlist_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_scan_button_clicked);
 }
 
 static void
@@ -438,4 +444,16 @@ polyhymnia_window_playlists_init (PolyhymniaWindow *self)
     adw_bin_set_child (self->playlist_stack_page_content,
                        GTK_WIDGET (self->playlist_navigation_view));
   }
+}
+
+static void
+polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
+                                       AdwSplitButton   *user_data)
+{
+  GtkApplication *app;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  app = gtk_window_get_application (GTK_WINDOW (self));
+  g_action_group_activate_action (G_ACTION_GROUP (app), "scan", NULL);
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-24 21:31+0500\n"
+"POT-Creation-Date: 2023-12-26 23:00+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgid "No description"
 msgstr ""
 
 #: data/ui/polyhymnia-artists-page.ui:6 data/ui/polyhymnia-artists-page.ui:12
-#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:145
+#: data/ui/polyhymnia-preferences-window.ui:59 data/ui/polyhymnia-window.ui:161
 msgid "Artists"
 msgstr ""
 
@@ -120,13 +120,13 @@ msgid "Start Page"
 msgstr ""
 
 #: data/ui/polyhymnia-preferences-window.ui:24
-#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:121
+#: data/ui/polyhymnia-preferences-window.ui:47 data/ui/polyhymnia-window.ui:137
 msgid "Library"
 msgstr ""
 
 #: data/ui/polyhymnia-preferences-window.ui:25
 #: data/ui/polyhymnia-preferences-window.ui:106
-#: data/ui/polyhymnia-window.ui:198
+#: data/ui/polyhymnia-window.ui:214
 msgid "Radio"
 msgstr ""
 
@@ -150,8 +150,8 @@ msgstr ""
 msgid "Album information that can be found in external sources"
 msgstr ""
 
-#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:154
-#: data/ui/polyhymnia-window.ui:241
+#: data/ui/polyhymnia-preferences-window.ui:53 data/ui/polyhymnia-window.ui:170
+#: data/ui/polyhymnia-window.ui:257
 msgid "Albums"
 msgstr ""
 
@@ -164,7 +164,7 @@ msgid "Song information that can be found in external sources"
 msgstr ""
 
 #: data/ui/polyhymnia-preferences-window.ui:65
-#: data/ui/polyhymnia-tracks-page.ui:6 data/ui/polyhymnia-window.ui:167
+#: data/ui/polyhymnia-tracks-page.ui:6 data/ui/polyhymnia-window.ui:183
 msgid "Songs"
 msgstr ""
 
@@ -208,51 +208,59 @@ msgstr ""
 msgid "Scan"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:56
+#: data/ui/polyhymnia-window.ui:59
 msgid "Search"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:69
+#: data/ui/polyhymnia-window.ui:72
 msgid "Search…"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:100
+#: data/ui/polyhymnia-window.ui:103
 msgid "_Preferences"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:104
+#: data/ui/polyhymnia-window.ui:107
 msgid "_Keyboard Shortcuts"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:108
+#: data/ui/polyhymnia-window.ui:111
 msgid "_About Polyhymnia"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:176 data/ui/polyhymnia-window.ui:300
+#: data/ui/polyhymnia-window.ui:120
+msgid "_Scan"
+msgstr ""
+
+#: data/ui/polyhymnia-window.ui:124
+msgid "_Full Scan"
+msgstr ""
+
+#: data/ui/polyhymnia-window.ui:192 data/ui/polyhymnia-window.ui:316
 msgid "Playlists"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:185 data/ui/polyhymnia-window.ui:268
+#: data/ui/polyhymnia-window.ui:201 data/ui/polyhymnia-window.ui:284
 msgid "Genres"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:201
+#: data/ui/polyhymnia-window.ui:217
 msgid "Check your Internet connection and try again"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:203
+#: data/ui/polyhymnia-window.ui:219
 msgid "No Internet connection"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:310
+#: data/ui/polyhymnia-window.ui:326
 msgid "Check your MPD setup and try again"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:312
+#: data/ui/polyhymnia-window.ui:328
 msgid "No MPD connection"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:317
+#: data/ui/polyhymnia-window.ui:333
 msgid "Try again"
 msgstr ""
 
@@ -311,8 +319,8 @@ msgid "Search for artist discography failed"
 msgstr ""
 
 #: src/polyhymnia-artists-page.c:415 src/polyhymnia-artists-page.c:498
-#: src/polyhymnia-tracks-page.c:239 src/polyhymnia-window.c:237
-#: src/polyhymnia-window.c:276 src/polyhymnia-window.c:422
+#: src/polyhymnia-tracks-page.c:239 src/polyhymnia-window.c:243
+#: src/polyhymnia-window.c:282 src/polyhymnia-window.c:428
 msgid "If something is missing, try launching library scanning"
 msgstr ""
 
@@ -352,34 +360,34 @@ msgstr ""
 msgid "No songs found"
 msgstr ""
 
-#: src/polyhymnia-window.c:224
+#: src/polyhymnia-window.c:230
 msgid "Search for albums failed"
 msgstr ""
 
-#: src/polyhymnia-window.c:239
+#: src/polyhymnia-window.c:245
 msgid "No albums found"
 msgstr ""
 
-#: src/polyhymnia-window.c:261
+#: src/polyhymnia-window.c:267
 msgid "Search for genres failed"
 msgstr ""
 
-#: src/polyhymnia-window.c:278
+#: src/polyhymnia-window.c:284
 msgid "No genres found"
 msgstr ""
 
-#: src/polyhymnia-window.c:329
+#: src/polyhymnia-window.c:335
 msgid "Library has been updated"
 msgstr ""
 
-#: src/polyhymnia-window.c:342
+#: src/polyhymnia-window.c:348
 msgid "Stored playlists have changed"
 msgstr ""
 
-#: src/polyhymnia-window.c:408
+#: src/polyhymnia-window.c:414
 msgid "Search for playlists failed"
 msgstr ""
 
-#: src/polyhymnia-window.c:424
+#: src/polyhymnia-window.c:430
 msgid "No playlists found"
 msgstr ""

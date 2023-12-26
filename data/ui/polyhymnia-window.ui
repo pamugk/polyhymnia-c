@@ -23,14 +23,17 @@
         <child type="top">
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
-              <object class="GtkButton">
-                <property name="action-name">app.scan</property>
+              <object class="AdwSplitButton">
                 <property name="action-target">"library"</property>
                 <property name="icon-name">update-symbolic</property>
+                <property name="menu-model">scan_menu</property>
                 <property name="visible"
                   bind-source="mpd_client"
                   bind-property="initialized"
                   bind-flags="sync-create" />
+                <signal name="clicked"
+                  handler="polyhymnia_window_scan_button_clicked"
+                  swapped="true" />
               </object>
             </child>
             <property name="title-widget">
@@ -107,6 +110,19 @@
       <item>
         <attribute name="label" translatable="yes">_About Polyhymnia</attribute>
         <attribute name="action">app.about</attribute>
+      </item>
+    </section>
+  </menu>
+
+  <menu id="scan_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Scan</attribute>
+        <attribute name="action">app.scan</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Full Scan</attribute>
+        <attribute name="action">app.rescan</attribute>
       </item>
     </section>
   </menu>
