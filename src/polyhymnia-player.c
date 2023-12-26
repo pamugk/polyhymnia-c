@@ -25,6 +25,7 @@ struct _PolyhymniaPlayer
   GObject  parent_instance;
 
   /* Utility fields */
+  guint               elapsed_timer_id;
   PolyhymniaMpdClient *mpd_client;
 
   /* State fields */
@@ -44,25 +45,28 @@ G_DEFINE_FINAL_TYPE (PolyhymniaPlayer, polyhymnia_player, G_TYPE_OBJECT)
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* Event handlers declaration */
+static gboolean
+polyhymnia_player_elapsed_tick (PolyhymniaPlayer *self);
+
 static void
-polyhymnia_player_mpd_audio_output_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_audio_output_changed (PolyhymniaPlayer    *self,
                                             PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_player_mpd_initialized (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_initialized (PolyhymniaPlayer    *self,
                                    GParamSpec* pspec,
                                    PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    *self,
                                               PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    *self,
                                        PolyhymniaMpdClient *user_data);
 
 static void
-polyhymnia_player_mpd_volume_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_volume_changed (PolyhymniaPlayer    *self,
                                       PolyhymniaMpdClient *user_data);
 
 /* Class stuff - constructors, destructors, etc */
@@ -105,6 +109,8 @@ static void
 polyhymnia_player_finalize (GObject *gobject)
 {
   PolyhymniaPlayer *self = POLYHYMNIA_PLAYER (gobject);
+
+  g_source_remove (self->elapsed_timer_id);
 
   G_OBJECT_CLASS (polyhymnia_player_parent_class)->finalize (gobject);
 }
@@ -285,6 +291,8 @@ static void
 polyhymnia_player_init (PolyhymniaPlayer *self)
 {
   self->mpd_client = g_object_new (POLYHYMNIA_TYPE_MPD_CLIENT, NULL);
+  self->elapsed_timer_id = g_timeout_add_seconds (1, G_SOURCE_FUNC (polyhymnia_player_elapsed_tick),
+                                                  self);
 
   polyhymnia_player_mpd_initialized (self, NULL, self->mpd_client);
 
@@ -412,15 +420,30 @@ polyhymnia_player_toggle_playback_state (PolyhymniaPlayer *self,
 }
 
 /* Event handlers implementation */
+static gboolean
+polyhymnia_player_elapsed_tick (PolyhymniaPlayer *self)
+{
+  if (self->playback_status == POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PLAYING)
+  {
+    guint duration = self->current_track == NULL
+      ? 0 : polyhymnia_track_get_duration (self->current_track);
+    guint next_elapsed = self->elapsed_seconds + 1;
+    self->elapsed_seconds = next_elapsed < duration ? next_elapsed : duration;
+    g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_ELAPSED_SECONDS]);
+  }
+
+  return TRUE;
+}
+
 static void
-polyhymnia_player_mpd_audio_output_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_audio_output_changed (PolyhymniaPlayer    *self,
                                             PolyhymniaMpdClient *user_data)
 {
   g_return_if_fail (POLYHYMNIA_IS_PLAYER (self));
 }
 
 static void
-polyhymnia_player_mpd_initialized (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_initialized (PolyhymniaPlayer    *self,
                                    GParamSpec* pspec,
                                    PolyhymniaMpdClient *user_data)
 {
@@ -474,7 +497,7 @@ polyhymnia_player_mpd_initialized (PolyhymniaPlayer    * self,
 }
 
 static void
-polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    *self,
                                               PolyhymniaMpdClient *user_data)
 {
   GError *error = NULL;
@@ -560,7 +583,7 @@ polyhymnia_player_mpd_playback_state_changed (PolyhymniaPlayer    * self,
 }
 
 static void
-polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    *self,
                                        PolyhymniaMpdClient *user_data)
 {
   GError *error = NULL;
@@ -590,7 +613,7 @@ polyhymnia_player_mpd_options_changed (PolyhymniaPlayer    * self,
 }
 
 static void
-polyhymnia_player_mpd_volume_changed (PolyhymniaPlayer    * self,
+polyhymnia_player_mpd_volume_changed (PolyhymniaPlayer    *self,
                                       PolyhymniaMpdClient *user_data)
 {
   GError *error = NULL;
