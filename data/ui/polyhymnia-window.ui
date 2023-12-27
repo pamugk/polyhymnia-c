@@ -11,7 +11,6 @@
         <setter object="header_bar" property="title-widget"/>
         <setter object="library_split_view" property="collapsed">true</setter>
         <setter object="artists_page" property="collapsed-view">true</setter>
-        <setter object="switcher_bar" property="reveal">true</setter>
       </object>
     </child>
     <property name="content">
@@ -36,12 +35,6 @@
                   swapped="true" />
               </object>
             </child>
-            <property name="title-widget">
-              <object class="AdwViewSwitcher">
-                <property name="stack">content_stack</property>
-                <property name="policy">wide</property>
-              </object>
-            </property>
             <child type="end">
               <object class="GtkMenuButton">
                 <property name="icon-name">open-menu-symbolic</property>
@@ -88,11 +81,6 @@
             </style>
           </object>
         </child>
-        <child type="bottom">
-          <object class="AdwViewSwitcherBar" id="switcher_bar">
-            <property name="stack">content_stack</property>
-          </object>
-        </child>
       </object>
     </property>
   </template>
@@ -129,96 +117,71 @@
 
   <object class="AdwOverlaySplitView" id="content">
     <child type="content">
-      <object class="AdwViewStack" id="content_stack">
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="icon-name">library-music-symbolic</property>
-            <property name="name">library_page</property>
-            <property name="title" translatable="yes">Library</property>
-            <property name="child">
-              <object class="AdwOverlaySplitView" id="library_split_view">
-                <child type="sidebar">
-                  <object class="GtkStackSidebar">
-                    <property name="stack">library_stack</property>
-                  </object>
-                </child>
-                <child type="content">
-                  <object class="GtkStack" id="library_stack">
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwNavigationView" id="artist_navigation_view">
-                            <child>
-                              <object class="PolyhymniaArtistsPage" id="artists_page">
-                                <signal name="navigate"
-                                  handler="polyhymnia_window_navigate_artist"
-                                  swapped="true" />
-                              </object>
-                            </child>
-                          </object>
-                        </property>
-                        <property name="name">artists_page</property>
-                        <property name="title" translatable="yes">Artists</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwBin" id="album_stack_page_content" />
-                        </property>
-                        <property name="name">albums_page</property>
-                        <property name="title" translatable="yes">Albums</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwNavigationView">
-                            <child>
-                              <object class="PolyhymniaTracksPage" />
-                            </child>
-                          </object>
-                        </property>
-                        <property name="name">songs_page</property>
-                        <property name="title" translatable="yes">Songs</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwBin" id="playlist_stack_page_content" />
-                        </property>
-                        <property name="name">playlists_page</property>
-                        <property name="title" translatable="yes">Playlists</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkStackPage">
-                        <property name="child">
-                          <object class="AdwBin" id="genre_stack_page_content" />
-                        </property>
-                        <property name="name">genres_page</property>
-                        <property name="title" translatable="yes">Genres</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </property>
+      <object class="AdwOverlaySplitView" id="library_split_view">
+        <child type="sidebar">
+          <object class="GtkStackSidebar">
+            <property name="stack">library_stack</property>
           </object>
         </child>
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="icon-name">audio-radio-symbolic</property>
-            <property name="name">radio_page</property>
-            <property name="title" translatable="yes">Radio</property>
-            <property name="child">
-              <object class="AdwStatusPage">
-                <property name="description" translatable="yes">Check your Internet connection and try again</property>
-                <property name="icon-name">offline-globe-symbolic</property>
-                <property name="title" translatable="yes">No Internet connection</property>
+        <child type="content">
+          <object class="GtkStack" id="library_stack">
+            <child>
+              <object class="GtkStackPage">
+                <property name="child">
+                  <object class="AdwNavigationView" id="artist_navigation_view">
+                    <child>
+                      <object class="PolyhymniaArtistsPage" id="artists_page">
+                        <signal name="navigate"
+                          handler="polyhymnia_window_navigate_artist"
+                          swapped="true" />
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="name">artists_page</property>
+                <property name="title" translatable="yes">Artists</property>
               </object>
-            </property>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="child">
+                  <object class="AdwBin" id="album_stack_page_content" />
+                </property>
+                <property name="name">albums_page</property>
+                <property name="title" translatable="yes">Albums</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="child">
+                  <object class="AdwNavigationView">
+                    <child>
+                      <object class="PolyhymniaTracksPage" />
+                    </child>
+                  </object>
+                </property>
+                <property name="name">songs_page</property>
+                <property name="title" translatable="yes">Songs</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="child">
+                  <object class="AdwBin" id="playlist_stack_page_content" />
+                </property>
+                <property name="name">playlists_page</property>
+                <property name="title" translatable="yes">Playlists</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="child">
+                  <object class="AdwBin" id="genre_stack_page_content" />
+                </property>
+                <property name="name">genres_page</property>
+                <property name="title" translatable="yes">Genres</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>
