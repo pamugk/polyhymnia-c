@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaAlbumsPage" parent="AdwNavigationPage">
+    <property name="tag">albums-list</property>
+    <property name="title" translatable="yes">Albums</property>
+  </template>
+
+  <object class="GtkScrolledWindow" id="albums_content">
+    <property name="child">
+      <object class="GtkGridView">
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
+          </object>
+        </property>
+        <property name="model">
+          <object class="GtkNoSelection" id="albums_selection_model" />
+        </property>
+        <property name="single-click-activate">true</property>
+        <signal name="activate"
+          handler="polyhymnia_albums_page_album_clicked"
+          swapped="true" />
+      </object>
+    </property>
+  </object>
+  <object class="AdwStatusPage" id="albums_status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="database-updated"
+      handler="polyhymnia_albums_page_mpd_database_updated"
+      swapped="true" />
+    <signal name="notify::initialized"
+      handler="polyhymnia_albums_page_mpd_client_initialized"
+      swapped="true" />
+  </object>
+</interface>

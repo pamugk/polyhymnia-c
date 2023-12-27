@@ -128,7 +128,7 @@
             <child>
               <object class="GtkStackPage">
                 <property name="child">
-                  <object class="AdwNavigationView" id="artist_navigation_view">
+                  <object class="AdwNavigationView" id="artists_navigation_view">
                     <child>
                       <object class="PolyhymniaArtistsPage" id="artists_page">
                         <signal name="navigate"
@@ -145,7 +145,15 @@
             <child>
               <object class="GtkStackPage">
                 <property name="child">
-                  <object class="AdwBin" id="album_stack_page_content" />
+                  <object class="AdwNavigationView" id="albums_navigation_view">
+                    <child>
+                      <object class="PolyhymniaAlbumsPage">
+                        <signal name="navigate"
+                          handler="polyhymnia_window_navigate_album"
+                          swapped="true" />
+                      </object>
+                    </child>
+                  </object>
                 </property>
                 <property name="name">albums_page</property>
                 <property name="title" translatable="yes">Albums</property>
@@ -167,19 +175,18 @@
             <child>
               <object class="GtkStackPage">
                 <property name="child">
-                  <object class="AdwBin" id="playlist_stack_page_content" />
+                  <object class="AdwNavigationView" id="playlists_navigation_view">
+                    <child>
+                      <object class="PolyhymniaPlaylistsPage">
+                        <signal name="navigate"
+                          handler="polyhymnia_window_navigate_playlist"
+                          swapped="true" />
+                      </object>
+                    </child>
+                  </object>
                 </property>
                 <property name="name">playlists_page</property>
                 <property name="title" translatable="yes">Playlists</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkStackPage">
-                <property name="child">
-                  <object class="AdwBin" id="genre_stack_page_content" />
-                </property>
-                <property name="name">genres_page</property>
-                <property name="title" translatable="yes">Genres</property>
               </object>
             </child>
           </object>
@@ -193,97 +200,6 @@
     <property name="max-sidebar-width">300</property>
     <property name="sidebar-position">end</property>
   </object>
-
-  <object class="AdwNavigationView" id="album_navigation_view">
-    <child>
-      <object class="AdwNavigationPage">
-        <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkGridView">
-                <property name="factory">
-                  <object class="GtkBuilderListItemFactory">
-                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-album-grid-item.ui</property>
-                  </object>
-                </property>
-                <property name="model">
-                  <object class="GtkNoSelection" id="album_selection_model" />
-                </property>
-                <property name="single-click-activate">true</property>
-                <signal name="activate"
-                  handler="polyhymnia_window_album_clicked"
-                  swapped="true" />
-              </object>
-            </property>
-          </object>
-        </property>
-        <property name="title" translatable="yes">Albums</property>
-      </object>
-    </child>
-  </object>
-  <object class="AdwNavigationView" id="genre_navigation_view">
-    <child>
-      <object class="AdwNavigationPage">
-        <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkGridView">
-                <property name="factory">
-                  <object class="GtkBuilderListItemFactory" id="genre_factory">
-                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
-                  </object>
-                </property>
-                <property name="model">
-                  <object class="GtkNoSelection" id="genre_selection_model">
-                    <property name="model">
-                      <object class="GtkStringList" id="genre_model" />
-                    </property>
-                  </object>
-                </property>
-              </object>
-            </property>
-          </object>
-        </property>
-        <property name="title" translatable="yes">Genres</property>
-      </object>
-    </child>
-  </object>
-  <object class="AdwNavigationView" id="playlist_navigation_view">
-    <child>
-      <object class="AdwNavigationPage">
-        <property name="child">
-          <object class="GtkScrolledWindow">
-            <property name="child">
-              <object class="GtkGridView">
-                <property name="factory">
-                  <object class="GtkBuilderListItemFactory" id="playlist_factory">
-                    <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
-                  </object>
-                </property>
-                <property name="model">
-                  <object class="GtkNoSelection" id="playlist_selection_model">
-                    <property name="model">
-                      <object class="GtkStringList" id="playlist_model" />
-                    </property>
-                  </object>
-                </property>
-                <property name="single-click-activate">true</property>
-                <signal name="activate"
-                  handler="polyhymnia_window_playlist_clicked"
-                  swapped="true" />
-              </object>
-            </property>
-          </object>
-        </property>
-        <property name="tag">playlist-list</property>
-        <property name="title" translatable="yes">Playlists</property>
-      </object>
-    </child>
-  </object>
-
-  <object class="AdwStatusPage" id="albums_status_page" />
-  <object class="AdwStatusPage" id="genres_status_page" />
-  <object class="AdwStatusPage" id="playlists_status_page" />
 
   <object class="AdwStatusPage" id="no_mpd_connection_page">
     <property name="description" translatable="yes">Check your MPD setup and try again</property>

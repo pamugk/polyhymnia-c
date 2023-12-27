@@ -15,6 +15,12 @@ typedef enum
   N_PROPERTIES,
 } PolyhymniaAlbumPageProperty;
 
+typedef enum
+{
+  SIGNAL_DELETED = 1,
+  N_SIGNALS,
+} PolyhymniaAlbumPageSignal;
+
 struct _PolyhymniaAlbumPage
 {
   AdwNavigationPage  parent_instance;
@@ -53,6 +59,8 @@ struct _PolyhymniaAlbumPage
 G_DEFINE_FINAL_TYPE (PolyhymniaAlbumPage, polyhymnia_album_page, ADW_TYPE_NAVIGATION_PAGE)
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static guint obj_signals[N_SIGNALS] = { 0, };
 
 /* Event handler declarations */
 static void
@@ -149,6 +157,7 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
 
   gobject_class->constructed = polyhymnia_album_page_constructed;
   gobject_class->dispose = polyhymnia_album_page_dispose;
@@ -165,6 +174,13 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
   g_object_class_install_properties (gobject_class,
                                      N_PROPERTIES,
                                      obj_properties);
+
+  obj_signals[SIGNAL_DELETED] =
+     g_signal_newv ("deleted", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-album-page.ui");
@@ -375,6 +391,7 @@ polyhymnia_album_page_fill (PolyhymniaAlbumPage *self)
                   NULL);
     adw_toolbar_view_set_content (self->root_toolbar_view,
                                   GTK_WIDGET (self->tracks_status_page));
+    g_signal_emit (self, obj_signals[SIGNAL_DELETED], 0);
   }
   else
   {
