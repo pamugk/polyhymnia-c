@@ -473,8 +473,12 @@ polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage    *self,
 static void
 polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
 {
-  GError *error = NULL;
   GPtrArray *artists;
+  GError    *error = NULL;
+  GtkWidget *new_child;
+  GtkWidget *previous_child;
+
+  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   artists = polyhymnia_mpd_client_search_artists (self->mpd_client, &error);
   if (error != NULL)
@@ -484,8 +488,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                   "icon-name", "error-symbolic",
                   "title", _("Search for artists failed"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->artists_status_page));
+    new_child = GTK_WIDGET (self->artists_status_page);
     g_warning("Search for artists failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
@@ -499,8 +502,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                   "icon-name", "question-round-symbolic",
                   "title", _("No artists found"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->artists_status_page));
+    new_child = GTK_WIDGET (self->artists_status_page);
     g_list_store_remove_all (self->artist_model);
   }
   else
@@ -510,8 +512,16 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                           g_list_model_get_n_items (G_LIST_MODEL (self->artist_model)),
                           artists->pdata, artists->len);
     g_ptr_array_free (artists, TRUE);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->artists_split_view));
+    new_child = GTK_WIDGET (self->artists_split_view);
+  }
+
+  if (new_child != previous_child)
+  {
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
   }
 }
 

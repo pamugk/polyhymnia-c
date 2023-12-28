@@ -126,9 +126,13 @@ polyhymnia_playlists_page_mpd_playlists_changed (PolyhymniaPlaylistsPage *self,
                                                  PolyhymniaMpdClient     *mpd_client)
 {
   GError *error = NULL;
+  GtkWidget *new_child;
   GPtrArray *playlists;
+  GtkWidget *previous_child;
 
   g_assert (POLYHYMNIA_IS_PLAYLISTS_PAGE (self));
+
+  previous_child= adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   playlists = polyhymnia_mpd_client_search_playlists (mpd_client, &error);
   if (error != NULL)
@@ -138,8 +142,7 @@ polyhymnia_playlists_page_mpd_playlists_changed (PolyhymniaPlaylistsPage *self,
                   "icon-name", "error-symbolic",
                   "title", _("Search for playlists failed"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->playlists_status_page));
+    new_child = GTK_WIDGET (self->playlists_status_page);
     g_warning("Search for playlists failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
@@ -154,8 +157,7 @@ polyhymnia_playlists_page_mpd_playlists_changed (PolyhymniaPlaylistsPage *self,
                   "icon-name", "question-round-symbolic",
                   "title", _("No playlists found"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->playlists_status_page));
+    new_child = GTK_WIDGET (self->playlists_status_page);
     gtk_string_list_splice (self->playlists_model,
                             0, g_list_model_get_n_items (G_LIST_MODEL (self->playlists_model)),
                             NULL);
@@ -166,8 +168,16 @@ polyhymnia_playlists_page_mpd_playlists_changed (PolyhymniaPlaylistsPage *self,
                             0, g_list_model_get_n_items (G_LIST_MODEL (self->playlists_model)),
                             (const gchar *const *) playlists->pdata);
     g_ptr_array_free (playlists, TRUE);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->playlists_content));
+    new_child = GTK_WIDGET (self->playlists_content);
+  }
+
+  if (new_child != previous_child)
+  {
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
   }
 }
 

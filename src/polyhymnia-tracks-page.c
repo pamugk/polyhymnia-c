@@ -215,7 +215,11 @@ static void
 polyhymnia_tracks_page_fill (PolyhymniaTracksPage *self)
 {
   GError    *error = NULL;
+  GtkWidget *new_child;
+  GtkWidget *previous_child;
   GPtrArray *tracks;
+
+  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   tracks = polyhymnia_mpd_client_search_tracks (self->mpd_client, "", &error);
   if (error != NULL)
@@ -225,8 +229,7 @@ polyhymnia_tracks_page_fill (PolyhymniaTracksPage *self)
                   "icon-name", "error-symbolic",
                   "title", _("Search for songs failed"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->tracks_status_page));
+    new_child = GTK_WIDGET (self->tracks_status_page);
     g_list_store_remove_all (self->track_model);
     g_warning("Search for tracks failed: %s\n", error->message);
     g_error_free (error);
@@ -240,8 +243,7 @@ polyhymnia_tracks_page_fill (PolyhymniaTracksPage *self)
                   "icon-name", "question-round-symbolic",
                   "title", _("No songs found"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->tracks_status_page));
+    new_child = GTK_WIDGET (self->tracks_status_page);
     g_list_store_remove_all (self->track_model);
   }
   else
@@ -250,8 +252,16 @@ polyhymnia_tracks_page_fill (PolyhymniaTracksPage *self)
                          0, g_list_model_get_n_items (G_LIST_MODEL (self->track_model)),
                          tracks->pdata, tracks->len);
     g_ptr_array_free (tracks, TRUE);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->track_toolbar_view));
+    new_child = GTK_WIDGET (self->track_toolbar_view);
+  }
+
+  if (new_child != previous_child)
+  {
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
   }
 }
 

@@ -146,8 +146,12 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
 {
   GPtrArray *albums;
   GError    *error = NULL;
+  GtkWidget *new_child;
+  GtkWidget *previous_child;
 
   g_assert (POLYHYMNIA_IS_ALBUMS_PAGE (self));
+
+  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   albums = polyhymnia_mpd_client_search_albums (self->mpd_client, &error);
   if (error != NULL)
@@ -157,8 +161,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                   "icon-name", "error-symbolic",
                   "title", _("Search for albums failed"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->albums_status_page));
+    new_child = GTK_WIDGET (self->albums_status_page);
     g_warning("Search for albums failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
@@ -172,7 +175,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                   "icon-name", "question-round-symbolic",
                   "title", _("No albums found"),
                   NULL);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->albums_status_page));
+    new_child = GTK_WIDGET (self->albums_status_page);
     g_list_store_remove_all (self->albums_model);
   }
   else
@@ -181,7 +184,15 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                          0, g_list_model_get_n_items (G_LIST_MODEL (self->albums_model)),
                          albums->pdata, albums->len);
     g_ptr_array_free (albums, TRUE);
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self),
-                                   GTK_WIDGET (self->albums_content));
+    new_child = GTK_WIDGET (self->albums_content);
+  }
+
+  if (new_child != previous_child)
+  {
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
   }
 }

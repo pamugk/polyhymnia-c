@@ -176,17 +176,29 @@ polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
                                           GParamSpec          *pspec,
                                           PolyhymniaMpdClient *user_data)
 {
+  GtkWidget *new_child;
+  GtkWidget *previous_child;
+
   g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  previous_child = adw_toast_overlay_get_child (self->root_toast_overlay);
 
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->content));
+    new_child = GTK_WIDGET (self->content);
   }
   else
   {
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->no_mpd_connection_page));
+    new_child = GTK_WIDGET (self->no_mpd_connection_page);
+  }
+
+  if (new_child != previous_child)
+  {
+    adw_toast_overlay_set_child (self->root_toast_overlay, new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
   }
 }
 
