@@ -39,8 +39,8 @@ struct _PolyhymniaArtistsPage
 
   /* Template objects */
   PolyhymniaMpdClient    *mpd_client;
-  GListStore             *artist_model;
-  GtkSingleSelection     *artist_selection_model;
+  GListStore             *artists_model;
+  GtkSingleSelection     *artists_selection_model;
   GListStore             *artist_tracks_model;
   GtkNoSelection         *artist_tracks_selection_model;
   GtkSortListModel       *artist_tracks_sort_model;
@@ -200,7 +200,7 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, mpd_client);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_selection_model);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artists_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_selection_model);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistsPage, artist_tracks_sort_model);
 
@@ -227,13 +227,13 @@ polyhymnia_artists_page_init (PolyhymniaArtistsPage *self)
 {
   self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                               g_free, g_object_unref);
-  self->artist_model = g_list_store_new (POLYHYMNIA_TYPE_ARTIST);
+  self->artists_model = g_list_store_new (POLYHYMNIA_TYPE_ARTIST);
   self->artist_tracks_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
 
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  gtk_single_selection_set_model (self->artist_selection_model,
-                                  G_LIST_MODEL (self->artist_model));
+  gtk_single_selection_set_model (self->artists_selection_model,
+                                  G_LIST_MODEL (self->artists_model));
   gtk_sort_list_model_set_model (self->artist_tracks_sort_model,
                                  G_LIST_MODEL (self->artist_tracks_model));
 
@@ -347,7 +347,7 @@ polyhymnia_artists_page_artist_clicked (PolyhymniaArtistsPage *self,
 
   g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
 
-  artist = g_list_model_get_item (G_LIST_MODEL (self->artist_model), position);
+  artist = g_list_model_get_item (G_LIST_MODEL (self->artists_model), position);
   g_signal_emit (self, obj_signals[SIGNAL_NAVIGATE], 0,
                  polyhymnia_artist_get_name (artist));
 }
@@ -386,7 +386,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
     GPtrArray        *selected_artist_tracks;
     const gchar      *selected_artist_name;
 
-    selected_artist = g_list_model_get_item (G_LIST_MODEL (self->artist_model),
+    selected_artist = g_list_model_get_item (G_LIST_MODEL (self->artists_model),
                                              selected_artist_index);
     selected_artist_name = polyhymnia_artist_get_name (selected_artist);
     adw_navigation_page_set_title (self->artist_discography_navigation_page,
@@ -455,7 +455,7 @@ polyhymnia_artists_page_mpd_client_initialized (PolyhymniaArtistsPage *self,
   {
     g_hash_table_remove_all (self->album_covers);
     g_list_store_remove_all (self->artist_tracks_model);
-    g_list_store_remove_all (self->artist_model);
+    g_list_store_remove_all (self->artists_model);
   }
 }
 
@@ -480,6 +480,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
 
   previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->artists_selection_model));
   artists = polyhymnia_mpd_client_search_artists (self->mpd_client, &error);
   if (error != NULL)
   {
@@ -492,7 +493,7 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
     g_warning("Search for artists failed: %s\n", error->message);
     g_error_free (error);
     error = NULL;
-    g_list_store_remove_all (self->artist_model);
+    g_list_store_remove_all (self->artists_model);
   }
   else if (artists->len == 0)
   {
@@ -503,13 +504,13 @@ polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self)
                   "title", _("No artists found"),
                   NULL);
     new_child = GTK_WIDGET (self->artists_status_page);
-    g_list_store_remove_all (self->artist_model);
+    g_list_store_remove_all (self->artists_model);
   }
   else
   {
     gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->artist_tracks_selection_model));
-    g_list_store_splice (self->artist_model, 0,
-                          g_list_model_get_n_items (G_LIST_MODEL (self->artist_model)),
+    g_list_store_splice (self->artists_model, 0,
+                          g_list_model_get_n_items (G_LIST_MODEL (self->artists_model)),
                           artists->pdata, artists->len);
     g_ptr_array_free (artists, TRUE);
     new_child = GTK_WIDGET (self->artists_split_view);

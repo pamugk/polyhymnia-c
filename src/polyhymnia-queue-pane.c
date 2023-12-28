@@ -660,6 +660,7 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
   GPtrArray *queue = polyhymnia_mpd_client_get_queue (self->mpd_client,
                                                       &error);
   g_hash_table_remove_all (self->album_covers);
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
   if (error != NULL)
   {
     g_object_set (G_OBJECT (self->queue_status_page),
