@@ -34,6 +34,8 @@
     <file alias="big-x-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/big-x-symbolic.svg</file>
     <file alias="cd-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/cd-symbolic.svg</file>
     <file alias="clock-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/clock-symbolic.svg</file>
+    <file alias="down-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-large-symbolic.svg</file>
+    <file alias="down-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-symbolic.svg</file>
     <file alias="edit-select-none-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/edit-select-none-symbolic.svg</file>
     <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
     <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>
@@ -53,6 +55,8 @@
     <file alias="question-round-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/question-round-symbolic.svg</file>
     <file alias="subtitles-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/subtitles-symbolic.svg</file>
     <file alias="task-recurring-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/task-recurring-symbolic.svg</file>
+    <file alias="up-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/up-large-symbolic.svg</file>
+    <file alias="up-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/up-symbolic.svg</file>
     <file alias="update-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/update-symbolic.svg</file>
     <file alias="user-trash-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/user-trash-symbolic.svg</file>
     <file alias="x-circular-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/x-circular-symbolic.svg</file>

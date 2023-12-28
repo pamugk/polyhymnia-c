@@ -51,6 +51,22 @@
               </object>
             </child>
             <child type="start">
+              <object class="GtkButton" id="up_button">
+                <property name="icon-name">up-large-symbolic</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_up_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <child type="start">
+              <object class="GtkButton" id="down_button">
+                <property name="icon-name">down-large-symbolic</property>
+    		<signal name="clicked"
+    		  handler="polyhymnia_queue_pane_down_button_clicked"
+    		  swapped="true" />
+              </object>
+            </child>
+            <child type="start">
               <object class="GtkButton">
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">big-x-symbolic</property>
@@ -95,7 +111,6 @@
           <object class="GtkBox">
             <child>
               <object class="GtkEntry" id="new_playlist_title_entry">
-                <property name="max-width-chars">250</property>
     		<signal name="changed"
     		  handler="polyhymnia_queue_pane_new_playlist_title_changed"
     		  swapped="true" />
