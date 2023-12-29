@@ -2,7 +2,7 @@
 #include "config.h"
 
 #include "polyhymnia-application.h"
-#include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-core.h"
 #include "polyhymnia-player.h"
 #include "polyhymnia-preferences-window.h"
 #include "polyhymnia-window.h"
@@ -165,26 +165,38 @@ polyhymnia_application_reconnect_action (GSimpleAction *action,
 }
 
 static void
-polyhymnia_application_scan_action (GSimpleAction *action,
+polyhymnia_application_rescan_action (GSimpleAction *action,
                                     GVariant      *parameter,
                                     gpointer       user_data)
 {
-  gsize parameter_length;
-  const gchar * parameter_value;
+  GError *error = NULL;
   PolyhymniaApplication *self = user_data;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
 
-  parameter_value = g_variant_get_string (parameter, &parameter_length);
-  if (g_str_equal (parameter_value, "library"))
+  polyhymnia_mpd_client_rescan (self->mpd_client, &error);
+  if (error != NULL)
   {
-    GError *error = NULL;
-    polyhymnia_mpd_client_scan (self->mpd_client, &error);
-    if (error != NULL)
-    {
-      g_warning("An error occurred on library scan request: %s\n", error->message);
-      g_error_free (error);
-    }
+    g_warning("An error occurred on library full rescan request: %s\n", error->message);
+    g_error_free (error);
+  }
+}
+
+static void
+polyhymnia_application_scan_action (GSimpleAction *action,
+                                    GVariant      *parameter,
+                                    gpointer       user_data)
+{
+  GError *error = NULL;
+  PolyhymniaApplication *self = user_data;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  polyhymnia_mpd_client_scan (self->mpd_client, &error);
+  if (error != NULL)
+  {
+    g_warning("An error occurred on library scan request: %s\n", error->message);
+    g_error_free (error);
   }
 }
 
@@ -193,7 +205,8 @@ static const GActionEntry app_actions[] = {
   { "preferences", polyhymnia_application_preferences_action },
   { "quit", polyhymnia_application_quit_action },
   { "reconnect", polyhymnia_application_reconnect_action },
-  { "scan", polyhymnia_application_scan_action, "s" },
+  { "rescan", polyhymnia_application_rescan_action },
+  { "scan", polyhymnia_application_scan_action },
 };
 
 static void

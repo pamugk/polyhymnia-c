@@ -9,6 +9,7 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-track-title-simple-column.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-album-disc-header.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-album-header.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-album-grid-item.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-artist-grid-item.ui</file>
@@ -16,9 +17,11 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-genre-grid-item.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-album-page.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-albums-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-artist-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-artists-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-playlist-page.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-playlists-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-tracks-page.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
@@ -32,6 +35,8 @@
     <file alias="big-x-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/big-x-symbolic.svg</file>
     <file alias="cd-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/cd-symbolic.svg</file>
     <file alias="clock-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/clock-symbolic.svg</file>
+    <file alias="down-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-large-symbolic.svg</file>
+    <file alias="down-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-symbolic.svg</file>
     <file alias="edit-select-none-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/edit-select-none-symbolic.svg</file>
     <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
     <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>
@@ -51,6 +56,8 @@
     <file alias="question-round-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/question-round-symbolic.svg</file>
     <file alias="subtitles-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/subtitles-symbolic.svg</file>
     <file alias="task-recurring-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/task-recurring-symbolic.svg</file>
+    <file alias="up-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/up-large-symbolic.svg</file>
+    <file alias="up-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/up-symbolic.svg</file>
     <file alias="update-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/update-symbolic.svg</file>
     <file alias="user-trash-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/user-trash-symbolic.svg</file>
     <file alias="x-circular-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/x-circular-symbolic.svg</file>

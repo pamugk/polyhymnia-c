@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="PolyhymniaAlbumHeader" parent="GtkWidget">
+    <child>
+      <object class="GtkImage" id="album_cover_image">
+        <property name="pixel-size">250</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="album_title_label">
+        <binding name="label">
+          <lookup name="album-title">PolyhymniaAlbumHeader</lookup>
+	</binding>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="album_release_label">
+        <binding name="label">
+          <lookup name="album-release">PolyhymniaAlbumHeader</lookup>
+	</binding>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="play_album_button">
+        <property name="icon-name">play-large-symbolic</property>
+        <signal name="clicked"
+          handler="polyhymnia_album_header_play_album_button_clicked"
+          swapped="true" />
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="enqueue_album_button">
+        <property name="icon-name">plus-symbolic</property>
+        <signal name="clicked"
+          handler="polyhymnia_album_header_add_album_to_queue_button_clicked"
+          swapped="true" />
+      </object>
+    </child>
+    <property name="layout-manager">
+      <object class="GtkConstraintLayout">
+        <constraints>
+          <constraint target="album_cover_image" target-attribute="bottom"
+            relation="eq"
+            source="super" source-attribute="bottom"
+            constant="-6"
+            strength="required" />
+          <constraint target="album_cover_image" target-attribute="start"
+            relation="eq"
+            source="super" source-attribute="start"
+            constant="12"
+            strength="required" />
+          <constraint target="album_cover_image" target-attribute="top"
+            relation="eq"
+            source="super" source-attribute="top"
+            constant="6"
+            strength="required" />
+
+          <constraint target="play_album_button" target-attribute="bottom"
+            relation="eq"
+            source="super" source-attribute="bottom"
+            constant="-6"
+            strength="required" />
+          <constraint target="play_album_button" target-attribute="start"
+            relation="eq"
+            source="album_cover_image" source-attribute="end"
+            constant="12"
+            strength="required" />
+          <constraint target="enqueue_album_button" target-attribute="bottom"
+            relation="eq"
+            source="super" source-attribute="bottom"
+            constant="-6"
+            strength="required" />
+          <constraint target="enqueue_album_button" target-attribute="start"
+            relation="eq"
+            source="play_album_button" source-attribute="end"
+            constant="12"
+            strength="required" />
+
+          <constraint target="album_title_label" target-attribute="bottom"
+            relation="eq"
+            source="play_album_button" source-attribute="top"
+            constant="-6"
+            strength="required" />
+          <constraint target="album_title_label" target-attribute="start"
+            relation="eq"
+            source="album_cover_image" source-attribute="end"
+            constant="12"
+            strength="required" />
+          <constraint target="album_release_label" target-attribute="bottom"
+            relation="eq"
+            source="enqueue_album_button" source-attribute="top"
+            constant="-6"
+            strength="required" />
+          <constraint target="album_release_label" target-attribute="start"
+            relation="eq"
+            source="album_title_label" source-attribute="end"
+            constant="12"
+            strength="required" />
+        </constraints>
+      </object>
+    </property>
+  </template>
+</interface>

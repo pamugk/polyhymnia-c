@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="PolyhymniaPlaylistsPage" parent="AdwNavigationPage">
+    <property name="tag">playlists-list</property>
+    <property name="title" translatable="yes">Playlists</property>
+  </template>
+
+  <object class="GtkScrolledWindow" id="playlists_content">
+    <property name="child">
+      <object class="GtkGridView">
+        <property name="factory">
+          <object class="GtkBuilderListItemFactory" id="playlist_factory">
+            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-genre-grid-item.ui</property>
+          </object>
+        </property>
+        <property name="model">
+          <object class="GtkNoSelection">
+            <property name="model">
+              <object class="GtkStringList" id="playlists_model" />
+            </property>
+          </object>
+        </property>
+        <property name="single-click-activate">true</property>
+        <signal name="activate"
+          handler="polyhymnia_playlists_page_playlist_clicked"
+          swapped="true" />
+      </object>
+    </property>
+  </object>
+  <object class="AdwStatusPage" id="playlists_status_page" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="notify::initialized"
+      handler="polyhymnia_playlists_page_mpd_client_initialized"
+      swapped="true" />
+    <signal name="stored-playlist-modified"
+      handler="polyhymnia_playlists_page_mpd_playlists_changed"
+      swapped="true" />
+  </object>
+</interface>

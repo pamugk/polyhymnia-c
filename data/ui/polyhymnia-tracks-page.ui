@@ -60,7 +60,7 @@
               </object>
             </child>
             <property name="model">
-              <object class="GtkMultiSelection" id="track_selection_model">
+              <object class="GtkMultiSelection" id="tracks_selection_model">
                 <signal name="selection-changed"
                   handler="polyhymnia_tracks_page_selection_changed"
                   swapped="true" />

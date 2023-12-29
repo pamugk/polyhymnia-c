@@ -30,6 +30,8 @@ struct _PolyhymniaQueuePane
   GtkScrolledWindow   *queue_page_content;
   AdwStatusPage       *queue_status_page;
   GtkButton           *play_button;
+  GtkButton           *up_button;
+  GtkButton           *down_button;
   GtkLabel            *playlist_exists_label;
   GtkButton           *save_playlist_button;
 
@@ -50,6 +52,10 @@ polyhymnia_queue_pane_clear_button_clicked (PolyhymniaQueuePane *self,
 static void
 polyhymnia_queue_pane_clear_selection_button_clicked (PolyhymniaQueuePane *self,
                                                       GtkButton           *user_data);
+
+static void
+polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
+                                           GtkButton           *user_data);
 
 static void
 polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
@@ -109,6 +115,10 @@ polyhymnia_queue_pane_track_unbind (PolyhymniaQueuePane      *self,
                                     GtkListItem              *object,
                                     GtkSignalListItemFactory *user_data);
 
+static void
+polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
+                                         GtkButton           *user_data);
+
 /* Private methods*/
 static void
 polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self);
@@ -152,6 +162,8 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, play_button);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, up_button);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, down_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, playlist_exists_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, save_playlist_button);
 
@@ -163,6 +175,8 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                            polyhymnia_queue_pane_clear_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_clear_selection_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_down_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_new_playlist_popover_closed);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -183,6 +197,8 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                            polyhymnia_queue_pane_track_teardown);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_track_unbind);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_up_button_clicked);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_mpd_client_initialized);
@@ -232,7 +248,47 @@ static void
 polyhymnia_queue_pane_clear_selection_button_clicked (PolyhymniaQueuePane *self,
                                                       GtkButton           *user_data)
 {
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
+}
+
+static void
+polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
+                                           GtkButton           *user_data)
+{
+  GError          *error = NULL;
+  PolyhymniaTrack *next_track;
+  guint           selected_index;
+  GtkBitset       *selection;
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  selection = gtk_selection_model_get_selection (GTK_SELECTION_MODEL (self->queue_selection_model));
+
+  selected_index = gtk_bitset_get_nth (selection, 0);
+  gtk_bitset_unref (selection);
+
+  if (selected_index >= g_list_model_get_n_items (G_LIST_MODEL (self->queue_model)) - 1)
+  {
+    return;
+  }
+
+  track = g_list_model_get_item(G_LIST_MODEL (self->queue_selection_model),
+                                selected_index);
+  next_track = g_list_model_get_item(G_LIST_MODEL (self->queue_selection_model),
+                                     selected_index + 1);
+
+  polyhymnia_mpd_client_swap_songs_in_queue (self->mpd_client,
+                                              polyhymnia_track_get_id (track),
+                                              polyhymnia_track_get_id (next_track),
+                                              &error);
+  if (error != NULL)
+  {
+    g_warning("Failed to move track higher in queue: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
 }
 
 static void
@@ -411,19 +467,29 @@ polyhymnia_queue_pane_remove_button_clicked (PolyhymniaQueuePane *self,
 }
 
 static void
-polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
-                                         guint             position,
-                                         guint             n_items,
-                                         GtkSelectionModel *user_data)
+polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane *self,
+                                         guint               position,
+                                         guint               n_items,
+                                         GtkSelectionModel   *user_data)
 {
+  gboolean  not_first = FALSE;
+  gboolean  not_last = FALSE;
   GtkBitset *selection = gtk_selection_model_get_selection (user_data);
+  gboolean  selected_one = gtk_bitset_get_size (selection) == 1;
+
+  if (selected_one)
+  {
+    guint idx = gtk_bitset_get_nth (selection, 0);
+    not_first = idx > 0;
+    not_last = idx < g_list_model_get_n_items (G_LIST_MODEL (user_data)) - 1;
+  }
 
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
 
-  gtk_action_bar_set_revealed (self->queue_action_bar,
-                               !gtk_bitset_is_empty (selection));
-  gtk_widget_set_sensitive (GTK_WIDGET (self->play_button),
-                            gtk_bitset_get_size (selection) == 1);
+  gtk_action_bar_set_revealed (self->queue_action_bar, !gtk_bitset_is_empty (selection));
+  gtk_widget_set_sensitive (GTK_WIDGET (self->play_button), selected_one);
+  gtk_widget_set_sensitive (GTK_WIDGET (self->up_button), not_first);
+  gtk_widget_set_sensitive (GTK_WIDGET (self->down_button), not_last);
   gtk_bitset_unref (selection);
 }
 
@@ -547,6 +613,45 @@ polyhymnia_queue_pane_track_unbind (PolyhymniaQueuePane      *self,
                       NULL);
 }
 
+static void
+polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
+                                         GtkButton           *user_data)
+{
+  GError          *error = NULL;
+  PolyhymniaTrack *previous_track;
+  guint           selected_index;
+  GtkBitset       *selection;
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  selection = gtk_selection_model_get_selection (GTK_SELECTION_MODEL (self->queue_selection_model));
+
+  selected_index = gtk_bitset_get_nth (selection, 0);
+  gtk_bitset_unref (selection);
+
+  if (selected_index == 0)
+  {
+    return;
+  }
+
+  previous_track = g_list_model_get_item(G_LIST_MODEL (self->queue_selection_model),
+                                         selected_index - 1);
+  track = g_list_model_get_item(G_LIST_MODEL (self->queue_selection_model),
+                                selected_index);
+
+  polyhymnia_mpd_client_swap_songs_in_queue (self->mpd_client,
+                                              polyhymnia_track_get_id (previous_track),
+                                              polyhymnia_track_get_id (track),
+                                              &error);
+  if (error != NULL)
+  {
+    g_warning("Failed to move track higher in queue: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+}
+
 /* Private methods implementation */
 static void
 polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
@@ -555,6 +660,7 @@ polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
   GPtrArray *queue = polyhymnia_mpd_client_get_queue (self->mpd_client,
                                                       &error);
   g_hash_table_remove_all (self->album_covers);
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
   if (error != NULL)
   {
     g_object_set (G_OBJECT (self->queue_status_page),

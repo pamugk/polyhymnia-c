@@ -20,7 +20,7 @@
                   </object>
                 </property>
                 <property name="model">
-                  <object class="GtkSingleSelection" id="artist_selection_model">
+                  <object class="GtkSingleSelection" id="artists_selection_model">
                     <property name="autoselect">false</property>
                     <signal name="selection-changed"
                       handler="polyhymnia_artists_page_artist_selection_changed"

@@ -1,7 +1,9 @@
 polyhymnia_sources = [
   'main.c',
   'polyhymnia-album.c',
+  'polyhymnia-album-header.c',
   'polyhymnia-album-page.c',
+  'polyhymnia-albums-page.c',
   'polyhymnia-artist-page.c',
   'polyhymnia-artists-page.c',
   'polyhymnia-artist.c',
@@ -12,6 +14,7 @@ polyhymnia_sources = [
   'polyhymnia-player.c',
   'polyhymnia-player-bar.c',
   'polyhymnia-playlist-page.c',
+  'polyhymnia-playlists-page.c',
   'polyhymnia-preferences-window.c',
   'polyhymnia-queue-pane.c',
   'polyhymnia-track.c',

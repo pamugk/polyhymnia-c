@@ -1,5 +1,6 @@
 
 #include "polyhymnia-mpd-client-api.h"
+#include "polyhymnia-mpd-client-core.h"
 #include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-outputs.h"
 #include "polyhymnia-mpd-client-player.h"
@@ -2099,6 +2100,36 @@ polyhymnia_mpd_client_save_queue_as_playlist (PolyhymniaMpdClient *self,
   }
 
   if (!mpd_run_save (self->main_mpd_connection, name))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+void
+polyhymnia_mpd_client_rescan(PolyhymniaMpdClient *self,
+                             GError              **error)
+{
+  GError *inner_error = NULL;
+  guint scan_job_id;
+
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return;
+  }
+
+  scan_job_id = mpd_run_rescan (self->main_mpd_connection, NULL);
+  if (scan_job_id == 0)
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
