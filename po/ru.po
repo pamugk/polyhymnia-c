@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 21:38+0500\n"
+"POT-Creation-Date: 2023-12-30 22:24+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -212,39 +212,39 @@ msgstr "Создать"
 msgid "Playlist with such name already exists."
 msgstr "Плейлист с таким именем уже существует."
 
-#: data/ui/polyhymnia-statistics-window.ui:39
+#: data/ui/polyhymnia-statistics-window.ui:23
 msgid "Statistics"
 msgstr "Статистика"
 
-#: data/ui/polyhymnia-statistics-window.ui:45
+#: data/ui/polyhymnia-statistics-window.ui:29
 msgid "Artists count"
 msgstr "Количество исполнителей"
 
-#: data/ui/polyhymnia-statistics-window.ui:62
+#: data/ui/polyhymnia-statistics-window.ui:46
 msgid "Albums count"
 msgstr "Количество альбомов"
 
-#: data/ui/polyhymnia-statistics-window.ui:79
+#: data/ui/polyhymnia-statistics-window.ui:63
 msgid "Songs count"
 msgstr "Количество песен"
 
-#: data/ui/polyhymnia-statistics-window.ui:96
+#: data/ui/polyhymnia-statistics-window.ui:80
 msgid "MPD uptime"
 msgstr "Продолжительность работы MPD"
 
-#: data/ui/polyhymnia-statistics-window.ui:113
+#: data/ui/polyhymnia-statistics-window.ui:97
 msgid "Total play time"
 msgstr "Всего хранится"
 
-#: data/ui/polyhymnia-statistics-window.ui:130
+#: data/ui/polyhymnia-statistics-window.ui:114
 msgid "Total played"
 msgstr "Всего воспроизведено"
 
-#: data/ui/polyhymnia-statistics-window.ui:147
+#: data/ui/polyhymnia-statistics-window.ui:131
 msgid "Last library update"
 msgstr "Последнее обновление библиотеки"
 
-#: data/ui/polyhymnia-statistics-window.ui:168
+#: data/ui/polyhymnia-statistics-window.ui:152
 msgid "Failed to fetch statistics"
 msgstr "Ошибка загрузки статистика"
 
@@ -340,6 +340,10 @@ msgstr "Если чего-то не хватает, попробуйте зап�
 #: src/polyhymnia-albums-page.c:176
 msgid "No albums found"
 msgstr "Альбомов не найдено"
+
+#: src/polyhymnia-application.c:119
+msgid "Simple MPD-based music player."
+msgstr "Простой музыкальный проигрыватель на основе MPD."
 
 #: src/polyhymnia-artist-page.c:258
 msgid "Failed to get an artist"

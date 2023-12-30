@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 21:38+0500\n"
+"POT-Creation-Date: 2023-12-30 22:24+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -210,39 +210,39 @@ msgstr ""
 msgid "Playlist with such name already exists."
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:39
+#: data/ui/polyhymnia-statistics-window.ui:23
 msgid "Statistics"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:45
+#: data/ui/polyhymnia-statistics-window.ui:29
 msgid "Artists count"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:62
+#: data/ui/polyhymnia-statistics-window.ui:46
 msgid "Albums count"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:79
+#: data/ui/polyhymnia-statistics-window.ui:63
 msgid "Songs count"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:96
+#: data/ui/polyhymnia-statistics-window.ui:80
 msgid "MPD uptime"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:113
+#: data/ui/polyhymnia-statistics-window.ui:97
 msgid "Total play time"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:130
+#: data/ui/polyhymnia-statistics-window.ui:114
 msgid "Total played"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:147
+#: data/ui/polyhymnia-statistics-window.ui:131
 msgid "Last library update"
 msgstr ""
 
-#: data/ui/polyhymnia-statistics-window.ui:168
+#: data/ui/polyhymnia-statistics-window.ui:152
 msgid "Failed to fetch statistics"
 msgstr ""
 
@@ -336,6 +336,10 @@ msgstr ""
 
 #: src/polyhymnia-albums-page.c:176
 msgid "No albums found"
+msgstr ""
+
+#: src/polyhymnia-application.c:119
+msgid "Simple MPD-based music player."
 msgstr ""
 
 #: src/polyhymnia-artist-page.c:258

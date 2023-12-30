@@ -8,6 +8,8 @@
 #include "polyhymnia-statistics-window.h"
 #include "polyhymnia-window.h"
 
+#define _(x) g_dgettext (GETTEXT_PACKAGE, x)
+
 struct _PolyhymniaApplication
 {
   AdwApplication parent_instance;
@@ -112,13 +114,17 @@ polyhymnia_application_about_action (GSimpleAction *action,
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
   adw_show_about_window (window,
-	                  "application-name", "Polyhymnia",
-	                  "application-icon", "com.github.pamugk.polyhymnia",
-	                  "developer-name", "pamugk",
-	                  "version", "0.1.0",
-	                  "developers", developers,
-	                  "copyright", "© 2023 pamugk",
-	                  NULL);
+	                 "application-name", "Polyhymnia",
+	                 "application-icon", "com.github.pamugk.polyhymnia",
+                         "comments", _("Simple MPD-based music player."),
+	                 "developer-name", "pamugk",
+	                 "version", "0.1.0",
+                         "website", "https://github.com/pamugk/polyhymnia-c",
+	                 "developers", developers,
+                         "issue-url", "https://github.com/pamugk/polyhymnia-c/issues/new/choose",
+	                 "copyright", "© 2023 pamugk",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+	                 NULL);
 }
 
 static void
@@ -227,7 +233,6 @@ polyhymnia_application_statistics_action (GSimpleAction *action,
                                     "application", self,
                                     NULL);
   gtk_window_set_modal (statistics_window, TRUE);
-  gtk_window_set_resizable (statistics_window, FALSE);
   gtk_window_set_transient_for(statistics_window, window);
 
   gtk_window_present (statistics_window);

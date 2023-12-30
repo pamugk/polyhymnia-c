@@ -19,7 +19,7 @@ struct _PolyhymniaStatisticsWindow
   /* Template widgets */
   GtkBox               *content;
   AdwStatusPage        *error_status_page;
-  AdwToastOverlay      *root_toast_overlay;
+  GtkScrolledWindow    *root_container;
 
   GtkLabel             *artists_count_label;
   GtkLabel             *albums_count_label;
@@ -30,7 +30,7 @@ struct _PolyhymniaStatisticsWindow
   GtkLabel             *last_update_label;
 
   /* Template objects */
-  PolyhymniaMpdClient  *mpd_client;
+  PolyhymniaMpdClient *mpd_client;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaStatisticsWindow, polyhymnia_statistics_window, ADW_TYPE_WINDOW)
@@ -73,7 +73,7 @@ polyhymnia_statistics_window_class_init (PolyhymniaStatisticsWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
                                         error_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
-                                        root_toast_overlay);
+                                        root_container);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
                                         artists_count_label);
@@ -178,14 +178,14 @@ polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *s
       g_free (last_update_str);
     }
 
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->content));
+    gtk_scrolled_window_set_child (self->root_container,
+                                   GTK_WIDGET (self->content));
     self->statistics = new_statistics;
   }
   else
   {
-    adw_toast_overlay_set_child (self->root_toast_overlay,
-                                 GTK_WIDGET (self->error_status_page));
+    gtk_scrolled_window_set_child (self->root_container,
+                                   GTK_WIDGET (self->error_status_page));
     g_warning("Failed to fetch statistics: %s\n", error->message);
     g_error_free (error);
     error = NULL;

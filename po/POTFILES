@@ -15,6 +15,7 @@ data/ui/polyhymnia-window.ui
 src/main.c
 src/polyhymnia-album-page.c
 src/polyhymnia-albums-page.c
+src/polyhymnia-application.c
 src/polyhymnia-artist-page.c
 src/polyhymnia-artists-page.c
 src/polyhymnia-queue-pane.c

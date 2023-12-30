@@ -32,6 +32,12 @@
 
     <file alias="gtk/help-overlay.ui" preprocess="xml-stripblanks">ui/gtk/help-overlay.ui</file>
   </gresource>
+  <gresource prefix="/com/github/pamugk/polyhymnia/icons/scalable/apps">
+    <file alias="com.github.pamugk.polyhymnia.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/apps/com.github.pamugk.polyhymnia.svg</file>
+  </gresource>
+  <gresource prefix="/com/github/pamugk/polyhymnia/icons/symbolic/apps">
+    <file alias="com.github.pamugk.polyhymnia-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/symbolic/apps/com.github.pamugk.polyhymnia-symbolic.svg</file>
+  </gresource>
   <gresource prefix="/com/github/pamugk/polyhymnia/icons/scalable/actions">
     <file alias="big-x-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/big-x-symbolic.svg</file>
     <file alias="cd-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/cd-symbolic.svg</file>
