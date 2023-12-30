@@ -1,6 +1,7 @@
 
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-core.h"
+#include "polyhymnia-mpd-client-details.h"
 #include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-outputs.h"
 #include "polyhymnia-mpd-client-player.h"
@@ -1568,6 +1569,89 @@ polyhymnia_mpd_client_get_song_album_cover(PolyhymniaMpdClient *self,
   }
 
   return cover_array == NULL ? NULL : g_byte_array_free_to_bytes (cover_array);
+}
+
+PolyhymniaTrackFullInfo *
+polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
+                                        const gchar         *song_uri,
+                                        GError              **error)
+{
+  GError                  *inner_error = NULL;
+  PolyhymniaTrackFullInfo *song_object;
+  struct mpd_song         *song;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return NULL;
+  }
+
+  if (!mpd_search_db_songs (self->main_mpd_connection, TRUE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  if (!mpd_search_add_uri_constraint (self->main_mpd_connection,
+                                      MPD_OPERATOR_DEFAULT,
+                                      song_uri))
+  {
+    mpd_search_cancel (self->main_mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search filter failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  if (!mpd_search_commit (self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  while ((song = mpd_recv_song(self->main_mpd_connection)) != NULL
+          && song_object == NULL)
+  {
+    song_object = g_object_new (POLYHYMNIA_TYPE_TRACK_FULL_INFO,
+                                "album",
+                                mpd_song_get_tag (song, MPD_TAG_ALBUM, 0),
+                                "album-artist",
+                                mpd_song_get_tag (song, MPD_TAG_ALBUM_ARTIST, 0),
+                                "title",
+                                mpd_song_get_tag (song, MPD_TAG_TITLE, 0),
+                                "uri", mpd_song_get_uri (song),
+                                NULL);
+    mpd_song_free(song);
+  }
+
+  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->main_mpd_connection))
+  {
+    g_clear_object (&song_object);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+
+  return NULL;
 }
 
 PolyhymniaTrack *
