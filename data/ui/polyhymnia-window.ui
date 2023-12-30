@@ -88,6 +88,10 @@
   <menu id="primary_menu">
     <section>
       <item>
+        <attribute name="label" translatable="yes">_Statistics</attribute>
+        <attribute name="action">app.statistics</attribute>
+      </item>
+      <item>
         <attribute name="label" translatable="yes">_Preferences</attribute>
         <attribute name="action">app.preferences</attribute>
       </item>
@@ -210,6 +214,10 @@
         <property name="action-name">app.reconnect</property>
         <property name="halign">center</property>
         <property name="label" translatable="yes">Try again</property>
+        <style>
+          <class name="pill" />
+          <class name="suggested-action" />
+        </style>
       </object>
     </property>
   </object>

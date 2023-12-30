@@ -5,6 +5,7 @@
 #include "polyhymnia-mpd-client-core.h"
 #include "polyhymnia-player.h"
 #include "polyhymnia-preferences-window.h"
+#include "polyhymnia-statistics-window.h"
 #include "polyhymnia-window.h"
 
 struct _PolyhymniaApplication
@@ -166,8 +167,8 @@ polyhymnia_application_reconnect_action (GSimpleAction *action,
 
 static void
 polyhymnia_application_rescan_action (GSimpleAction *action,
-                                    GVariant      *parameter,
-                                    gpointer       user_data)
+                                      GVariant      *parameter,
+                                      gpointer       user_data)
 {
   GError *error = NULL;
   PolyhymniaApplication *self = user_data;
@@ -200,6 +201,29 @@ polyhymnia_application_scan_action (GSimpleAction *action,
   }
 }
 
+static void
+polyhymnia_application_statistics_action (GSimpleAction *action,
+                                          GVariant      *parameter,
+                                          gpointer       user_data)
+{
+  PolyhymniaApplication *self = user_data;
+  GtkWindow *window = NULL;
+  GtkWindow *statistics_window = NULL;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (self));
+
+  statistics_window = g_object_new (POLYHYMNIA_TYPE_STATISTICS_WINDOW,
+                                    "application", self,
+                                    NULL);
+  gtk_window_set_modal (statistics_window, TRUE);
+  gtk_window_set_resizable (statistics_window, FALSE);
+  gtk_window_set_transient_for(statistics_window, window);
+
+  gtk_window_present (statistics_window);
+}
+
 static const GActionEntry app_actions[] = {
   { "about", polyhymnia_application_about_action },
   { "preferences", polyhymnia_application_preferences_action },
@@ -207,6 +231,7 @@ static const GActionEntry app_actions[] = {
   { "reconnect", polyhymnia_application_reconnect_action },
   { "rescan", polyhymnia_application_rescan_action },
   { "scan", polyhymnia_application_scan_action },
+  { "statistics", polyhymnia_application_statistics_action },
 };
 
 static void

@@ -17,6 +17,8 @@ polyhymnia_sources = [
   'polyhymnia-playlists-page.c',
   'polyhymnia-preferences-window.c',
   'polyhymnia-queue-pane.c',
+  'polyhymnia-statistics.c',
+  'polyhymnia-statistics-window.c',
   'polyhymnia-track.c',
   'polyhymnia-tracks-page.c',
   'polyhymnia-window.c',
