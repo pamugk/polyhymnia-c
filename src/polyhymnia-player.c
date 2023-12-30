@@ -99,6 +99,12 @@ polyhymnia_player_dispose (GObject *gobject)
 {
   PolyhymniaPlayer *self = POLYHYMNIA_PLAYER (gobject);
 
+  if (self->playback_status == POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PLAYING)
+  {
+    polyhymnia_mpd_client_pause_playback (self->mpd_client, NULL);
+    self->playback_status = POLYHYMNIA_PLAYER_PLAYBACK_STATUS_PAUSED;
+  }
+
   g_clear_object (&self->current_track);
   g_clear_object (&self->mpd_client);
 

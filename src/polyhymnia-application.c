@@ -30,6 +30,12 @@ polyhymnia_application_new (const char        *application_id,
 	                NULL);
 }
 
+/* Event handlers declaration */
+static void
+polyhymnia_application_mpd_initialized (PolyhymniaApplication *self,
+                                        GParamSpec            *pspec,
+                                        PolyhymniaMpdClient   *user_data);
+
 /* Class stuff - startup & shutdown callbacks, etc */
 static void
 polyhymnia_application_activate (GApplication *app)
@@ -42,9 +48,7 @@ polyhymnia_application_activate (GApplication *app)
 
   if (window == NULL)
   {
-    window = g_object_new (POLYHYMNIA_TYPE_WINDOW,
-		            "application", app,
-		            NULL);
+    window = g_object_new (POLYHYMNIA_TYPE_WINDOW, "application", app, NULL);
   }
 
   gtk_window_present (window);
@@ -75,6 +79,11 @@ polyhymnia_application_startup (GApplication *app)
   self = POLYHYMNIA_APPLICATION (app);
 
   self->mpd_client = g_object_new (POLYHYMNIA_TYPE_MPD_CLIENT, NULL);
+  polyhymnia_application_mpd_initialized (self, NULL, self->mpd_client);
+  g_signal_connect_swapped (self->mpd_client, "notify::initialized",
+                            G_CALLBACK (polyhymnia_application_mpd_initialized),
+                            self);
+
   self->player = g_object_new (POLYHYMNIA_TYPE_PLAYER, NULL);
 }
 
@@ -249,3 +258,33 @@ polyhymnia_application_init (PolyhymniaApplication *self)
 	                                  (const char *[]) { "<primary>comma", NULL });
 }
 
+/* Event handlers declaration */
+static void
+polyhymnia_application_mpd_initialized (PolyhymniaApplication *self,
+                                        GParamSpec            *pspec,
+                                        PolyhymniaMpdClient   *user_data)
+{
+  gboolean mpd_initialized = polyhymnia_mpd_client_is_initialized (user_data);
+  GSimpleAction *reconnect_action;
+  GSimpleAction *rescan_action;
+  GSimpleAction *scan_action;
+  GSimpleAction *statistics_action;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  reconnect_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
+                                                                  "reconnect"));
+  g_simple_action_set_enabled (reconnect_action, !mpd_initialized);
+
+  rescan_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
+                                                               "rescan"));
+  g_simple_action_set_enabled (rescan_action, mpd_initialized);
+
+  scan_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
+                                                             "scan"));
+  g_simple_action_set_enabled (scan_action, mpd_initialized);
+
+  statistics_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
+                                                                   "statistics"));
+  g_simple_action_set_enabled (statistics_action, mpd_initialized);
+}

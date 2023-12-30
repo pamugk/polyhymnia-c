@@ -8,9 +8,9 @@ typedef enum
   PROP_ALBUMS_COUNT,
   PROP_TRACKS_COUNT,
   PROP_MPD_UPTIME,
-  PROP_DB_PLAYTIME,
+  PROP_DB_PLAY_TIME,
   PROP_DB_LAST_UPDATE,
-  PROP_MPD_PLAYTIME,
+  PROP_MPD_PLAY_TIME,
   N_PROPERTIES,
 } PolyhymniaStatisticsProperty;
 
@@ -19,13 +19,13 @@ struct _PolyhymniaStatistics
   GObject  parent_instance;
 
   /* Data */
-  guint     artists_count;
-  guint     albums_count;
-  guint     tracks_count;
-  gulong    mpd_uptime;
-  gulong    db_playtime;
-  GDateTime *db_last_update;
-  gulong    mpd_playtime;
+  guint  artists_count;
+  guint  albums_count;
+  guint  tracks_count;
+  gulong mpd_uptime;
+  gulong db_play_time;
+  gulong db_last_update;
+  gulong mpd_play_time;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaStatistics, polyhymnia_statistics, G_TYPE_OBJECT)
@@ -36,10 +36,6 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 static void
 polyhymnia_statistics_finalize (GObject *gobject)
 {
-  PolyhymniaStatistics *self = POLYHYMNIA_STATISTICS (gobject);
-
-  g_clear_pointer (&(self->db_last_update), g_date_time_unref);
-
   G_OBJECT_CLASS (polyhymnia_statistics_parent_class)->finalize (gobject);
 }
 
@@ -65,14 +61,14 @@ polyhymnia_statistics_get_property (GObject    *object,
     case PROP_MPD_UPTIME:
       g_value_set_ulong (value, self->mpd_uptime);
       break;
-    case PROP_DB_PLAYTIME:
-      g_value_set_ulong (value, self->db_playtime);
+    case PROP_DB_PLAY_TIME:
+      g_value_set_ulong (value, self->db_play_time);
       break;
     case PROP_DB_LAST_UPDATE:
-      g_value_set_object (value, self->db_last_update);
+      g_value_set_ulong (value, self->db_last_update);
       break;
-    case PROP_MPD_PLAYTIME:
-      g_value_set_ulong (value, self->mpd_playtime);
+    case PROP_MPD_PLAY_TIME:
+      g_value_set_ulong (value, self->mpd_play_time);
       break;
 
     default:
@@ -103,14 +99,14 @@ polyhymnia_statistics_set_property (GObject      *object,
     case PROP_MPD_UPTIME:
       self->mpd_uptime = g_value_get_ulong (value);
       break;
-    case PROP_DB_PLAYTIME:
-      self->db_playtime = g_value_get_ulong (value);
+    case PROP_DB_PLAY_TIME:
+      self->db_play_time = g_value_get_ulong (value);
       break;
     case PROP_DB_LAST_UPDATE:
-      self->db_last_update = g_value_get_object (value);
+      self->db_last_update = g_value_get_ulong (value);
       break;
-    case PROP_MPD_PLAYTIME:
-      self->mpd_playtime = g_value_get_ulong (value);
+    case PROP_MPD_PLAY_TIME:
+      self->mpd_play_time = g_value_get_ulong (value);
       break;
 
     default:
@@ -134,8 +130,7 @@ polyhymnia_statistics_class_init (PolyhymniaStatisticsClass *klass)
                        0, G_MAXUINT, 0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ALBUMS_COUNT] =
-    g_param_spec_uint ("albums-count",
-                       "Albums count",
+    g_param_spec_uint ("albums-count", "Albums count",
                        "Count of distinct albums in DB",
                        0, G_MAXUINT, 0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
@@ -145,23 +140,23 @@ polyhymnia_statistics_class_init (PolyhymniaStatisticsClass *klass)
                        0, G_MAXUINT, 0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_MPD_UPTIME] =
-    g_param_spec_ulong ("tracks-count", "Tracks count",
-                        "Count of tracks in DB",
+    g_param_spec_ulong ("mpd-uptime", "MPD uptime",
+                        "Current MPD server uptime",
                         0, G_MAXULONG, 0,
                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
-  obj_properties[PROP_DB_PLAYTIME] =
-    g_param_spec_ulong ("tracks-count", "Tracks count",
-                       "Count of tracks in DB",
+  obj_properties[PROP_DB_PLAY_TIME] =
+    g_param_spec_ulong ("db-play-time", "DB play time",
+                       "Total duration (in seconds) of known tracks",
                        0, G_MAXULONG, 0,
                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_DB_LAST_UPDATE] =
-    g_param_spec_object ("db-last-update", "DB last update",
-                         "The last time DB was updated",
-                         G_TYPE_DATE_TIME,
-                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
-  obj_properties[PROP_MPD_PLAYTIME] =
-    g_param_spec_ulong ("tracks-count", "Tracks count",
-                        "Count of tracks in DB",
+    g_param_spec_ulong ("db-last-update", "DB last update",
+                        "The last time DB was updated",
+                        0, G_MAXULONG, 0,
+                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MPD_PLAY_TIME] =
+    g_param_spec_ulong ("mpd-play-time", "MPD play time",
+                        "Total duration (in seconds) played by MPD server",
                         0, G_MAXULONG, 0,
                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   g_object_class_install_properties (gobject_class,
@@ -172,4 +167,54 @@ polyhymnia_statistics_class_init (PolyhymniaStatisticsClass *klass)
 static void
 polyhymnia_statistics_init (PolyhymniaStatistics *self)
 {
+}
+
+/* Instance methods */
+guint
+polyhymnia_statistics_get_albums_count (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->albums_count;
+}
+
+guint
+polyhymnia_statistics_get_artists_count (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->artists_count;
+}
+
+gulong
+polyhymnia_statistics_get_db_play_time (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->db_play_time;
+}
+
+gulong
+polyhymnia_statistics_get_db_last_update (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->db_last_update;
+}
+
+gulong
+polyhymnia_statistics_get_mpd_play_time (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->mpd_play_time;
+}
+
+gulong
+polyhymnia_statistics_get_mpd_uptime (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->mpd_uptime;
+}
+
+guint
+polyhymnia_statistics_get_tracks_count (PolyhymniaStatistics *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_STATISTICS (self), 0);
+  return self->tracks_count;
 }

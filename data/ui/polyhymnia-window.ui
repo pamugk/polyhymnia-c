@@ -26,7 +26,7 @@
                 <property name="action-target">"library"</property>
                 <property name="icon-name">update-symbolic</property>
                 <property name="menu-model">scan_menu</property>
-                <property name="visible"
+                <property name="sensitive"
                   bind-source="mpd_client"
                   bind-property="initialized"
                   bind-flags="sync-create" />

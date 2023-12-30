@@ -34,7 +34,7 @@
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="audio_outputs_group">
-            <property name="description" translatable="yes">Available MPD server auido outputs</property>
+            <property name="description" translatable="yes">Available MPD auido outputs</property>
             <property name="title" translatable="yes">Audio Outputs</property>
           </object>
         </child>

@@ -6,6 +6,7 @@
 #include "polyhymnia-mpd-client-player.h"
 #include "polyhymnia-mpd-client-playlists.h"
 #include "polyhymnia-mpd-client-queue.h"
+#include "polyhymnia-mpd-client-statistics.h"
 
 #include <mpd/client.h>
 
@@ -1686,6 +1687,60 @@ polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
   }
 
   return state;
+}
+
+PolyhymniaStatistics *
+polyhymnia_mpd_client_get_statistics (PolyhymniaMpdClient *self,
+                                      GError              **error)
+{
+  GError               *inner_error = NULL;
+  struct mpd_stats     *mpd_statistics;
+  PolyhymniaStatistics *statistics = NULL;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), statistics);
+  g_return_val_if_fail (error == NULL || *error == NULL, statistics);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, statistics);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return statistics;
+  }
+
+  mpd_statistics = mpd_run_stats (self->main_mpd_connection);
+
+  if (mpd_statistics == NULL)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+  else
+  {
+    statistics = g_object_new (POLYHYMNIA_TYPE_STATISTICS,
+                               "artists-count",
+                               mpd_stats_get_number_of_artists (mpd_statistics),
+                               "albums-count",
+                               mpd_stats_get_number_of_albums (mpd_statistics),
+                               "tracks-count",
+                               mpd_stats_get_number_of_songs (mpd_statistics),
+                               "mpd-uptime",
+                               mpd_stats_get_uptime (mpd_statistics),
+                               "db-play-time",
+                               mpd_stats_get_db_play_time (mpd_statistics),
+                               "db-last-update",
+                               mpd_stats_get_db_update_time (mpd_statistics),
+                               "mpd-play-time",
+                               mpd_stats_get_play_time (mpd_statistics),
+                               NULL);
+    mpd_stats_free (mpd_statistics);
+  }
+
+  return statistics;
 }
 
 guint

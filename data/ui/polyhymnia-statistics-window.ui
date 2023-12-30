@@ -5,10 +5,6 @@
   <template class="PolyhymniaStatisticsWindow" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">
-        <property name="reveal-bottom-bars"
-          bind-source="mpd_client"
-          bind-property="initialized"
-          bind-flags="sync-create" />
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="show-title"
@@ -20,18 +16,6 @@
         <property name="content">
           <object class="AdwToastOverlay" id="root_toast_overlay" />
         </property>
-        <child type="bottom">
-          <object class="GtkActionBar">
-            <child type="start">
-              <object class="GtkButton">
-                <property name="icon-name">copy-symbolic</property>
-              </object>
-            </child>
-            <style>
-              <class name="toolbar"/>
-            </style>
-          </object>
-        </child>
       </object>
     </property>
     <property name="default-height">320</property>
@@ -103,11 +87,14 @@
     <child>
       <object class="GtkLabel" id="mpd_uptime_label">
         <property name="xalign">0</property>
+	<style>
+	  <class name="numeric"/>
+	</style>
       </object>
     </child>
     <child>
       <object class="GtkLabel">
-        <property name="label" translatable="yes">Total playtime</property>
+        <property name="label" translatable="yes">Total play time</property>
         <property name="xalign">0</property>
 	<style>
 	  <class name="heading"/>
@@ -117,6 +104,9 @@
     <child>
       <object class="GtkLabel" id="total_playtime_label">
         <property name="xalign">0</property>
+	<style>
+	  <class name="numeric"/>
+	</style>
       </object>
     </child>
     <child>
@@ -131,6 +121,9 @@
     <child>
       <object class="GtkLabel" id="total_played_label">
         <property name="xalign">0</property>
+	<style>
+	  <class name="numeric"/>
+	</style>
       </object>
     </child>
     <child>
@@ -153,6 +146,10 @@
     <property name="margin-top">6</property>
     <property name="orientation">vertical</property>
     <property name="spacing">6</property>
+  </object>
+  <object class="AdwStatusPage" id="error_status_page">
+    <property name="icon-name">error-symbolic</property>
+    <property name="title" translatable="yes">Failed to fetch statistics</property>
   </object>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
