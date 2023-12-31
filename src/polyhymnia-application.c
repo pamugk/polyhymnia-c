@@ -6,6 +6,7 @@
 #include "polyhymnia-player.h"
 #include "polyhymnia-preferences-window.h"
 #include "polyhymnia-statistics-window.h"
+#include "polyhymnia-track-details-window.h"
 #include "polyhymnia-window.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -154,9 +155,9 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
 
   preferences_window = g_object_new (POLYHYMNIA_TYPE_PREFERENCES_WINDOW,
 	                              "application", self,
+                                      "transient-for", window,
 		                      NULL);
   gtk_window_set_modal (preferences_window, TRUE);
-  gtk_window_set_transient_for(preferences_window, window);
 
   gtk_window_present (preferences_window);
 }
@@ -231,11 +232,34 @@ polyhymnia_application_statistics_action (GSimpleAction *action,
 
   statistics_window = g_object_new (POLYHYMNIA_TYPE_STATISTICS_WINDOW,
                                     "application", self,
+                                    "transient-for", window,
                                     NULL);
   gtk_window_set_modal (statistics_window, TRUE);
-  gtk_window_set_transient_for(statistics_window, window);
 
   gtk_window_present (statistics_window);
+}
+
+static void
+polyhymnia_application_track_details_action (GSimpleAction *action,
+                                             GVariant      *parameter,
+                                             gpointer       user_data)
+{
+  PolyhymniaApplication *self = user_data;
+  GtkWindow *window;
+  GtkWindow *track_details_window;
+
+  g_assert (POLYHYMNIA_IS_APPLICATION (self));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (self));
+
+  track_details_window = g_object_new (POLYHYMNIA_TYPE_STATISTICS_WINDOW,
+                                       "application", self,
+                                       "track-uri", g_variant_get_string (parameter, NULL),
+                                       "transient-for", window,
+                                       NULL);
+  gtk_window_set_modal (track_details_window, TRUE);
+
+  gtk_window_present (track_details_window);
 }
 
 static const GActionEntry app_actions[] = {
@@ -246,6 +270,7 @@ static const GActionEntry app_actions[] = {
   { "rescan", polyhymnia_application_rescan_action },
   { "scan", polyhymnia_application_scan_action },
   { "statistics", polyhymnia_application_statistics_action },
+  { "track-details", polyhymnia_application_track_details_action, "s" },
 };
 
 static void
@@ -274,6 +299,7 @@ polyhymnia_application_mpd_initialized (PolyhymniaApplication *self,
   GSimpleAction *rescan_action;
   GSimpleAction *scan_action;
   GSimpleAction *statistics_action;
+  GSimpleAction *track_details_action;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
 
@@ -292,4 +318,8 @@ polyhymnia_application_mpd_initialized (PolyhymniaApplication *self,
   statistics_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
                                                                    "statistics"));
   g_simple_action_set_enabled (statistics_action, mpd_initialized);
+
+  track_details_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
+                                                                      "track-details"));
+  g_simple_action_set_enabled (track_details_action, mpd_initialized);
 }

@@ -20,6 +20,7 @@ polyhymnia_sources = [
   'polyhymnia-statistics.c',
   'polyhymnia-statistics-window.c',
   'polyhymnia-track.c',
+  'polyhymnia-track-details-window.c',
   'polyhymnia-track-full-info.c',
   'polyhymnia-tracks-page.c',
   'polyhymnia-window.c',
