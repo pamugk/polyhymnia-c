@@ -168,7 +168,11 @@
                 <property name="child">
                   <object class="AdwNavigationView">
                     <child>
-                      <object class="PolyhymniaTracksPage" />
+                      <object class="PolyhymniaTracksPage">
+                	<signal name="view-details"
+                  	  handler="polyhymnia_window_track_show_details"
+                  	  swapped="true" />
+                      </object>
                     </child>
                   </object>
                 </property>

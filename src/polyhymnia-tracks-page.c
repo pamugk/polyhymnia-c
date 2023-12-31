@@ -90,6 +90,7 @@ polyhymnia_tracks_page_class_init (PolyhymniaTracksPageClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GType type = G_TYPE_FROM_CLASS (gobject_class);
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_tracks_page_dispose;
 
@@ -98,7 +99,7 @@ polyhymnia_tracks_page_class_init (PolyhymniaTracksPageClass *klass)
                     G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
                     NULL, NULL, NULL, NULL,
                     G_TYPE_NONE,
-                    0, NULL);
+                    1, view_detail_types);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-tracks-page.ui");
@@ -243,7 +244,8 @@ polyhymnia_tracks_page_track_activated (PolyhymniaTracksPage *self,
   g_assert (POLYHYMNIA_IS_TRACKS_PAGE (self));
 
   track = g_list_model_get_item (G_LIST_MODEL (self->tracks_model), position);
-  g_signal_emit (self, obj_signals[SIGNAL_VIEW_DETAILS], 0);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_DETAILS], 0,
+                 polyhymnia_track_get_uri (track));
 }
 
 /* Private function implementation */

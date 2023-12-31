@@ -19,9 +19,13 @@ struct _PolyhymniaTrackDetailsWindow
 {
   AdwWindow parent_instance;
 
-  /* Stored UI state */
-
   /* Template widgets */
+  AdwNavigationView       *root_navigation_view;
+
+  GtkImage                *album_cover_image;
+  GtkLabel                *track_title_label;
+  GtkLabel                *album_title_label;
+  GtkLabel                *album_artist_label;
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
@@ -43,6 +47,13 @@ polyhymnia_track_details_window_mpd_client_initialized (PolyhymniaTrackDetailsWi
 static void
 polyhymnia_track_details_window_mpd_database_updated (PolyhymniaTrackDetailsWindow *self,
                                                       PolyhymniaMpdClient          *user_data);
+
+/* Private methods declaration */
+static void
+polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self);
+
+static void
+polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self);
 
 /* Class stuff */
 static void
@@ -131,6 +142,12 @@ polyhymnia_track_details_window_class_init (PolyhymniaTrackDetailsWindowClass *k
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-track-details-window.ui");
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, root_navigation_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, album_cover_image);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, track_title_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, album_title_label);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, album_artist_label);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, mpd_client);
 
   gtk_widget_class_bind_template_callback (widget_class,
@@ -168,4 +185,80 @@ polyhymnia_track_details_window_mpd_database_updated (PolyhymniaTrackDetailsWind
                                                       PolyhymniaMpdClient          *user_data)
 {
   g_assert (POLYHYMNIA_IS_TRACK_DETAILS_WINDOW (self));
+
+  polyhymnia_track_details_window_fill_cover (self);
+  polyhymnia_track_details_window_fill_details (self);
+}
+
+/* Private methods implementation */
+static void
+polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
+{
+  GError *error = NULL;
+  GBytes *cover;
+  cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                      self->track_uri,
+                                                      &error);
+
+  if (error != NULL)
+  {
+    g_warning ("Failed to get album cover: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+    gtk_image_set_from_icon_name (self->album_cover_image,
+                                  "cd-symbolic");
+  }
+  else if (cover != NULL)
+  {
+    GdkTexture *cover_texture = gdk_texture_new_from_bytes (cover, &error);
+    if (error != NULL)
+    {
+      g_warning ("Failed to convert album cover: %s\n", error->message);
+      g_error_free (error);
+      error = NULL;
+      gtk_image_set_from_icon_name (self->album_cover_image,
+                                    "cd-symbolic");
+    }
+    else
+    {
+      gtk_image_set_from_paintable (self->album_cover_image,
+                                    GDK_PAINTABLE (cover_texture));
+      g_object_unref (cover_texture);
+    }
+    g_bytes_unref (cover);
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (self->album_cover_image,
+                                  "cd-symbolic");
+  }
+}
+
+static void
+polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self)
+{
+  GError *error = NULL;
+  PolyhymniaTrackFullInfo *details;
+
+  details = polyhymnia_mpd_client_get_song_details (self->mpd_client,
+                                                    self->track_uri,
+                                                    &error);
+
+  if (error != NULL)
+  {
+    g_warning ("Failed to get track details: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    //gtk_label_set_label (self->track_title_label,
+    //                     polyhymnia_track_full_info_get_title (details));
+    //gtk_label_set_label (self->album_title_label,
+    //                     polyhymnia_track_full_info_get_album (details));
+    //gtk_label_set_label (self->album_artist_label,
+    //                     polyhymnia_track_full_info_get_album_artist (details));
+
+    //g_object_unref (details);
+  }
 }

@@ -1636,7 +1636,7 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
                                 mpd_song_get_tag (song, MPD_TAG_TITLE, 0),
                                 "uri", mpd_song_get_uri (song),
                                 NULL);
-    mpd_song_free(song);
+    mpd_song_free (song);
   }
 
   if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
@@ -1651,7 +1651,7 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
     mpd_connection_clear_error (self->main_mpd_connection);
   }
 
-  return NULL;
+  return song_object;
 }
 
 PolyhymniaTrack *

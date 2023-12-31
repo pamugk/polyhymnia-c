@@ -252,7 +252,7 @@ polyhymnia_application_track_details_action (GSimpleAction *action,
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  track_details_window = g_object_new (POLYHYMNIA_TYPE_STATISTICS_WINDOW,
+  track_details_window = g_object_new (POLYHYMNIA_TYPE_TRACK_DETAILS_WINDOW,
                                        "application", self,
                                        "track-uri", g_variant_get_string (parameter, NULL),
                                        "transient-for", window,
