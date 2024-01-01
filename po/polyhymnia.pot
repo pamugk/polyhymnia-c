@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 18:38+0500\n"
+"POT-Creation-Date: 2024-01-01 19:18+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,7 +33,7 @@ msgstr ""
 
 #: data/ui/polyhymnia-artists-page.ui:6 data/ui/polyhymnia-artists-page.ui:12
 #: data/ui/polyhymnia-preferences-window.ui:59
-#: data/ui/polyhymnia-track-details-window.ui:527
+#: data/ui/polyhymnia-track-details-window.ui:504
 #: data/ui/polyhymnia-window.ui:146
 msgid "Artists"
 msgstr ""
@@ -213,7 +213,7 @@ msgid "Playlist with such name already exists."
 msgstr ""
 
 #: data/ui/polyhymnia-statistics-window.ui:24
-#: data/ui/polyhymnia-track-details-window.ui:707
+#: data/ui/polyhymnia-track-details-window.ui:684
 msgid "Statistics"
 msgstr ""
 
@@ -258,12 +258,12 @@ msgid "Audio format"
 msgstr ""
 
 #: data/ui/polyhymnia-track-details-window.ui:92
-#: data/ui/polyhymnia-track-details-window.ui:648
+#: data/ui/polyhymnia-track-details-window.ui:625
 msgid "Personnel"
 msgstr ""
 
 #: data/ui/polyhymnia-track-details-window.ui:105
-#: data/ui/polyhymnia-track-details-window.ui:699
+#: data/ui/polyhymnia-track-details-window.ui:676
 msgid "Legal"
 msgstr ""
 
@@ -324,31 +324,27 @@ msgstr ""
 msgid "Channels"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:468
-msgid "Bitrate"
-msgstr ""
-
-#: data/ui/polyhymnia-track-details-window.ui:507
+#: data/ui/polyhymnia-track-details-window.ui:484
 msgid "Audio Format"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:548
+#: data/ui/polyhymnia-track-details-window.ui:525
 msgid "Performers"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:569
+#: data/ui/polyhymnia-track-details-window.ui:546
 msgid "Composers"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:590
+#: data/ui/polyhymnia-track-details-window.ui:567
 msgid "Conductors"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:611
+#: data/ui/polyhymnia-track-details-window.ui:588
 msgid "Ensemble"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-window.ui:666
+#: data/ui/polyhymnia-track-details-window.ui:643
 msgid "Label or publisher"
 msgstr ""
 
@@ -508,38 +504,32 @@ msgstr ""
 msgid "Library not scanned yet"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:404
+#: src/polyhymnia-track-details-window.c:402
 msgid "Unknown track"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:406
+#: src/polyhymnia-track-details-window.c:404
 msgid "Unknown album"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:409
+#: src/polyhymnia-track-details-window.c:407
 msgid "Unknown artist"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:458
-#: src/polyhymnia-track-details-window.c:469
-#: src/polyhymnia-track-details-window.c:480
-#: src/polyhymnia-track-details-window.c:491
+#: src/polyhymnia-track-details-window.c:454
+#: src/polyhymnia-track-details-window.c:465
+#: src/polyhymnia-track-details-window.c:476
 msgid "Unknown or unspecified"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:462
+#: src/polyhymnia-track-details-window.c:458
 #, c-format
 msgid "%d Hz"
 msgstr ""
 
-#: src/polyhymnia-track-details-window.c:473
+#: src/polyhymnia-track-details-window.c:469
 #, c-format
 msgid "%d bits per sample"
-msgstr ""
-
-#: src/polyhymnia-track-details-window.c:495
-#, c-format
-msgid "%d kbit/s"
 msgstr ""
 
 #: src/polyhymnia-tracks-page.c:269

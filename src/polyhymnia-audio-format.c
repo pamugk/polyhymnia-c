@@ -115,13 +115,6 @@ polyhymnia_audio_format_init (PolyhymniaAudioFormat *self)
 }
 
 /* Instance methods */
-unsigned int
-polyhymnia_audio_format_get_bitrate (PolyhymniaAudioFormat *self)
-{
-  g_return_val_if_fail (POLYHYMNIA_IS_AUDIO_FORMAT (self), 0);
-  return self->sample_rate / 1000.0 * self->bits * self->channels;
-}
-
 unsigned char
 polyhymnia_audio_format_get_bits (PolyhymniaAudioFormat *self)
 {

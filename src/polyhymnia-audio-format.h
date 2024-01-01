@@ -9,9 +9,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PolyhymniaAudioFormat, polyhymnia_audio_format, POLYHYMNIA, AUDIO_FORMAT, GObject)
 
-unsigned int
-polyhymnia_audio_format_get_bitrate (PolyhymniaAudioFormat *self);
-
 unsigned char
 polyhymnia_audio_format_get_bits (PolyhymniaAudioFormat *self);
 

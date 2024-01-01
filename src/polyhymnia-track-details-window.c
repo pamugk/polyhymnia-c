@@ -55,7 +55,6 @@ struct _PolyhymniaTrackDetailsWindow
   GtkLabel            *sample_rate_label;
   GtkLabel            *bps_label;
   GtkLabel            *channels_label;
-  GtkLabel            *bitrate_label;
 
   AdwPreferencesGroup *legal_group;
   AdwActionRow        *personnel_row;
@@ -224,7 +223,6 @@ polyhymnia_track_details_window_class_init (PolyhymniaTrackDetailsWindowClass *k
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, sample_rate_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, bps_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, channels_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, bitrate_label);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, legal_group);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, personnel_row);
@@ -447,12 +445,10 @@ polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self
       gtk_label_set_text (self->sample_rate_label, NULL);
       gtk_label_set_text (self->bps_label, NULL);
       gtk_label_set_text (self->channels_label, NULL);
-      gtk_label_set_text (self->bitrate_label, NULL);
       gtk_widget_set_visible (GTK_WIDGET (self->audio_format_row), FALSE);
     }
     else
     {
-      unsigned int bitrate = polyhymnia_audio_format_get_bitrate (audio_format);
       if (polyhymnia_audio_format_get_sample_rate (audio_format) == 0)
       {
         gtk_label_set_text (self->sample_rate_label, _("Unknown or unspecified"));
@@ -485,16 +481,6 @@ polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self
                                           polyhymnia_audio_format_get_channels (audio_format));
         gtk_label_set_text (self->channels_label, channels);
         g_free (channels);
-      }
-      if (bitrate == 0)
-      {
-        gtk_label_set_text (self->bitrate_label, _("Unknown or unspecified"));
-      }
-      else
-      {
-        char *bitrate_str = g_strdup_printf (_("%d kbit/s"), bitrate);
-        gtk_label_set_text (self->bitrate_label, bitrate_str);
-        g_free (bitrate_str);
       }
 
       gtk_widget_set_visible (GTK_WIDGET (self->audio_format_row), TRUE);
