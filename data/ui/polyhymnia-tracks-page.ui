@@ -3,6 +3,7 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="PolyhymniaTracksPage" parent="AdwNavigationPage">
+    <property name="tag">tracks-list</property>
     <property name="title" translatable="yes">Songs</property>
   </template>
 
