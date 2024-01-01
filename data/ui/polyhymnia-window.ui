@@ -76,6 +76,9 @@
         </property>
         <child type="bottom">
           <object class="PolyhymniaPlayerBar" id="player_bar">
+            <signal name="view-track-details"
+              handler="polyhymnia_window_track_show_details"
+              swapped="true" />
             <style>
               <class name="toolbar"/>
             </style>
@@ -138,6 +141,9 @@
                         <signal name="navigate"
                           handler="polyhymnia_window_navigate_artist"
                           swapped="true" />
+                	<signal name="view-track-details"
+                  	  handler="polyhymnia_window_track_show_details"
+                  	  swapped="true" />
                       </object>
                     </child>
                   </object>
@@ -202,7 +208,11 @@
       </object>
     </child>
     <child type="sidebar">
-      <object class="PolyhymniaQueuePane" />
+      <object class="PolyhymniaQueuePane">
+        <signal name="view-track-details"
+          handler="polyhymnia_window_track_show_details"
+          swapped="true" />
+      </object>
     </child>
     <property name="collapsed">true</property>
     <property name="max-sidebar-width">300</property>

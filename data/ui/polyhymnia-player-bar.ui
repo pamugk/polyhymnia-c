@@ -142,6 +142,21 @@
 	    <property name="valign">center</property>
 	  </object>
         </child>
+	<child type="end">
+	  <object class="GtkButton">
+            <property name="has-tooltip">true</property>
+	    <property name="icon-name">info-symbolic</property>
+	    <property name="sensitive"
+	      bind-source="player"
+	      bind-property="active"
+	      bind-flags="sync-create" />
+            <property name="tooltip-text" translatable="yes">Details</property>
+	    <property name="valign">center</property>
+	    <signal name="clicked"
+	      handler="polyhymnia_player_bar_details_button_clicked"
+	      swapped="true" />
+	  </object>
+	</child>
         <child type="end">
           <object class="GtkToggleButton">
             <property name="has-tooltip">true</property>

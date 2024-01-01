@@ -127,6 +127,9 @@
                 </property>
                 <property name="show-column-separators">false</property>
                 <property name="show-row-separators">true</property>
+                <signal name="activate"
+                  handler="polyhymnia_album_page_track_activated"
+                  swapped="true" />
               </object>
             </property>
             <property name="vexpand">true</property>

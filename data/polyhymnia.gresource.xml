@@ -48,6 +48,7 @@
     <file alias="down-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-symbolic.svg</file>
     <file alias="edit-select-none-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/edit-select-none-symbolic.svg</file>
     <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
+    <file alias="info-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/info-symbolic.svg</file>
     <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>
     <file alias="library-music-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/library-music-symbolic.svg</file>
     <file alias="list-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/list-symbolic.svg</file>

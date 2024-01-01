@@ -299,7 +299,7 @@ polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
     g_error_free (error);
     error = NULL;
     gtk_image_set_from_icon_name (self->album_cover_image,
-                                  "cd-symbolic");
+                                  "image-missing-symbolic");
   }
   else if (cover != NULL)
   {
@@ -310,7 +310,7 @@ polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
       g_error_free (error);
       error = NULL;
       gtk_image_set_from_icon_name (self->album_cover_image,
-                                    "cd-symbolic");
+                                    "image-missing-symbolic");
     }
     else
     {
@@ -323,7 +323,7 @@ polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
   else
   {
     gtk_image_set_from_icon_name (self->album_cover_image,
-                                  "cd-symbolic");
+                                  "image-missing-symbolic");
   }
 }
 

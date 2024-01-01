@@ -330,7 +330,7 @@ polyhymnia_player_change_volume (PolyhymniaPlayer *self,
 }
 
 const PolyhymniaTrack *
-polyhymnia_player_get_current_track (const PolyhymniaPlayer *self)
+polyhymnia_player_get_current_track (PolyhymniaPlayer *self)
 {
   return self->current_track;
 }

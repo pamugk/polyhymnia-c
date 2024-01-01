@@ -18,7 +18,7 @@ polyhymnia_player_change_volume (PolyhymniaPlayer *self,
                                  GError           **error);
 
 const PolyhymniaTrack *
-polyhymnia_player_get_current_track (const PolyhymniaPlayer *self);
+polyhymnia_player_get_current_track (PolyhymniaPlayer *self);
 
 GBytes *
 polyhymnia_player_get_current_track_album_cover (PolyhymniaPlayer *self,

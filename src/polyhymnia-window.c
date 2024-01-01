@@ -250,6 +250,9 @@ polyhymnia_window_navigate_album (PolyhymniaWindow     *self,
   g_signal_connect_swapped (album_page, "deleted",
                             (GCallback) polyhymnia_window_album_deleted,
                             self);
+  g_signal_connect_swapped (album_page, "view-track-details",
+                            (GCallback) polyhymnia_window_track_show_details,
+                            self);
   adw_navigation_view_push (self->albums_navigation_view,
                             ADW_NAVIGATION_PAGE (album_page));
 }
@@ -276,6 +279,9 @@ polyhymnia_window_navigate_playlist (PolyhymniaWindow        *self,
                                 NULL);
   g_signal_connect_swapped (playlist_page, "deleted",
                             (GCallback) polyhymnia_window_playlist_deleted,
+                            self);
+  g_signal_connect_swapped (playlist_page, "view-track-details",
+                            (GCallback) polyhymnia_window_track_show_details,
                             self);
   adw_navigation_view_push (self->playlists_navigation_view,
                             ADW_NAVIGATION_PAGE (playlist_page));
