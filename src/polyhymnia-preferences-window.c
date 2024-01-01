@@ -14,8 +14,6 @@ struct _PolyhymniaPreferencesWindow
 
   AdwSwitchRow        *resume_playback_switch;
 
-  AdwSwitchRow        *play_explicit_switch;
-  AdwSwitchRow        *show_explicit_switch;
   AdwSwitchRow        *scan_startup_switch;
 
   /* Template objects */
@@ -75,8 +73,6 @@ polyhymnia_preferences_window_class_init (PolyhymniaPreferencesWindowClass *klas
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, audio_outputs_group);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, resume_playback_switch);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, play_explicit_switch);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, show_explicit_switch);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, scan_startup_switch);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, mpd_client);
@@ -95,12 +91,6 @@ polyhymnia_preferences_window_init (PolyhymniaPreferencesWindow *self)
                                                         self->mpd_client);
   g_settings_bind (self->settings, "app-system-resume-playback",
                   self->resume_playback_switch, "active",
-                  G_SETTINGS_BIND_DEFAULT);
-  g_settings_bind (self->settings, "app-library-explicit-songs",
-                  self->play_explicit_switch, "active",
-                  G_SETTINGS_BIND_DEFAULT);
-  g_settings_bind (self->settings, "app-library-explicit-covers",
-                  self->show_explicit_switch, "active",
                   G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "app-library-scan-startup",
                   self->scan_startup_switch, "active",
