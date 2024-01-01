@@ -6,6 +6,12 @@
 #include "polyhymnia-player-bar.h"
 
 /* Type metadata */
+typedef enum
+{
+  SIGNAL_VIEW_TRACK_DETAILS = 1,
+  N_SIGNALS,
+} PolyhymniaTracksPageSignal;
+
 struct _PolyhymniaPlayerBar
 {
   GtkWidget  parent_instance;
@@ -31,6 +37,8 @@ struct _PolyhymniaPlayerBar
 
 G_DEFINE_FINAL_TYPE (PolyhymniaPlayerBar, polyhymnia_player_bar, GTK_TYPE_WIDGET)
 
+static guint obj_signals[N_SIGNALS] = { 0, };
+
 static const gchar *VOLUME_ICONS[] =
 {
   "audio-volume-low-symbolic",
@@ -48,6 +56,10 @@ static void
 polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
                                     GParamSpec          *pspec,
                                     PolyhymniaPlayer    *user_data);
+
+static void
+polyhymnia_player_bar_details_button_clicked(PolyhymniaPlayerBar *self,
+                                             gpointer             user_data);
 
 static void
 polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
@@ -103,8 +115,17 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_player_bar_dispose;
+
+  obj_signals[SIGNAL_VIEW_TRACK_DETAILS] =
+     g_signal_newv ("view-track-details", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, view_detail_types);
 
   gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
 
@@ -124,6 +145,8 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, player);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_details_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_next_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -233,6 +256,20 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
     gtk_adjustment_set_upper (self->playback_adjustment,
                               (gdouble) polyhymnia_track_get_duration (current_track));
   }
+}
+
+static void
+polyhymnia_player_bar_details_button_clicked(PolyhymniaPlayerBar *self,
+                                             gpointer             user_data)
+{
+  const PolyhymniaTrack *current_track;
+
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
+
+  current_track = polyhymnia_player_get_current_track (self->player);
+  g_return_if_fail (current_track != NULL);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_TRACK_DETAILS], 0,
+                 polyhymnia_track_get_uri (current_track));
 }
 
 static void

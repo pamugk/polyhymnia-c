@@ -79,6 +79,11 @@ static void
 polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
                                        AdwSplitButton   *user_data);
 
+static void
+polyhymnia_window_track_show_details (PolyhymniaWindow *self,
+                                      const gchar      *track_uri,
+                                      GObject          *user_data);
+
 /* Class stuff */
 static void
 polyhymnia_window_dispose(GObject *gobject)
@@ -127,6 +132,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
                                            polyhymnia_window_navigate_playlist);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_scan_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_track_show_details);
 }
 
 static void
@@ -243,6 +250,9 @@ polyhymnia_window_navigate_album (PolyhymniaWindow     *self,
   g_signal_connect_swapped (album_page, "deleted",
                             (GCallback) polyhymnia_window_album_deleted,
                             self);
+  g_signal_connect_swapped (album_page, "view-track-details",
+                            (GCallback) polyhymnia_window_track_show_details,
+                            self);
   adw_navigation_view_push (self->albums_navigation_view,
                             ADW_NAVIGATION_PAGE (album_page));
 }
@@ -270,6 +280,9 @@ polyhymnia_window_navigate_playlist (PolyhymniaWindow        *self,
   g_signal_connect_swapped (playlist_page, "deleted",
                             (GCallback) polyhymnia_window_playlist_deleted,
                             self);
+  g_signal_connect_swapped (playlist_page, "view-track-details",
+                            (GCallback) polyhymnia_window_track_show_details,
+                            self);
   adw_navigation_view_push (self->playlists_navigation_view,
                             ADW_NAVIGATION_PAGE (playlist_page));
 }
@@ -292,4 +305,18 @@ polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
 
   app = gtk_window_get_application (GTK_WINDOW (self));
   g_action_group_activate_action (G_ACTION_GROUP (app), "scan", NULL);
+}
+
+static void
+polyhymnia_window_track_show_details (PolyhymniaWindow *self,
+                                      const gchar      *track_uri,
+                                      GObject          *user_data)
+{
+  GtkApplication *app;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  app = gtk_window_get_application (GTK_WINDOW (self));
+  g_action_group_activate_action (G_ACTION_GROUP (app), "track-details",
+                                  g_variant_new_string (track_uri));
 }

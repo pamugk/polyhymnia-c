@@ -19,6 +19,7 @@ typedef enum
 typedef enum
 {
   SIGNAL_NAVIGATE = 1,
+  SIGNAL_VIEW_TRACK_DETAILS,
   N_SIGNALS,
 } PolyhymniaArtistsPageSignal;
 
@@ -102,6 +103,11 @@ static void
 polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage *self,
                                               PolyhymniaMpdClient *user_data);
 
+static void
+polyhymnia_artists_page_track_activated (PolyhymniaArtistsPage *self,
+                                         guint                 position,
+                                         GtkColumnView         *user_data);
+
 /* Private function declaration */
 static void
 polyhymnia_artists_page_fill (PolyhymniaArtistsPage *self);
@@ -173,6 +179,7 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   GType navigate_param_types[1] = { G_TYPE_STRING };
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_artists_page_dispose;
   gobject_class->get_property = polyhymnia_artists_page_get_property;
@@ -195,6 +202,12 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
                     NULL, NULL, NULL, NULL,
                     G_TYPE_NONE,
                     1, navigate_param_types);
+  obj_signals[SIGNAL_VIEW_TRACK_DETAILS] =
+     g_signal_newv ("view-track-details", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, view_detail_types);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-artists-page.ui");
@@ -229,6 +242,8 @@ polyhymnia_artists_page_class_init (PolyhymniaArtistsPageClass *klass)
                                            polyhymnia_artists_page_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_artists_page_mpd_database_updated);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_artists_page_track_activated);
 }
 
 static void
@@ -481,6 +496,20 @@ polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage    *self,
 
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->artist_tracks_selection_model));
   polyhymnia_artists_page_fill (self);
+}
+
+static void
+polyhymnia_artists_page_track_activated (PolyhymniaArtistsPage *self,
+                                         guint                 position,
+                                         GtkColumnView         *user_data)
+{
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+  track = g_list_model_get_item (G_LIST_MODEL (self->artist_tracks_selection_model), position);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_TRACK_DETAILS], 0,
+                 polyhymnia_track_get_uri (track));
 }
 
 /* Private function implementation */

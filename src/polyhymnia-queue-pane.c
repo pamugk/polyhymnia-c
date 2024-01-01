@@ -13,6 +13,12 @@
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
 /* Type metadata */
+typedef enum
+{
+  SIGNAL_VIEW_TRACK_DETAILS = 1,
+  N_SIGNALS,
+} PolyhymniaTracksPageSignal;
+
 struct _PolyhymniaQueuePane
 {
   GtkWidget  parent_instance;
@@ -43,6 +49,8 @@ struct _PolyhymniaQueuePane
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaQueuePane, polyhymnia_queue_pane, GTK_TYPE_WIDGET)
+
+static guint obj_signals[N_SIGNALS] = { 0, };
 
 /* Event handlers*/
 static void
@@ -95,6 +103,11 @@ polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
                                          guint                position,
                                          guint                n_items,
                                          GtkSelectionModel    *user_data);
+
+static void
+polyhymnia_queue_pane_track_activated (PolyhymniaQueuePane *self,
+                                       guint                position,
+                                       GtkColumnView        *user_data);
 static void
 polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
                                   GtkListItem              *object,
@@ -146,8 +159,17 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_queue_pane_dispose;
+
+  obj_signals[SIGNAL_VIEW_TRACK_DETAILS] =
+     g_signal_newv ("view-track-details", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, view_detail_types);
 
   gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
 
@@ -189,6 +211,8 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                            polyhymnia_queue_pane_remove_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_selection_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_queue_pane_track_activated);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_queue_pane_track_bind);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -491,6 +515,20 @@ polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane *self,
   gtk_widget_set_sensitive (GTK_WIDGET (self->up_button), not_first);
   gtk_widget_set_sensitive (GTK_WIDGET (self->down_button), not_last);
   gtk_bitset_unref (selection);
+}
+
+static void
+polyhymnia_queue_pane_track_activated (PolyhymniaQueuePane *self,
+                                       guint                position,
+                                       GtkColumnView        *user_data)
+{
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  track = g_list_model_get_item (G_LIST_MODEL (self->queue_model), position);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_TRACK_DETAILS], 0,
+                 polyhymnia_track_get_uri (track));
 }
 
 static void

@@ -126,6 +126,9 @@
     </property>
     <property name="show-column-separators">false</property>
     <property name="show-row-separators">true</property>
+    <signal name="activate"
+      handler="polyhymnia_artists_page_track_activated"
+      swapped="true" />
   </object>
   <object class="AdwStatusPage" id="artists_status_page" />
   <object class="AdwStatusPage" id="artist_discography_status_page" />

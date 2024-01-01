@@ -175,6 +175,9 @@
       </object>
     </property>
     <property name="show-separators">true</property>
+    <signal name="activate"
+      handler="polyhymnia_queue_pane_track_activated"
+      swapped="true" />
   </object>
   <object class="AdwStatusPage" id="queue_status_page" />
 

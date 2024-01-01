@@ -6,6 +6,9 @@
 G_BEGIN_DECLS
 
 gchar*
-seconds_to_readable(guint duration);
+seconds_to_readable (guint duration);
+
+gchar*
+timespan_to_readable (gulong timespan);
 
 G_END_DECLS

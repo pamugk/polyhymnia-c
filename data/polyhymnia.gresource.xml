@@ -27,18 +27,28 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-window.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-queue-pane.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-statistics-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-track-details-window.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-window.ui</file>
 
     <file alias="gtk/help-overlay.ui" preprocess="xml-stripblanks">ui/gtk/help-overlay.ui</file>
+  </gresource>
+  <gresource prefix="/com/github/pamugk/polyhymnia/icons/scalable/apps">
+    <file alias="com.github.pamugk.polyhymnia.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/apps/com.github.pamugk.polyhymnia.svg</file>
+  </gresource>
+  <gresource prefix="/com/github/pamugk/polyhymnia/icons/symbolic/apps">
+    <file alias="com.github.pamugk.polyhymnia-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/symbolic/apps/com.github.pamugk.polyhymnia-symbolic.svg</file>
   </gresource>
   <gresource prefix="/com/github/pamugk/polyhymnia/icons/scalable/actions">
     <file alias="big-x-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/big-x-symbolic.svg</file>
     <file alias="cd-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/cd-symbolic.svg</file>
     <file alias="clock-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/clock-symbolic.svg</file>
+    <file alias="copy-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/copy-symbolic.svg</file>
     <file alias="down-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-large-symbolic.svg</file>
     <file alias="down-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-symbolic.svg</file>
     <file alias="edit-select-none-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/edit-select-none-symbolic.svg</file>
     <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
+    <file alias="info-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/info-symbolic.svg</file>
     <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>
     <file alias="library-music-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/library-music-symbolic.svg</file>
     <file alias="list-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/list-symbolic.svg</file>
@@ -54,6 +64,8 @@
     <file alias="plus-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/plus-symbolic.svg</file>
     <file alias="preferences-system-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/preferences-system-symbolic.svg</file>
     <file alias="question-round-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/question-round-symbolic.svg</file>
+    <file alias="right-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/right-large-symbolic.svg</file>
+    <file alias="right-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/right-symbolic.svg</file>
     <file alias="subtitles-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/subtitles-symbolic.svg</file>
     <file alias="task-recurring-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/task-recurring-symbolic.svg</file>
     <file alias="up-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/up-large-symbolic.svg</file>

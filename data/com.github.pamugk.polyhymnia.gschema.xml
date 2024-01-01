@@ -2,20 +2,11 @@
 <schemalist gettext-domain="polyhymnia">
 	<schema id="com.github.pamugk.polyhymnia" path="/com/github/pamugk/polyhymnia/">
 	  <!-- Application preferences -->
-	  <key name="app-library-explicit-covers" type="b">
-      <default>false</default>
-    </key>
-	  <key name="app-library-explicit-songs" type="b">
-      <default>false</default>
-    </key>
 	  <key name="app-library-scan-startup" type="b">
       <default>false</default>
     </key>
 	  <key name="app-system-resume-playback" type="b">
       <default>false</default>
-    </key>
-	  <key name="app-system-start-page" type="s">
-      <default>"library_page"</default>
     </key>
 
 	  <!-- Main window state-->

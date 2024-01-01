@@ -1,11 +1,13 @@
 
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-core.h"
+#include "polyhymnia-mpd-client-details.h"
 #include "polyhymnia-mpd-client-images.h"
 #include "polyhymnia-mpd-client-outputs.h"
 #include "polyhymnia-mpd-client-player.h"
 #include "polyhymnia-mpd-client-playlists.h"
 #include "polyhymnia-mpd-client-queue.h"
+#include "polyhymnia-mpd-client-statistics.h"
 
 #include <mpd/client.h>
 
@@ -1010,16 +1012,16 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
   g_ptr_array_set_free_func (results, g_object_unref);
   while ((track = mpd_recv_song(self->main_mpd_connection)) != NULL)
   {
-    const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
+    const char *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
     if (title != NULL && !g_str_equal (title, ""))
     {
-      const gchar *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
-      const gchar *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
-      const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
-      const gchar *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
-            gchar *date_parsed = NULL;
-      const gchar *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
-      const gchar *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
+      const char *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
+      const char *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
+      const char *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const char *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
+            char *date_parsed = NULL;
+      const char *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
+      const char *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
       guint64 disc_number = 0;
       GObject *track_object;
 
@@ -1147,18 +1149,18 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
   g_ptr_array_set_free_func (results, g_object_unref);
   while ((track = mpd_recv_song(self->main_mpd_connection)) != NULL)
   {
-    const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
+    const char *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
     if (title != NULL && !g_str_equal (title, ""))
     {
-      const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
-      const gchar *album_sort = mpd_song_get_tag (track, MPD_TAG_ALBUM_SORT, 0);
-      const gchar *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
-      const gchar *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
-      const gchar *track_artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
-      const gchar *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
-            gchar *date_parsed = NULL;
-      const gchar *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
-      const gchar *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
+      const char *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const char *album_sort = mpd_song_get_tag (track, MPD_TAG_ALBUM_SORT, 0);
+      const char *album_position = mpd_song_get_tag (track, MPD_TAG_TRACK, 0);
+      const char *album_artist = mpd_song_get_tag (track, MPD_TAG_ALBUM_ARTIST, 0);
+      const char *track_artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const char *date = mpd_song_get_tag (track, MPD_TAG_DATE, 0);
+            char *date_parsed = NULL;
+      const char *disc = mpd_song_get_tag (track, MPD_TAG_DISC, 0);
+      const char *original_date = mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0);
       guint64 disc_number = 0;
       GObject *track_object;
 
@@ -1399,9 +1401,9 @@ polyhymnia_mpd_client_get_playlist_tracks (PolyhymniaMpdClient *self,
     if (mpd_entity_get_type (entity) == MPD_ENTITY_TYPE_SONG)
     {
       const struct mpd_song *track = mpd_entity_get_song (entity);
-      const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
-      const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
-      const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const char *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
+      const char *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const char *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
       GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                             "uri", mpd_song_get_uri (track),
                                             "title", title,
@@ -1468,9 +1470,9 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
     if (mpd_entity_get_type (entity) == MPD_ENTITY_TYPE_SONG)
     {
       const struct mpd_song *track = mpd_entity_get_song (entity);
-      const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
-      const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
-      const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const char *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
+      const char *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const char *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
       GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                             "id", mpd_song_get_id (track),
                                             "queue-position", mpd_song_get_pos (track),
@@ -1569,6 +1571,163 @@ polyhymnia_mpd_client_get_song_album_cover(PolyhymniaMpdClient *self,
   return cover_array == NULL ? NULL : g_byte_array_free_to_bytes (cover_array);
 }
 
+PolyhymniaTrackFullInfo *
+polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
+                                        const gchar         *song_uri,
+                                        GError              **error)
+{
+  GError                  *inner_error = NULL;
+  PolyhymniaAudioFormat   *audio_format_object = NULL;
+  PolyhymniaTrackFullInfo *song_object = NULL;
+  struct mpd_song         *song;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return NULL;
+  }
+
+  if (!mpd_search_db_songs (self->main_mpd_connection, TRUE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search initialization failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  if (!mpd_search_add_uri_constraint (self->main_mpd_connection,
+                                      MPD_OPERATOR_DEFAULT,
+                                      song_uri))
+  {
+    mpd_search_cancel (self->main_mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search filter failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  if (!mpd_search_commit (self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "search start failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return NULL;
+  }
+  while ((song = mpd_recv_song(self->main_mpd_connection)) != NULL
+          && song_object == NULL)
+  {
+    const struct mpd_audio_format *audio_format = mpd_song_get_audio_format (song);
+    const char *date = mpd_song_get_tag (song, MPD_TAG_DATE, 0);
+    char *formatted_date = NULL;
+    const char *original_date = mpd_song_get_tag (song, MPD_TAG_ORIGINAL_DATE, 0);
+    char *formatted_original_date = NULL;
+
+    if (date != NULL)
+    {
+      GDateTime *release_date = g_date_time_new_from_iso8601 (date, NULL);
+      if (release_date != NULL)
+      {
+        formatted_date = g_date_time_format (release_date, "\%x");
+        g_date_time_unref (release_date);
+      }
+    }
+    if (original_date != NULL)
+    {
+      GDateTime *original_release_date = g_date_time_new_from_iso8601 (original_date, NULL);
+      if (original_release_date != NULL)
+      {
+        formatted_original_date = g_date_time_format (original_release_date, "\%x");
+        g_date_time_unref (original_release_date);
+      }
+    }
+
+    if (audio_format != NULL)
+    {
+      audio_format_object = g_object_new (POLYHYMNIA_TYPE_AUDIO_FORMAT,
+                                          "bits",
+                                          audio_format->bits,
+                                          "channels",
+                                          audio_format->channels,
+                                          "sample-rate",
+                                          audio_format->sample_rate,
+                                          NULL);
+    }
+
+    song_object = g_object_new (POLYHYMNIA_TYPE_TRACK_FULL_INFO,
+                                "album",
+                                mpd_song_get_tag (song, MPD_TAG_ALBUM, 0),
+                                "album-artist",
+                                mpd_song_get_tag (song, MPD_TAG_ALBUM_ARTIST, 0),
+                                "artists",
+                                mpd_song_get_tag (song, MPD_TAG_ARTIST, 0),
+                                "audio-format", audio_format_object,
+                                "comment",
+                                mpd_song_get_tag (song, MPD_TAG_COMMENT, 0),
+                                "composers",
+                                mpd_song_get_tag (song, MPD_TAG_COMPOSER, 0),
+                                "conductors",
+                                mpd_song_get_tag (song, MPD_TAG_CONDUCTOR, 0),
+                                "date",
+                                formatted_date == NULL ? date : formatted_date,
+                                "disc",
+                                mpd_song_get_tag (song, MPD_TAG_DISC, 0),
+                                "ensemble",
+                                mpd_song_get_tag (song, MPD_TAG_ENSEMBLE, 0),
+                                "genre",
+                                mpd_song_get_tag (song, MPD_TAG_GENRE, 0),
+                                "location",
+                                mpd_song_get_tag (song, MPD_TAG_LOCATION, 0),
+                                "movement",
+                                mpd_song_get_tag (song, MPD_TAG_MOVEMENT, 0),
+                                "movement-number",
+                                mpd_song_get_tag (song, MPD_TAG_MOVEMENTNUMBER, 0),
+                                "original-date",
+                                formatted_original_date == NULL ? original_date : formatted_original_date,
+                                "performers",
+                                mpd_song_get_tag (song, MPD_TAG_PERFORMER, 0),
+                                "position",
+                                mpd_song_get_tag (song, MPD_TAG_TRACK, 0),
+                                "publisher",
+                                mpd_song_get_tag (song, MPD_TAG_LABEL, 0),
+                                "title",
+                                mpd_song_get_tag (song, MPD_TAG_TITLE, 0),
+                                "uri", mpd_song_get_uri (song),
+                                "work",
+                                mpd_song_get_tag (song, MPD_TAG_WORK, 0),
+                                NULL);
+
+    g_clear_pointer (&formatted_date, g_free);
+    g_clear_pointer (&formatted_original_date, g_free);
+    mpd_song_free (song);
+  }
+
+  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->main_mpd_connection))
+  {
+    g_clear_object (&song_object);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+
+  return song_object;
+}
+
 PolyhymniaTrack *
 polyhymnia_mpd_client_get_song_from_queue(PolyhymniaMpdClient *self,
                                           guint               id,
@@ -1603,9 +1762,9 @@ polyhymnia_mpd_client_get_song_from_queue(PolyhymniaMpdClient *self,
   }
   else
   {
-    const gchar *album = mpd_song_get_tag (song, MPD_TAG_ALBUM, 0);
-    const gchar *artist = mpd_song_get_tag (song, MPD_TAG_ARTIST, 0);
-    const gchar *title = mpd_song_get_tag (song, MPD_TAG_TITLE, 0);
+    const char *album = mpd_song_get_tag (song, MPD_TAG_ALBUM, 0);
+    const char *artist = mpd_song_get_tag (song, MPD_TAG_ARTIST, 0);
+    const char *title = mpd_song_get_tag (song, MPD_TAG_TITLE, 0);
     song_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                 "id", mpd_song_get_id (song),
                                 "queue-position", mpd_song_get_pos (song),
@@ -1686,6 +1845,60 @@ polyhymnia_mpd_client_get_state(PolyhymniaMpdClient *self,
   }
 
   return state;
+}
+
+PolyhymniaStatistics *
+polyhymnia_mpd_client_get_statistics (PolyhymniaMpdClient *self,
+                                      GError              **error)
+{
+  GError               *inner_error = NULL;
+  struct mpd_stats     *mpd_statistics;
+  PolyhymniaStatistics *statistics = NULL;
+
+  g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), statistics);
+  g_return_val_if_fail (error == NULL || *error == NULL, statistics);
+  g_return_val_if_fail (self->main_mpd_connection != NULL, statistics);
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return statistics;
+  }
+
+  mpd_statistics = mpd_run_stats (self->main_mpd_connection);
+
+  if (mpd_statistics == NULL)
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+  else
+  {
+    statistics = g_object_new (POLYHYMNIA_TYPE_STATISTICS,
+                               "artists-count",
+                               mpd_stats_get_number_of_artists (mpd_statistics),
+                               "albums-count",
+                               mpd_stats_get_number_of_albums (mpd_statistics),
+                               "tracks-count",
+                               mpd_stats_get_number_of_songs (mpd_statistics),
+                               "mpd-uptime",
+                               mpd_stats_get_uptime (mpd_statistics),
+                               "db-play-time",
+                               mpd_stats_get_db_play_time (mpd_statistics),
+                               "db-last-update",
+                               mpd_stats_get_db_update_time (mpd_statistics),
+                               "mpd-play-time",
+                               mpd_stats_get_play_time (mpd_statistics),
+                               NULL);
+    mpd_stats_free (mpd_statistics);
+  }
+
+  return statistics;
 }
 
 guint
@@ -2358,7 +2571,7 @@ polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
   {
     if (pair->value != NULL && !g_str_equal (pair->value, ""))
     {
-      gchar *genre = g_strdup (pair->value);
+      char *genre = g_strdup (pair->value);
       g_ptr_array_add (results, genre);
     }
     mpd_return_pair(self->main_mpd_connection, pair);
@@ -2503,11 +2716,11 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
   g_ptr_array_set_free_func (results, g_object_unref);
   while ((track = mpd_recv_song(self->main_mpd_connection)) != NULL)
   {
-    const gchar *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
+    const char *title = mpd_song_get_tag (track, MPD_TAG_TITLE, 0);
     if (title != NULL && !g_str_equal (title, ""))
     {
-      const gchar *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
-      const gchar *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
+      const char *album = mpd_song_get_tag (track, MPD_TAG_ALBUM, 0);
+      const char *artist = mpd_song_get_tag (track, MPD_TAG_ARTIST, 0);
       GObject *track_object = g_object_new (POLYHYMNIA_TYPE_TRACK,
                                             "uri", mpd_song_get_uri (track),
                                             "title", title,

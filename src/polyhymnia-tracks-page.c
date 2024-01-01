@@ -8,6 +8,12 @@
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
 /* Type metadata */
+typedef enum
+{
+  SIGNAL_VIEW_DETAILS = 1,
+  N_SIGNALS,
+} PolyhymniaTracksPageSignal;
+
 struct _PolyhymniaTracksPage
 {
   AdwNavigationPage  parent_instance;
@@ -23,6 +29,8 @@ struct _PolyhymniaTracksPage
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaTracksPage, polyhymnia_tracks_page, ADW_TYPE_NAVIGATION_PAGE)
+
+static guint obj_signals[N_SIGNALS] = { 0, };
 
 /* Event handler declarations */
 static void
@@ -52,6 +60,11 @@ polyhymnia_tracks_page_selection_changed (PolyhymniaTracksPage *self,
                                           guint                n_items,
                                           GtkSelectionModel    *user_data);
 
+static void
+polyhymnia_tracks_page_track_activated (PolyhymniaTracksPage *self,
+                                        guint                position,
+                                        GtkColumnView        *user_data);
+
 /* Private function declaration */
 static void
 polyhymnia_tracks_page_fill (PolyhymniaTracksPage *self);
@@ -76,8 +89,17 @@ polyhymnia_tracks_page_class_init (PolyhymniaTracksPageClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GType type = G_TYPE_FROM_CLASS (gobject_class);
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->dispose = polyhymnia_tracks_page_dispose;
+
+  obj_signals[SIGNAL_VIEW_DETAILS] =
+     g_signal_newv ("view-details", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, view_detail_types);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-tracks-page.ui");
@@ -100,6 +122,8 @@ polyhymnia_tracks_page_class_init (PolyhymniaTracksPageClass *klass)
                                            polyhymnia_tracks_page_play_tracks_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_tracks_page_selection_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_tracks_page_track_activated);
 }
 
 static void
@@ -208,6 +232,20 @@ polyhymnia_tracks_page_selection_changed (PolyhymniaTracksPage *self,
   adw_toolbar_view_set_reveal_bottom_bars (self->track_toolbar_view,
                                            !gtk_bitset_is_empty (selection));
   gtk_bitset_unref (selection);
+}
+
+static void
+polyhymnia_tracks_page_track_activated (PolyhymniaTracksPage *self,
+                                        guint                position,
+                                        GtkColumnView        *user_data)
+{
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_TRACKS_PAGE (self));
+
+  track = g_list_model_get_item (G_LIST_MODEL (self->tracks_model), position);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_DETAILS], 0,
+                 polyhymnia_track_get_uri (track));
 }
 
 /* Private function implementation */

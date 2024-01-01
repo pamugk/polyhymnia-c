@@ -18,6 +18,7 @@ typedef enum
 typedef enum
 {
   SIGNAL_DELETED = 1,
+  SIGNAL_VIEW_TRACK_DETAILS,
   N_SIGNALS,
 } PolyhymniaAlbumPageSignal;
 
@@ -79,6 +80,11 @@ polyhymnia_album_page_add_album_to_queue_button_clicked (PolyhymniaAlbumPage *se
 static void
 polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
                                                  GtkButton        *user_data);
+
+static void
+polyhymnia_album_page_track_activated (PolyhymniaAlbumPage *self,
+                                       guint               position,
+                                       GtkColumnView       *user_data);
 
 /* Private function declarations */
 static gchar *
@@ -158,6 +164,7 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GType type = G_TYPE_FROM_CLASS (gobject_class);
+  GType view_detail_types[] = { G_TYPE_STRING };
 
   gobject_class->constructed = polyhymnia_album_page_constructed;
   gobject_class->dispose = polyhymnia_album_page_dispose;
@@ -181,6 +188,12 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
                     NULL, NULL, NULL, NULL,
                     G_TYPE_NONE,
                     0, NULL);
+  obj_signals[SIGNAL_VIEW_TRACK_DETAILS] =
+     g_signal_newv ("view-track-details", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    1, view_detail_types);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-album-page.ui");
@@ -218,6 +231,8 @@ polyhymnia_album_page_class_init (PolyhymniaAlbumPageClass *klass)
                                            polyhymnia_album_page_add_album_to_queue_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_page_play_album_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_album_page_track_activated);
 }
 
 static void
@@ -295,6 +310,20 @@ polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
     g_error_free (error);
     error = NULL;
   }
+}
+
+static void
+polyhymnia_album_page_track_activated (PolyhymniaAlbumPage *self,
+                                       guint               position,
+                                       GtkColumnView       *user_data)
+{
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_ALBUM_PAGE (self));
+
+  track = g_list_model_get_item (G_LIST_MODEL (self->tracks_model), position);
+  g_signal_emit (self, obj_signals[SIGNAL_VIEW_TRACK_DETAILS], 0,
+                 polyhymnia_track_get_uri (track));
 }
 
 /* Private function declarations */
