@@ -44,6 +44,11 @@ polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
                                              const gchar         *artist,
                                              GError              **error);
 
+GPtrArray *
+polyhymnia_mpd_client_get_last_modified_tracks(PolyhymniaMpdClient *self,
+                                               GDateTime           *since,
+                                               GError              **error);
+
 void
 polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
                             GError              **error);

@@ -126,7 +126,17 @@
     <child type="content">
       <object class="AdwOverlaySplitView" id="library_split_view">
         <child type="sidebar">
-          <object class="GtkListBox">
+          <object class="GtkListBox" id="sidebar_box">
+            <child>
+              <object class="GtkListBoxRow" id="last_modified_sidebar_row">
+                <property name="child">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Recently Modified</property>
+                    <property name="xalign">0</property>
+                  </object>
+                </property>
+              </object>
+            </child>
             <child>
               <object class="GtkListBoxRow" id="artists_sidebar_row">
                 <property name="child">
@@ -178,6 +188,13 @@
         </child>
         <child type="content">
           <object class="AdwNavigationView" id="library_navigation_view">
+            <child>
+              <object class="PolyhymniaLastModifiedPage">
+                <signal name="view-details"
+                  handler="polyhymnia_window_track_show_details"
+                  swapped="true" />
+              </object>
+            </child>
             <child>
               <object class="PolyhymniaArtistsPage" id="artists_page">
                 <signal name="navigate"

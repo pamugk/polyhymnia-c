@@ -10,6 +10,7 @@ polyhymnia_sources = [
   'polyhymnia-application.c',
   'polyhymnia-audio-format.c',
   'polyhymnia-format-utils.c',
+  'polyhymnia-last-modified-page.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-output.c',
   'polyhymnia-player.c',

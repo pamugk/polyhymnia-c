@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 21:14+0500\n"
+"POT-Creation-Date: 2024-01-02 17:52+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -26,15 +26,39 @@ msgstr "Polyhymnia"
 msgid "No description"
 msgstr "Без описания"
 
-#: data/ui/polyhymnia-albums-page.ui:7 data/ui/polyhymnia-window.ui:169
+#: data/ui/polyhymnia-albums-page.ui:7 data/ui/polyhymnia-window.ui:154
 msgid "Albums"
 msgstr "Альбомы"
 
-#: data/ui/polyhymnia-artists-page.ui:6 data/ui/polyhymnia-artists-page.ui:12
+#: data/ui/polyhymnia-artists-page.ui:7 data/ui/polyhymnia-artists-page.ui:13
 #: data/ui/polyhymnia-track-details-window.ui:504
-#: data/ui/polyhymnia-window.ui:152
+#: data/ui/polyhymnia-window.ui:144
 msgid "Artists"
 msgstr "Артисты"
+
+#: data/ui/polyhymnia-last-modified-page.ui:7 data/ui/polyhymnia-window.ui:134
+msgid "Recently Modified"
+msgstr "Недавно изменённые"
+
+#: data/ui/polyhymnia-last-modified-page.ui:24
+#: data/ui/polyhymnia-playlist-page.ui:66 data/ui/polyhymnia-tracks-page.ui:24
+msgid "Title"
+msgstr "Название"
+
+#: data/ui/polyhymnia-last-modified-page.ui:36
+#: data/ui/polyhymnia-playlist-page.ui:78 data/ui/polyhymnia-tracks-page.ui:36
+msgid "Artist"
+msgstr "Артист"
+
+#: data/ui/polyhymnia-last-modified-page.ui:48
+#: data/ui/polyhymnia-playlist-page.ui:90 data/ui/polyhymnia-tracks-page.ui:48
+msgid "Album"
+msgstr "Альбом"
+
+#: data/ui/polyhymnia-last-modified-page.ui:60
+#: data/ui/polyhymnia-playlist-page.ui:102 data/ui/polyhymnia-tracks-page.ui:60
+msgid "Duration"
+msgstr "Продолжительность"
 
 #: data/ui/polyhymnia-player-bar.ui:153
 #: data/ui/polyhymnia-track-details-window.ui:62
@@ -48,22 +72,6 @@ msgstr "Текст песни"
 #: data/ui/polyhymnia-player-bar.ui:173 data/ui/polyhymnia-queue-pane.ui:21
 msgid "Queue"
 msgstr "Очередь"
-
-#: data/ui/polyhymnia-playlist-page.ui:66 data/ui/polyhymnia-tracks-page.ui:23
-msgid "Title"
-msgstr "Название"
-
-#: data/ui/polyhymnia-playlist-page.ui:78 data/ui/polyhymnia-tracks-page.ui:35
-msgid "Artist"
-msgstr "Артист"
-
-#: data/ui/polyhymnia-playlist-page.ui:90 data/ui/polyhymnia-tracks-page.ui:47
-msgid "Album"
-msgstr "Альбом"
-
-#: data/ui/polyhymnia-playlist-page.ui:102 data/ui/polyhymnia-tracks-page.ui:59
-msgid "Duration"
-msgstr "Продолжительность"
 
 #: data/ui/polyhymnia-playlist-page.ui:143
 msgid "Playlist will be permanently deleted."
@@ -81,7 +89,7 @@ msgstr "_Отменить"
 msgid "_Delete"
 msgstr "_Удалить"
 
-#: data/ui/polyhymnia-playlists-page.ui:7 data/ui/polyhymnia-window.ui:203
+#: data/ui/polyhymnia-playlists-page.ui:7 data/ui/polyhymnia-window.ui:174
 msgid "Playlists"
 msgstr "Плейлисты"
 
@@ -306,7 +314,7 @@ msgstr "Ансамбль"
 msgid "Label or publisher"
 msgstr "Лейбл или издатель"
 
-#: data/ui/polyhymnia-tracks-page.ui:6 data/ui/polyhymnia-window.ui:186
+#: data/ui/polyhymnia-tracks-page.ui:7 data/ui/polyhymnia-window.ui:164
 msgid "Songs"
 msgstr "Песни"
 
@@ -342,15 +350,15 @@ msgstr "_Обновить"
 msgid "_Full Scan"
 msgstr "_Полностью обновить"
 
-#: data/ui/polyhymnia-window.ui:223
+#: data/ui/polyhymnia-window.ui:246
 msgid "Check your MPD setup and try again"
 msgstr "Проверьте настройки MPD и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:225
+#: data/ui/polyhymnia-window.ui:248
 msgid "No MPD connection"
 msgstr "Нет соединения с MPD"
 
-#: data/ui/polyhymnia-window.ui:230
+#: data/ui/polyhymnia-window.ui:253
 msgid "Try again"
 msgstr "Повторить попытку"
 
@@ -439,6 +447,18 @@ msgstr "Поиск исполнителей завершился с ошибко
 msgid "No artists found"
 msgstr "Исполнителей не найдено"
 
+#: src/polyhymnia-last-modified-page.c:278 src/polyhymnia-tracks-page.c:269
+msgid "Search for songs failed"
+msgstr "Поиск песен завершился с ошибкой"
+
+#: src/polyhymnia-last-modified-page.c:290
+msgid "Songs modified in a last week will be displayed here"
+msgstr "Здесь будет отображены изменённые за последнюю неделю песни"
+
+#: src/polyhymnia-last-modified-page.c:292
+msgid "No recently modified songs"
+msgstr "Нет недавно изменённых песен"
+
 #: src/polyhymnia-queue-pane.c:705
 msgid "Failed to fetch queue"
 msgstr "Ошибка загрузки очереди"
@@ -495,18 +515,14 @@ msgstr "%d Гц"
 msgid "%d bits per sample"
 msgstr "%d бит на сэмпл"
 
-#: src/polyhymnia-tracks-page.c:269
-msgid "Search for songs failed"
-msgstr "Поиск песен завершился с ошибкой"
-
 #: src/polyhymnia-tracks-page.c:283
 msgid "No songs found"
 msgstr "Песен не найдено"
 
-#: src/polyhymnia-window.c:220
+#: src/polyhymnia-window.c:235
 msgid "Stored playlists have changed"
 msgstr "Хранимые плейлисты были изменены"
 
-#: src/polyhymnia-window.c:233
+#: src/polyhymnia-window.c:248
 msgid "Library has been updated"
 msgstr "Библиотека была обновлена"
