@@ -7,6 +7,7 @@
 #include "polyhymnia-albums-page.h"
 #include "polyhymnia-artist-page.h"
 #include "polyhymnia-artists-page.h"
+#include "polyhymnia-last-modified-page.h"
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-player-bar.h"
 #include "polyhymnia-playlist-page.h"
@@ -25,11 +26,15 @@ struct _PolyhymniaWindow
   AdwOverlaySplitView  *content;
   AdwStatusPage        *no_mpd_connection_page;
   AdwToastOverlay      *root_toast_overlay;
+  GtkListBox           *sidebar_box;
+  AdwNavigationView    *library_navigation_view;
   PolyhymniaPlayerBar  *player_bar;
 
-  AdwNavigationView    *albums_navigation_view;
-  AdwNavigationView    *artists_navigation_view;
-  AdwNavigationView    *playlists_navigation_view;
+  GtkListBoxRow        *artists_sidebar_row;
+  GtkListBoxRow        *last_modified_sidebar_row;
+  GtkListBoxRow        *albums_sidebar_row;
+  GtkListBoxRow        *tracks_sidebar_row;
+  GtkListBoxRow        *playlists_sidebar_row;
 
   /* Template objects */
   PolyhymniaMpdClient  *mpd_client;
@@ -84,6 +89,11 @@ polyhymnia_window_track_show_details (PolyhymniaWindow *self,
                                       const gchar      *track_uri,
                                       GObject          *user_data);
 
+static void
+polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
+                                        GtkListBoxRow       *selected_row,
+                                        GtkListBox          *sidebar);
+
 /* Class stuff */
 static void
 polyhymnia_window_dispose(GObject *gobject)
@@ -109,11 +119,15 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_mpd_connection_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, root_toast_overlay);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, sidebar_box);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player_bar);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_navigation_view);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_navigation_view);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, playlists_navigation_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, last_modified_sidebar_row);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_sidebar_row);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_sidebar_row);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_sidebar_row);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, playlists_sidebar_row);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
@@ -134,6 +148,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
                                            polyhymnia_window_scan_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_track_show_details);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_sidebar_row_selected);
 }
 
 static void
@@ -141,12 +157,14 @@ polyhymnia_window_init (PolyhymniaWindow *self)
 {
   g_type_ensure (POLYHYMNIA_TYPE_ALBUMS_PAGE);
   g_type_ensure (POLYHYMNIA_TYPE_ARTISTS_PAGE);
+  g_type_ensure (POLYHYMNIA_TYPE_LAST_MODIFIED_PAGE);
   g_type_ensure (POLYHYMNIA_TYPE_PLAYER_BAR);
   g_type_ensure (POLYHYMNIA_TYPE_PLAYLISTS_PAGE);
   g_type_ensure (POLYHYMNIA_TYPE_QUEUE_PANE);
   g_type_ensure (POLYHYMNIA_TYPE_TRACKS_PAGE);
 
   gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_list_box_select_row (self->sidebar_box, self->last_modified_sidebar_row);
 
   g_object_bind_property (polyhymnia_player_bar_get_queue_toggle_button (self->player_bar),
                           "active",
@@ -175,7 +193,7 @@ polyhymnia_window_album_deleted (PolyhymniaWindow    *self,
                                  PolyhymniaAlbumPage *album_page)
 {
   g_assert (POLYHYMNIA_IS_WINDOW (self));
-  adw_navigation_view_pop_to_tag (self->albums_navigation_view, "albums-list");
+  adw_navigation_view_pop_to_tag (self->library_navigation_view, "albums-list");
 }
 
 static void
@@ -253,7 +271,7 @@ polyhymnia_window_navigate_album (PolyhymniaWindow     *self,
   g_signal_connect_swapped (album_page, "view-track-details",
                             (GCallback) polyhymnia_window_track_show_details,
                             self);
-  adw_navigation_view_push (self->albums_navigation_view,
+  adw_navigation_view_push (self->library_navigation_view,
                             ADW_NAVIGATION_PAGE (album_page));
 }
 
@@ -283,7 +301,7 @@ polyhymnia_window_navigate_playlist (PolyhymniaWindow        *self,
   g_signal_connect_swapped (playlist_page, "view-track-details",
                             (GCallback) polyhymnia_window_track_show_details,
                             self);
-  adw_navigation_view_push (self->playlists_navigation_view,
+  adw_navigation_view_push (self->library_navigation_view,
                             ADW_NAVIGATION_PAGE (playlist_page));
 }
 
@@ -292,7 +310,7 @@ polyhymnia_window_playlist_deleted (PolyhymniaWindow        *self,
                                     PolyhymniaPlaylistPage  *playlist_page)
 {
   g_assert (POLYHYMNIA_IS_WINDOW (self));
-  adw_navigation_view_pop_to_tag (self->playlists_navigation_view, "playlists-list");
+  adw_navigation_view_pop_to_tag (self->library_navigation_view, "playlists-list");
 }
 
 static void
@@ -319,4 +337,43 @@ polyhymnia_window_track_show_details (PolyhymniaWindow *self,
   app = gtk_window_get_application (GTK_WINDOW (self));
   g_action_group_activate_action (G_ACTION_GROUP (app), "track-details",
                                   g_variant_new_string (track_uri));
+}
+
+static void
+polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
+                                        GtkListBoxRow       *selected_row,
+                                        GtkListBox          *sidebar)
+{
+  const char *destination;
+
+  if (selected_row == NULL)
+  {
+    return;
+  }
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  if (selected_row == self->last_modified_sidebar_row)
+  {
+    destination = "last-modified-list";
+  }
+  else if (selected_row == self->artists_sidebar_row)
+  {
+    destination = "artists-list";
+  }
+  else if (selected_row == self->albums_sidebar_row)
+  {
+    destination = "albums-list";
+  }
+  else if (selected_row == self->tracks_sidebar_row)
+  {
+    destination = "tracks-list";
+  }
+  else if (selected_row == self->playlists_sidebar_row)
+  {
+    destination = "playlists-list";
+  }
+
+  adw_navigation_view_replace_with_tags (self->library_navigation_view,
+                                         &destination, 1);
 }

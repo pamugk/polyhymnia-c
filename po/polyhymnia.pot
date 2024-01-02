@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 21:14+0500\n"
+"POT-Creation-Date: 2024-01-02 17:52+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,14 +26,38 @@ msgstr ""
 msgid "No description"
 msgstr ""
 
-#: data/ui/polyhymnia-albums-page.ui:7 data/ui/polyhymnia-window.ui:169
+#: data/ui/polyhymnia-albums-page.ui:7 data/ui/polyhymnia-window.ui:154
 msgid "Albums"
 msgstr ""
 
-#: data/ui/polyhymnia-artists-page.ui:6 data/ui/polyhymnia-artists-page.ui:12
+#: data/ui/polyhymnia-artists-page.ui:7 data/ui/polyhymnia-artists-page.ui:13
 #: data/ui/polyhymnia-track-details-window.ui:504
-#: data/ui/polyhymnia-window.ui:152
+#: data/ui/polyhymnia-window.ui:144
 msgid "Artists"
+msgstr ""
+
+#: data/ui/polyhymnia-last-modified-page.ui:7 data/ui/polyhymnia-window.ui:134
+msgid "Recently Modified"
+msgstr ""
+
+#: data/ui/polyhymnia-last-modified-page.ui:24
+#: data/ui/polyhymnia-playlist-page.ui:66 data/ui/polyhymnia-tracks-page.ui:24
+msgid "Title"
+msgstr ""
+
+#: data/ui/polyhymnia-last-modified-page.ui:36
+#: data/ui/polyhymnia-playlist-page.ui:78 data/ui/polyhymnia-tracks-page.ui:36
+msgid "Artist"
+msgstr ""
+
+#: data/ui/polyhymnia-last-modified-page.ui:48
+#: data/ui/polyhymnia-playlist-page.ui:90 data/ui/polyhymnia-tracks-page.ui:48
+msgid "Album"
+msgstr ""
+
+#: data/ui/polyhymnia-last-modified-page.ui:60
+#: data/ui/polyhymnia-playlist-page.ui:102 data/ui/polyhymnia-tracks-page.ui:60
+msgid "Duration"
 msgstr ""
 
 #: data/ui/polyhymnia-player-bar.ui:153
@@ -47,22 +71,6 @@ msgstr ""
 
 #: data/ui/polyhymnia-player-bar.ui:173 data/ui/polyhymnia-queue-pane.ui:21
 msgid "Queue"
-msgstr ""
-
-#: data/ui/polyhymnia-playlist-page.ui:66 data/ui/polyhymnia-tracks-page.ui:23
-msgid "Title"
-msgstr ""
-
-#: data/ui/polyhymnia-playlist-page.ui:78 data/ui/polyhymnia-tracks-page.ui:35
-msgid "Artist"
-msgstr ""
-
-#: data/ui/polyhymnia-playlist-page.ui:90 data/ui/polyhymnia-tracks-page.ui:47
-msgid "Album"
-msgstr ""
-
-#: data/ui/polyhymnia-playlist-page.ui:102 data/ui/polyhymnia-tracks-page.ui:59
-msgid "Duration"
 msgstr ""
 
 #: data/ui/polyhymnia-playlist-page.ui:143
@@ -81,7 +89,7 @@ msgstr ""
 msgid "_Delete"
 msgstr ""
 
-#: data/ui/polyhymnia-playlists-page.ui:7 data/ui/polyhymnia-window.ui:203
+#: data/ui/polyhymnia-playlists-page.ui:7 data/ui/polyhymnia-window.ui:174
 msgid "Playlists"
 msgstr ""
 
@@ -306,7 +314,7 @@ msgstr ""
 msgid "Label or publisher"
 msgstr ""
 
-#: data/ui/polyhymnia-tracks-page.ui:6 data/ui/polyhymnia-window.ui:186
+#: data/ui/polyhymnia-tracks-page.ui:7 data/ui/polyhymnia-window.ui:164
 msgid "Songs"
 msgstr ""
 
@@ -342,15 +350,15 @@ msgstr ""
 msgid "_Full Scan"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:223
+#: data/ui/polyhymnia-window.ui:246
 msgid "Check your MPD setup and try again"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:225
+#: data/ui/polyhymnia-window.ui:248
 msgid "No MPD connection"
 msgstr ""
 
-#: data/ui/polyhymnia-window.ui:230
+#: data/ui/polyhymnia-window.ui:253
 msgid "Try again"
 msgstr ""
 
@@ -438,6 +446,18 @@ msgstr ""
 msgid "No artists found"
 msgstr ""
 
+#: src/polyhymnia-last-modified-page.c:278 src/polyhymnia-tracks-page.c:269
+msgid "Search for songs failed"
+msgstr ""
+
+#: src/polyhymnia-last-modified-page.c:290
+msgid "Songs modified in a last week will be displayed here"
+msgstr ""
+
+#: src/polyhymnia-last-modified-page.c:292
+msgid "No recently modified songs"
+msgstr ""
+
 #: src/polyhymnia-queue-pane.c:705
 msgid "Failed to fetch queue"
 msgstr ""
@@ -494,18 +514,14 @@ msgstr ""
 msgid "%d bits per sample"
 msgstr ""
 
-#: src/polyhymnia-tracks-page.c:269
-msgid "Search for songs failed"
-msgstr ""
-
 #: src/polyhymnia-tracks-page.c:283
 msgid "No songs found"
 msgstr ""
 
-#: src/polyhymnia-window.c:220
+#: src/polyhymnia-window.c:235
 msgid "Stored playlists have changed"
 msgstr ""
 
-#: src/polyhymnia-window.c:233
+#: src/polyhymnia-window.c:248
 msgid "Library has been updated"
 msgstr ""

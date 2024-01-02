@@ -2,9 +2,9 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
-  <template class="PolyhymniaTracksPage" parent="AdwNavigationPage">
-    <property name="tag">tracks-list</property>
-    <property name="title" translatable="yes">Songs</property>
+  <template class="PolyhymniaLastModifiedPage" parent="AdwNavigationPage">
+    <property name="tag">last-modified-list</property>
+    <property name="title" translatable="yes">Recently Modified</property>
   </template>
 
   <object class="AdwToolbarView" id="track_toolbar_view">
@@ -63,14 +63,14 @@
             <property name="model">
               <object class="GtkMultiSelection" id="tracks_selection_model">
                 <signal name="selection-changed"
-                  handler="polyhymnia_tracks_page_selection_changed"
+                  handler="polyhymnia_last_modified_page_selection_changed"
                   swapped="true" />
               </object>
             </property>
             <property name="show-column-separators">true</property>
             <property name="show-row-separators">true</property>
             <signal name="activate"
-              handler="polyhymnia_tracks_page_track_activated"
+              handler="polyhymnia_last_modified_page_track_activated"
               swapped="true" />
           </object>
         </property>
@@ -82,7 +82,7 @@
           <object class="GtkButton">
             <property name="icon-name">play-large-symbolic</property>
             <signal name="clicked"
-              handler="polyhymnia_tracks_page_play_tracks_button_clicked"
+              handler="polyhymnia_last_modified_page_play_tracks_button_clicked"
               swapped="true" />
 	  </object>
         </child>
@@ -90,7 +90,7 @@
           <object class="GtkButton">
             <property name="icon-name">plus-symbolic</property>
             <signal name="clicked"
-              handler="polyhymnia_tracks_page_add_tracks_to_queue_button_clicked"
+              handler="polyhymnia_last_modified_page_add_tracks_to_queue_button_clicked"
               swapped="true" />
 	  </object>
         </child>
@@ -98,7 +98,7 @@
           <object class="GtkButton">
             <property name="icon-name">edit-select-none-symbolic</property>
             <signal name="clicked"
-              handler="polyhymnia_tracks_page_clear_selection_button_clicked"
+              handler="polyhymnia_last_modified_page_clear_selection_button_clicked"
               swapped="true" />
 	  </object>
         </child>
@@ -110,10 +110,10 @@
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"
-      handler="polyhymnia_tracks_page_mpd_database_updated"
+      handler="polyhymnia_last_modified_page_mpd_database_updated"
       swapped="true" />
     <signal name="notify::initialized"
-      handler="polyhymnia_tracks_page_mpd_client_initialized"
+      handler="polyhymnia_last_modified_page_mpd_client_initialized"
       swapped="true" />
   </object>
 </interface>

@@ -4,6 +4,7 @@ data/com.github.pamugk.polyhymnia.gschema.xml
 data/ui/polyhymnia-album-page.ui
 data/ui/polyhymnia-albums-page.ui
 data/ui/polyhymnia-artists-page.ui
+data/ui/polyhymnia-last-modified-page.ui
 data/ui/polyhymnia-player-bar.ui
 data/ui/polyhymnia-playlist-page.ui
 data/ui/polyhymnia-playlists-page.ui
@@ -19,6 +20,7 @@ src/polyhymnia-albums-page.c
 src/polyhymnia-application.c
 src/polyhymnia-artist-page.c
 src/polyhymnia-artists-page.c
+src/polyhymnia-last-modified-page.c
 src/polyhymnia-queue-pane.c
 src/polyhymnia-playlist-page.c
 src/polyhymnia-playlists-page.c
