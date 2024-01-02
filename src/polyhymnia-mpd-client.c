@@ -2778,10 +2778,9 @@ polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
     mpd_connection_clear_error (self->main_mpd_connection);
     return NULL;
   }
-  if (!mpd_search_add_tag_constraint (self->main_mpd_connection,
-                                      MPD_OPERATOR_DEFAULT,
-                                      MPD_TAG_TITLE,
-                                      query))
+  if (!mpd_search_add_any_tag_constraint (self->main_mpd_connection,
+                                          MPD_OPERATOR_DEFAULT,
+                                          query))
   {
     mpd_search_cancel (self->main_mpd_connection);
     g_set_error (error,
