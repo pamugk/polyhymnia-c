@@ -13,6 +13,7 @@
 #include "polyhymnia-playlist-page.h"
 #include "polyhymnia-playlists-page.h"
 #include "polyhymnia-queue-pane.h"
+#include "polyhymnia-search-page.h"
 #include "polyhymnia-tracks-page.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -161,6 +162,7 @@ polyhymnia_window_init (PolyhymniaWindow *self)
   g_type_ensure (POLYHYMNIA_TYPE_PLAYER_BAR);
   g_type_ensure (POLYHYMNIA_TYPE_PLAYLISTS_PAGE);
   g_type_ensure (POLYHYMNIA_TYPE_QUEUE_PANE);
+  g_type_ensure (POLYHYMNIA_TYPE_SEARCH_PAGE);
   g_type_ensure (POLYHYMNIA_TYPE_TRACKS_PAGE);
 
   gtk_widget_init_template (GTK_WIDGET (self));

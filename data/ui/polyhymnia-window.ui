@@ -226,6 +226,13 @@
                   swapped="true" />
               </object>
             </child>
+            <child>
+              <object class="PolyhymniaSearchPage">
+                <signal name="view-track-details"
+                  handler="polyhymnia_window_track_show_details"
+                  swapped="true" />
+              </object>
+            </child>
           </object>
         </child>
       </object>

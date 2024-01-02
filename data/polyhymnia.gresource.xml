@@ -23,6 +23,7 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-last-modified-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-playlist-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-playlists-page.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-search-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-tracks-page.ui</file>
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
