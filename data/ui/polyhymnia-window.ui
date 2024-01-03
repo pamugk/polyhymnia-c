@@ -63,12 +63,21 @@
             <child>
 	      <object class="GtkSearchEntry">
                 <property name="placeholder-text" translatable="yes">Search…</property>
+                <signal name="search-changed"
+                  handler="polyhymnia_window_search_changed"
+                  swapped="true" />
+                <signal name="search-started"
+                  handler="polyhymnia_window_search_started"
+                  swapped="true" />
+                <signal name="stop-search"
+                  handler="polyhymnia_window_search_stopped"
+                  swapped="true" />
 	      </object>
             </child>
             <property name="search-mode-enabled"
             	bind-source="search_button"
             	bind-property="active"
-            	bind-flags="sync-create" />
+            	bind-flags="bidirectional|sync-create" />
           </object>
         </child>
         <property name="content">

@@ -23,6 +23,9 @@ struct _PolyhymniaWindow
 {
   AdwApplicationWindow parent_instance;
 
+  /* UI state */
+  GtkListBoxRow        *last_selected_sidebar_row;
+
   /* Template widgets */
   AdwOverlaySplitView  *content;
   AdwStatusPage        *no_mpd_connection_page;
@@ -86,6 +89,18 @@ polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
                                        AdwSplitButton   *user_data);
 
 static void
+polyhymnia_window_search_changed (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data);
+
+static void
+polyhymnia_window_search_started (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data);
+
+static void
+polyhymnia_window_search_stopped (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data);
+
+static void
 polyhymnia_window_track_show_details (PolyhymniaWindow *self,
                                       const gchar      *track_uri,
                                       GObject          *user_data);
@@ -101,6 +116,7 @@ polyhymnia_window_dispose(GObject *gobject)
 {
   PolyhymniaWindow *self = POLYHYMNIA_WINDOW (gobject);
 
+  self->last_selected_sidebar_row = NULL;
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_WINDOW);
 
   G_OBJECT_CLASS (polyhymnia_window_parent_class)->dispose (gobject);
@@ -147,6 +163,12 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
                                            polyhymnia_window_navigate_playlist);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_scan_button_clicked);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_search_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_search_started);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_search_stopped);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_track_show_details);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -328,6 +350,39 @@ polyhymnia_window_scan_button_clicked (PolyhymniaWindow *self,
 }
 
 static void
+polyhymnia_window_search_changed (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+  g_debug ("Search changed");
+}
+
+static void
+polyhymnia_window_search_started (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data)
+{
+  const char *destination;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  gtk_list_box_unselect_all (self->sidebar_box);
+  g_debug ("Search started");
+  destination = "search";
+  adw_navigation_view_replace_with_tags (self->library_navigation_view,
+                                         &destination, 1);
+}
+
+static void
+polyhymnia_window_search_stopped (PolyhymniaWindow *self,
+                                  GtkSearchEntry   *user_data)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  g_debug ("Search stopped");
+  gtk_list_box_select_row (self->sidebar_box, self->last_selected_sidebar_row);
+}
+
+static void
 polyhymnia_window_track_show_details (PolyhymniaWindow *self,
                                       const gchar      *track_uri,
                                       GObject          *user_data)
@@ -348,13 +403,14 @@ polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
 {
   const char *destination;
 
-  if (selected_row == NULL)
+  if (selected_row == NULL || self->last_selected_sidebar_row == selected_row)
   {
     return;
   }
 
   g_assert (POLYHYMNIA_IS_WINDOW (self));
 
+  self->last_selected_sidebar_row = selected_row;
   if (selected_row == self->last_modified_sidebar_row)
   {
     destination = "last-modified-list";
