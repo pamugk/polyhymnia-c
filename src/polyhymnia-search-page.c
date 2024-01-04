@@ -83,6 +83,7 @@ polyhymnia_search_page_dispose(GObject *gobject)
 
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_SEARCH_PAGE);
+  g_clear_pointer (&(self->search_query), g_free);
 
   G_OBJECT_CLASS (polyhymnia_search_page_parent_class)->dispose (gobject);
 }
@@ -140,6 +141,21 @@ polyhymnia_search_page_init (PolyhymniaSearchPage *self)
                                  G_LIST_MODEL (self->tracks_model));
 
   polyhymnia_search_page_mpd_client_initialized (self, NULL, self->mpd_client);
+}
+
+/* Instance methods */
+void
+polyhymnia_search_page_set_search_query (PolyhymniaSearchPage *self,
+                                         const char *search_query)
+{
+  g_assert (POLYHYMNIA_IS_SEARCH_PAGE (self));
+
+  if (self->search_query != NULL)
+  {
+    g_free (self->search_query);
+  }
+  self->search_query = g_strstrip (g_strdup (search_query));
+  polyhymnia_search_page_fill (self);
 }
 
 /* Event handler implementations */
@@ -260,7 +276,9 @@ polyhymnia_search_page_fill (PolyhymniaSearchPage *self)
 
   previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
-  if (self->search_query == NULL)
+  if (self->search_query == NULL
+      // Simple trick to avoid O(N) string length measurement
+      || self->search_query[0] == '\0' || self->search_query[1] == '\0')
   {
     g_list_store_remove_all (self->tracks_model);
     g_object_set (G_OBJECT (self->tracks_status_page),
@@ -276,7 +294,8 @@ polyhymnia_search_page_fill (PolyhymniaSearchPage *self)
     GPtrArray *tracks;
 
     gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->tracks_selection_model));
-    tracks = polyhymnia_mpd_client_search_tracks (self->mpd_client, "", &error);
+    tracks = polyhymnia_mpd_client_search_tracks (self->mpd_client,
+                                                  self->search_query, &error);
     if (error != NULL)
     {
       g_object_set (G_OBJECT (self->tracks_status_page),

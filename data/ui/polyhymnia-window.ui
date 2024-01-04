@@ -59,9 +59,9 @@
           </object>
         </child>
         <child type="top">
-          <object class="GtkSearchBar">
+          <object class="GtkSearchBar" id="search_bar">
             <child>
-	      <object class="GtkSearchEntry">
+	      <object class="GtkSearchEntry" id="search_entry">
                 <property name="placeholder-text" translatable="yes">Search…</property>
                 <signal name="search-changed"
                   handler="polyhymnia_window_search_changed"
@@ -198,7 +198,7 @@
         <child type="content">
           <object class="AdwNavigationView" id="library_navigation_view">
             <child>
-              <object class="PolyhymniaLastModifiedPage">
+              <object class="PolyhymniaLastModifiedPage" id="last_modified_page">
                 <signal name="view-details"
                   handler="polyhymnia_window_track_show_details"
                   swapped="true" />
@@ -215,28 +215,28 @@
               </object>
             </child>
             <child>
-              <object class="PolyhymniaAlbumsPage">
+              <object class="PolyhymniaAlbumsPage" id="albums_page">
                 <signal name="navigate"
                   handler="polyhymnia_window_navigate_album"
                   swapped="true" />
               </object>
             </child>
             <child>
-              <object class="PolyhymniaTracksPage">
+              <object class="PolyhymniaTracksPage" id="tracks_page">
                 <signal name="view-details"
                   handler="polyhymnia_window_track_show_details"
                   swapped="true" />
               </object>
             </child>
             <child>
-              <object class="PolyhymniaPlaylistsPage">
+              <object class="PolyhymniaPlaylistsPage" id="playlists_page">
                 <signal name="navigate"
                   handler="polyhymnia_window_navigate_playlist"
                   swapped="true" />
               </object>
             </child>
             <child>
-              <object class="PolyhymniaSearchPage">
+              <object class="PolyhymniaSearchPage" id="search_page">
                 <signal name="view-track-details"
                   handler="polyhymnia_window_track_show_details"
                   swapped="true" />

@@ -30,6 +30,8 @@ struct _PolyhymniaWindow
   AdwOverlaySplitView  *content;
   AdwStatusPage        *no_mpd_connection_page;
   AdwToastOverlay      *root_toast_overlay;
+  GtkSearchBar         *search_bar;
+  GtkSearchEntry       *search_entry;
   GtkListBox           *sidebar_box;
   AdwNavigationView    *library_navigation_view;
   PolyhymniaPlayerBar  *player_bar;
@@ -39,6 +41,13 @@ struct _PolyhymniaWindow
   GtkListBoxRow        *albums_sidebar_row;
   GtkListBoxRow        *tracks_sidebar_row;
   GtkListBoxRow        *playlists_sidebar_row;
+
+  AdwNavigationPage    *last_modified_page;
+  AdwNavigationPage    *artists_page;
+  AdwNavigationPage    *albums_page;
+  AdwNavigationPage    *tracks_page;
+  AdwNavigationPage    *playlists_page;
+  AdwNavigationPage    *search_page;
 
   /* Template objects */
   PolyhymniaMpdClient  *mpd_client;
@@ -136,6 +145,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, no_mpd_connection_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, root_toast_overlay);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_bar);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_entry);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, sidebar_box);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player_bar);
@@ -145,6 +156,13 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_sidebar_row);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_sidebar_row);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, playlists_sidebar_row);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, last_modified_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, artists_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, albums_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, tracks_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, playlists_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
@@ -354,22 +372,25 @@ polyhymnia_window_search_changed (PolyhymniaWindow *self,
                                   GtkSearchEntry   *user_data)
 {
   g_assert (POLYHYMNIA_IS_WINDOW (self));
-  g_debug ("Search changed");
+
+  if (adw_navigation_view_get_visible_page (self->library_navigation_view) != self->search_page)
+  {
+    polyhymnia_window_search_started (self, user_data);
+  }
+
+  polyhymnia_search_page_set_search_query (POLYHYMNIA_SEARCH_PAGE (self->search_page),
+                                           gtk_editable_get_text (GTK_EDITABLE (self->search_entry)));
 }
 
 static void
 polyhymnia_window_search_started (PolyhymniaWindow *self,
                                   GtkSearchEntry   *user_data)
 {
-  const char *destination;
-
   g_assert (POLYHYMNIA_IS_WINDOW (self));
 
   gtk_list_box_unselect_all (self->sidebar_box);
-  g_debug ("Search started");
-  destination = "search";
-  adw_navigation_view_replace_with_tags (self->library_navigation_view,
-                                         &destination, 1);
+  adw_navigation_view_replace (self->library_navigation_view,
+                               &(self->search_page), 1);
 }
 
 static void
@@ -378,7 +399,6 @@ polyhymnia_window_search_stopped (PolyhymniaWindow *self,
 {
   g_assert (POLYHYMNIA_IS_WINDOW (self));
 
-  g_debug ("Search stopped");
   gtk_list_box_select_row (self->sidebar_box, self->last_selected_sidebar_row);
 }
 
@@ -401,7 +421,7 @@ polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
                                         GtkListBoxRow       *selected_row,
                                         GtkListBox          *sidebar)
 {
-  const char *destination;
+  AdwNavigationPage *destination;
 
   if (selected_row == NULL || self->last_selected_sidebar_row == selected_row)
   {
@@ -413,25 +433,25 @@ polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
   self->last_selected_sidebar_row = selected_row;
   if (selected_row == self->last_modified_sidebar_row)
   {
-    destination = "last-modified-list";
+    destination = self->last_modified_page;
   }
   else if (selected_row == self->artists_sidebar_row)
   {
-    destination = "artists-list";
+    destination = self->artists_page;
   }
   else if (selected_row == self->albums_sidebar_row)
   {
-    destination = "albums-list";
+    destination = self->albums_page;
   }
   else if (selected_row == self->tracks_sidebar_row)
   {
-    destination = "tracks-list";
+    destination = self->tracks_page;
   }
   else if (selected_row == self->playlists_sidebar_row)
   {
-    destination = "playlists-list";
+    destination = self->playlists_page;
   }
 
-  adw_navigation_view_replace_with_tags (self->library_navigation_view,
-                                         &destination, 1);
+  adw_navigation_view_replace (self->library_navigation_view, &destination, 1);
+  gtk_search_bar_set_search_mode (self->search_bar, FALSE);
 }
