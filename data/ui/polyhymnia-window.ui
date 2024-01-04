@@ -59,16 +59,28 @@
           </object>
         </child>
         <child type="top">
-          <object class="GtkSearchBar">
+          <object class="GtkSearchBar" id="search_bar">
             <child>
-	      <object class="GtkSearchEntry">
+	      <object class="GtkSearchEntry" id="search_entry">
                 <property name="placeholder-text" translatable="yes">Search…</property>
+                <signal name="search-changed"
+                  handler="polyhymnia_window_search_changed"
+                  swapped="true" />
+                <signal name="search-started"
+                  handler="polyhymnia_window_search_started"
+                  swapped="true" />
+                <signal name="stop-search"
+                  handler="polyhymnia_window_search_stopped"
+                  swapped="true" />
 	      </object>
             </child>
             <property name="search-mode-enabled"
             	bind-source="search_button"
             	bind-property="active"
-            	bind-flags="sync-create" />
+            	bind-flags="bidirectional|sync-create" />
+	    <signal name="notify::search-mode-enabled"
+	      handler="polyhymnia_window_search_mode_changed"
+	      swapped="true" />
           </object>
         </child>
         <property name="content">
@@ -189,7 +201,7 @@
         <child type="content">
           <object class="AdwNavigationView" id="library_navigation_view">
             <child>
-              <object class="PolyhymniaLastModifiedPage">
+              <object class="PolyhymniaLastModifiedPage" id="last_modified_page">
                 <signal name="view-details"
                   handler="polyhymnia_window_track_show_details"
                   swapped="true" />
@@ -206,23 +218,30 @@
               </object>
             </child>
             <child>
-              <object class="PolyhymniaAlbumsPage">
+              <object class="PolyhymniaAlbumsPage" id="albums_page">
                 <signal name="navigate"
                   handler="polyhymnia_window_navigate_album"
                   swapped="true" />
               </object>
             </child>
             <child>
-              <object class="PolyhymniaTracksPage">
+              <object class="PolyhymniaTracksPage" id="tracks_page">
                 <signal name="view-details"
                   handler="polyhymnia_window_track_show_details"
                   swapped="true" />
               </object>
             </child>
             <child>
-              <object class="PolyhymniaPlaylistsPage">
+              <object class="PolyhymniaPlaylistsPage" id="playlists_page">
                 <signal name="navigate"
                   handler="polyhymnia_window_navigate_playlist"
+                  swapped="true" />
+              </object>
+            </child>
+            <child>
+              <object class="PolyhymniaSearchPage" id="search_page">
+                <signal name="view-track-details"
+                  handler="polyhymnia_window_track_show_details"
                   swapped="true" />
               </object>
             </child>

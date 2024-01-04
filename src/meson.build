@@ -20,6 +20,7 @@ polyhymnia_sources = [
   'polyhymnia-preferences-window.c',
   'polyhymnia-queue-pane.c',
   'polyhymnia-statistics.c',
+  'polyhymnia-search-page.c',
   'polyhymnia-statistics-window.c',
   'polyhymnia-track.c',
   'polyhymnia-track-details-window.c',
