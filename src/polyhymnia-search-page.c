@@ -282,7 +282,7 @@ polyhymnia_search_page_fill (PolyhymniaSearchPage *self)
   {
     g_list_store_remove_all (self->tracks_model);
     g_object_set (G_OBJECT (self->tracks_status_page),
-                  "description", _("Search query must be at least 3-character long"),
+                  "description", _("Search query must be at least 2-character long"),
                   "icon-name", "error-symbolic",
                   "title", _("Search query is not long enough"),
                   NULL);

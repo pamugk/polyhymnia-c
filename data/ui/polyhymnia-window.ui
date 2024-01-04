@@ -78,6 +78,9 @@
             	bind-source="search_button"
             	bind-property="active"
             	bind-flags="bidirectional|sync-create" />
+	    <signal name="notify::search-mode-enabled"
+	      handler="polyhymnia_window_search_mode_changed"
+	      swapped="true" />
           </object>
         </child>
         <property name="content">

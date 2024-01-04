@@ -442,19 +442,19 @@ msgstr "Артист не выбран"
 
 #: src/polyhymnia-artists-page.c:434
 msgid "Search for artist discography failed"
-msgstr "Поиск дискографии исполнителя завершился с ошибкой"
+msgstr "Поиск дискографии артиста завершился с ошибкой"
 
 #: src/polyhymnia-artists-page.c:448
 msgid "No artist albums found"
-msgstr "Альбомов исполнителя не найдено"
+msgstr "Альбомов артиста не найдено"
 
 #: src/polyhymnia-artists-page.c:533
 msgid "Search for artists failed"
-msgstr "Поиск исполнителей завершился с ошибкой"
+msgstr "Поиск артистов завершился с ошибкой"
 
 #: src/polyhymnia-artists-page.c:547
 msgid "No artists found"
-msgstr "Исполнителей не найдено"
+msgstr "Артистов не найдено"
 
 #: src/polyhymnia-last-modified-page.c:278 src/polyhymnia-search-page.c:300
 #: src/polyhymnia-tracks-page.c:269
