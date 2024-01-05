@@ -15,11 +15,13 @@ struct _PolyhymniaStatisticsWindow
 
   /* Stored UI state */
   PolyhymniaStatistics *statistics;
+  GCancellable         *statistics_cancellable;
 
   /* Template widgets */
   GtkBox               *content;
   AdwStatusPage        *error_status_page;
   GtkScrolledWindow    *root_container;
+  GtkSpinner           *spinner;
 
   GtkLabel             *artists_count_label;
   GtkLabel             *albums_count_label;
@@ -37,6 +39,11 @@ G_DEFINE_FINAL_TYPE (PolyhymniaStatisticsWindow, polyhymnia_statistics_window, A
 
 /* Event handlers declaration */
 static void
+polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
+                                                      GAsyncResult *res,
+                                                      gpointer data);
+
+static void
 polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
                                                      GParamSpec                 *pspec,
                                                      PolyhymniaMpdClient        *user_data);
@@ -51,6 +58,7 @@ polyhymnia_statistics_window_dispose(GObject *gobject)
 {
   PolyhymniaStatisticsWindow *self = POLYHYMNIA_STATISTICS_WINDOW (gobject);
 
+  g_cancellable_cancel (self->statistics_cancellable);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_STATISTICS_WINDOW);
   g_clear_object (&(self->statistics));
 
@@ -74,6 +82,8 @@ polyhymnia_statistics_window_class_init (PolyhymniaStatisticsWindowClass *klass)
                                         error_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
                                         root_container);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+                                        spinner);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
                                         artists_count_label);
@@ -108,35 +118,19 @@ polyhymnia_statistics_window_init (PolyhymniaStatisticsWindow *self)
 
 /* Event handlers implementation */
 static void
-polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
-                                                     GParamSpec                 *pspec,
-                                                     PolyhymniaMpdClient        *user_data)
+polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
+                                                      GAsyncResult *result,
+                                                      gpointer user_data)
 {
-  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
-
-  if (polyhymnia_mpd_client_is_initialized (user_data))
-  {
-    polyhymnia_statistics_window_mpd_database_updated (self, user_data);
-  }
-  else
-  {
-    gtk_window_close (GTK_WINDOW (self));
-  }
-}
-
-static void
-polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *self,
-                                                   PolyhymniaMpdClient        *user_data)
-{
-  GError               *error = NULL;
+  GError *error = NULL;
+  PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   PolyhymniaStatistics *new_statistics;
+  PolyhymniaStatisticsWindow *self = user_data;
 
-  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
-
-  new_statistics = polyhymnia_mpd_client_get_statistics (self->mpd_client,
-                                                         &error);
-
+  new_statistics = polyhymnia_mpd_client_get_statistics_finish (mpd_client, result, &error);
   g_clear_object (&(self->statistics));
+
+  gtk_spinner_stop (self->spinner);
   if (error == NULL)
   {
     guint artists_count = polyhymnia_statistics_get_artists_count (new_statistics);
@@ -180,9 +174,9 @@ polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *s
 
     gtk_scrolled_window_set_child (self->root_container,
                                    GTK_WIDGET (self->content));
-    self->statistics = new_statistics;
+    self->statistics = g_object_ref (new_statistics);
   }
-  else
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
     gtk_scrolled_window_set_child (self->root_container,
                                    GTK_WIDGET (self->error_status_page));
@@ -190,4 +184,44 @@ polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *s
     g_error_free (error);
     error = NULL;
   }
+
+  g_clear_object (&(self->statistics_cancellable));
+}
+
+static void
+polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
+                                                     GParamSpec                 *pspec,
+                                                     PolyhymniaMpdClient        *user_data)
+{
+  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
+
+  if (polyhymnia_mpd_client_is_initialized (user_data))
+  {
+    polyhymnia_statistics_window_mpd_database_updated (self, user_data);
+  }
+  else
+  {
+    gtk_window_close (GTK_WINDOW (self));
+  }
+}
+
+static void
+polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *self,
+                                                   PolyhymniaMpdClient        *user_data)
+{
+  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
+
+  if (self->statistics_cancellable != NULL)
+  {
+    g_debug ("Statistics fetching already in progress");
+    return;
+  }
+
+  self->statistics_cancellable = g_cancellable_new ();
+  polyhymnia_mpd_client_get_statistics_async (self->mpd_client,
+                                              self->statistics_cancellable,
+                                              polyhymnia_statistics_window_get_statistics_callback,
+                                              self);
+  gtk_spinner_start (self->spinner);
+  gtk_scrolled_window_set_child (self->root_container, GTK_WIDGET (self->spinner));
 }
