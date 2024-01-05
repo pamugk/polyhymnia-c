@@ -317,237 +317,29 @@ polyhymnia_mpd_client_connection_init(GError **error)
 }
 
 /* Private instance methods declaration */
-static void
-polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
-                                              GError              **error);
-
-/* Private instance methods implementation */
 static gboolean
 polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
                                            GIOCondition condition,
-                                           gpointer data)
-{
-  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (data);
-
-  if (condition == G_IO_IN)
-  {
-    enum mpd_idle events = mpd_recv_idle (self->idle_mpd_connection, FALSE);
-
-    // Server closed connection, any further activity is undesirable
-    if (events == 0)
-    {
-      g_debug ("MPD server disconnected");
-      self->initialized = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
-
-      g_clear_pointer (&(self->main_mpd_connection), mpd_connection_free);
-      g_clear_pointer (&(self->idle_channel), g_io_channel_unref);
-      g_clear_pointer (&(self->idle_mpd_connection), mpd_connection_free);
-
-      return FALSE;
-    }
-
-    if (events & MPD_IDLE_DATABASE)
-    {
-      g_debug ("MPD: song database has been updated\n");
-      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATED], 0);
-    }
-    if (events & MPD_IDLE_STORED_PLAYLIST)
-    {
-      g_debug ("MPD: a stored playlist has been modified, created, deleted or renamed\n");
-      g_signal_emit (self, obj_signals[SIGNAL_STORED_PLAYLIST_MODIFIED], 0);
-    }
-    if (events & MPD_IDLE_QUEUE)
-    {
-      g_debug ("MPD: the queue has been modified\n");
-      g_signal_emit (self, obj_signals[SIGNAL_QUEUE_MODIFIED], 0);
-    }
-    if (events & MPD_IDLE_PLAYER)
-    {
-      g_debug ("MPD: the player state has changed (play, stop, pause, seek, etc)\n");
-      g_signal_emit (self, obj_signals[SIGNAL_PLAYER_STATE_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_MIXER)
-    {
-      g_debug ("MPD: the volume has been modified \n");
-      g_signal_emit (self, obj_signals[SIGNAL_VOLUME_MODIFIED], 0);
-    }
-    if (events & MPD_IDLE_OUTPUT)
-    {
-      g_debug ("MPD: an audio output device has been enabled or disabled\n");
-      g_signal_emit (self, obj_signals[SIGNAL_AUDIO_OUTPUT_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_OPTIONS)
-    {
-      g_debug ("MPD: options have changed (crossfade, random, repeat, etc)\n");
-      g_signal_emit (self, obj_signals[SIGNAL_PLAYBACK_OPTIONS_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_UPDATE)
-    {
-      g_debug ("MPD: a database update has started or finished\n");
-      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATE_STATE_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_STICKER)
-    {
-      g_debug ("MPD: a sticker has been modified\n");
-      g_signal_emit (self, obj_signals[SIGNAL_STICKER_MODIFIED], 0);
-    }
-    if (events & MPD_IDLE_SUBSCRIPTION)
-    {
-      g_debug ("MPD: a client has subscribed to or unsubscribed from a channel\n");
-      g_signal_emit (self, obj_signals[SIGNAL_SUBSCRIPTIONS_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_MESSAGE)
-    {
-      g_debug ("MPD: a message on a subscribed channel was received\n");
-      g_signal_emit (self, obj_signals[SIGNAL_MESSAGE_RECEIVED], 0);
-    }
-    if (events & MPD_IDLE_PARTITION)
-    {
-      g_debug ("MPD: a partition was added or changed\n");
-      g_signal_emit (self, obj_signals[SIGNAL_PARTITIONS_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_NEIGHBOR)
-    {
-      g_debug ("MPD: a neighbor was found or lost\n");
-      g_signal_emit (self, obj_signals[SIGNAL_NEIGHBORS_CHANGED], 0);
-    }
-    if (events & MPD_IDLE_MOUNT)
-    {
-      g_debug ("MPD: the mount list has changed\n");
-      g_signal_emit (self, obj_signals[SIGNAL_MOUNT_LIST_CHANGED], 0);
-    }
-
-    mpd_send_idle (self->idle_mpd_connection);
-    return TRUE;
-  }
-
-  return FALSE;
-}
+                                           gpointer data);
 
 static void
 polyhymnia_mpd_client_append_anything_to_queue(PolyhymniaMpdClient *self,
                                                const gchar         *filter,
                                                enum  mpd_tag_type  filter_tag,
-                                               GError              **error)
-{
-  GError *inner_error = NULL;
-
-  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
-  g_return_if_fail (error == NULL || *error == NULL);
-  g_return_if_fail (self->main_mpd_connection != NULL);
-  g_return_if_fail (filter != NULL && !g_str_equal (filter, ""));
-
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
-  if (inner_error != NULL)
-  {
-    g_propagate_error (error, inner_error);
-    return;
-  }
-
-  if (!mpd_search_add_db_songs (self->main_mpd_connection, TRUE))
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "request failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
-    return;
-  }
-  if (!mpd_search_add_tag_constraint (self->main_mpd_connection,
-                                      MPD_OPERATOR_DEFAULT,
-                                      filter_tag,
-                                      filter))
-  {
-    mpd_search_cancel (self->main_mpd_connection);
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "filter failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
-    return;
-  }
-  if (!mpd_search_commit (self->main_mpd_connection))
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "start failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
-    return;
-  }
-  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
-      || !mpd_response_finish(self->main_mpd_connection))
-  {
-    g_set_error (error,
-                 POLYHYMNIA_MPD_CLIENT_ERROR,
-                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
-                 "cleanup failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
-  }
-}
+                                               GError              **error);
 
 static void
-polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
-{
-  gint fd;
-  GError *inner_error = NULL;
-
-  self->idle_mpd_connection = polyhymnia_mpd_client_connection_init (&inner_error);
-  if (inner_error != NULL)
-  {
-    g_warning ("MPD client event loop initialization error: %s\n",
-              inner_error->message);
-    g_error_free (inner_error);
-    return;
-  }
-
-  if (!mpd_send_idle(self->idle_mpd_connection))
-  {
-    g_warning ("MPD send idle failed: %s",
-             mpd_connection_get_error_message(self->idle_mpd_connection));
-    mpd_connection_clear_error (self->idle_mpd_connection);
-    mpd_connection_free (self->idle_mpd_connection);
-    self->idle_mpd_connection = NULL;
-    return;
-  }
-
-  fd = mpd_connection_get_fd(self->idle_mpd_connection);
-
-  self->idle_channel = g_io_channel_unix_new (fd);
-  g_io_channel_set_encoding (self->idle_channel, NULL, NULL);
-  g_io_add_watch (self->idle_channel, G_IO_IN | G_IO_HUP,
-                  polyhymnia_mpd_client_accept_idle_channel,
-                  self);
-}
+polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self);
 
 static void
 polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
-                                              GError              **error)
-{
-  // Check on MPD and try to reconnect when needed.
-  if (!mpd_send_command (self->main_mpd_connection, "ping", NULL)
-      || !mpd_response_finish(self->main_mpd_connection))
-  {
-    // Destroy currently invalid connection
-    g_clear_pointer (&(self->main_mpd_connection), mpd_connection_free);
-    // Try to open new connection
-    self->main_mpd_connection = polyhymnia_mpd_client_connection_init (error);
-    // Failed reconnection means that something is wrong.
-    // So let's cleanup all other resources and let user figure it out.
-    if (self->main_mpd_connection == NULL)
-    {
-      g_clear_pointer (&(self->idle_channel), g_io_channel_unref);
-      g_clear_pointer (&(self->idle_mpd_connection), mpd_connection_free);
-      self->initialized = FALSE;
-      g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
-    }
-  }
-}
+                                              GError              **error);
+
+static void
+polyhymnia_mpd_client_get_statistics_async_thread (GTask         *task,
+                                                   gpointer       source_object,
+                                                   gpointer       task_data,
+                                                   GCancellable  *cancellable);
 
 /* Instance methods */
 gint
@@ -2003,6 +1795,30 @@ polyhymnia_mpd_client_get_statistics (PolyhymniaMpdClient *self,
   return statistics;
 }
 
+void
+polyhymnia_mpd_client_get_statistics_async (PolyhymniaMpdClient *self,
+                                            GCancellable        *cancellable,
+                                            GAsyncReadyCallback  callback,
+                                            gpointer             user_data)
+{
+  GTask *task;
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, polyhymnia_mpd_client_get_statistics_async);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_run_in_thread (task, polyhymnia_mpd_client_get_statistics_async_thread);
+  g_object_unref (task);
+}
+
+PolyhymniaStatistics *
+polyhymnia_mpd_client_get_statistics_finish (PolyhymniaMpdClient *self,
+                                             GAsyncResult        *result,
+                                             GError             **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
+}
+
 guint
 polyhymnia_mpd_client_get_volume(PolyhymniaMpdClient *self,
                                  GError              **error)
@@ -3023,5 +2839,258 @@ polyhymnia_mpd_client_toggle_repeat(PolyhymniaMpdClient *self,
                  "failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
     mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+/* Private instance methods implementation */
+static gboolean
+polyhymnia_mpd_client_accept_idle_channel (GIOChannel* source,
+                                           GIOCondition condition,
+                                           gpointer data)
+{
+  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (data);
+
+  if (condition == G_IO_IN)
+  {
+    enum mpd_idle events = mpd_recv_idle (self->idle_mpd_connection, FALSE);
+
+    // Server closed connection, any further activity is undesirable
+    if (events == 0)
+    {
+      g_debug ("MPD server disconnected");
+      self->initialized = FALSE;
+      g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
+
+      g_clear_pointer (&(self->main_mpd_connection), mpd_connection_free);
+      g_clear_pointer (&(self->idle_channel), g_io_channel_unref);
+      g_clear_pointer (&(self->idle_mpd_connection), mpd_connection_free);
+
+      return FALSE;
+    }
+
+    if (events & MPD_IDLE_DATABASE)
+    {
+      g_debug ("MPD: song database has been updated\n");
+      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATED], 0);
+    }
+    if (events & MPD_IDLE_STORED_PLAYLIST)
+    {
+      g_debug ("MPD: a stored playlist has been modified, created, deleted or renamed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_STORED_PLAYLIST_MODIFIED], 0);
+    }
+    if (events & MPD_IDLE_QUEUE)
+    {
+      g_debug ("MPD: the queue has been modified\n");
+      g_signal_emit (self, obj_signals[SIGNAL_QUEUE_MODIFIED], 0);
+    }
+    if (events & MPD_IDLE_PLAYER)
+    {
+      g_debug ("MPD: the player state has changed (play, stop, pause, seek, etc)\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PLAYER_STATE_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_MIXER)
+    {
+      g_debug ("MPD: the volume has been modified \n");
+      g_signal_emit (self, obj_signals[SIGNAL_VOLUME_MODIFIED], 0);
+    }
+    if (events & MPD_IDLE_OUTPUT)
+    {
+      g_debug ("MPD: an audio output device has been enabled or disabled\n");
+      g_signal_emit (self, obj_signals[SIGNAL_AUDIO_OUTPUT_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_OPTIONS)
+    {
+      g_debug ("MPD: options have changed (crossfade, random, repeat, etc)\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PLAYBACK_OPTIONS_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_UPDATE)
+    {
+      g_debug ("MPD: a database update has started or finished\n");
+      g_signal_emit (self, obj_signals[SIGNAL_DATABASE_UPDATE_STATE_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_STICKER)
+    {
+      g_debug ("MPD: a sticker has been modified\n");
+      g_signal_emit (self, obj_signals[SIGNAL_STICKER_MODIFIED], 0);
+    }
+    if (events & MPD_IDLE_SUBSCRIPTION)
+    {
+      g_debug ("MPD: a client has subscribed to or unsubscribed from a channel\n");
+      g_signal_emit (self, obj_signals[SIGNAL_SUBSCRIPTIONS_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_MESSAGE)
+    {
+      g_debug ("MPD: a message on a subscribed channel was received\n");
+      g_signal_emit (self, obj_signals[SIGNAL_MESSAGE_RECEIVED], 0);
+    }
+    if (events & MPD_IDLE_PARTITION)
+    {
+      g_debug ("MPD: a partition was added or changed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_PARTITIONS_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_NEIGHBOR)
+    {
+      g_debug ("MPD: a neighbor was found or lost\n");
+      g_signal_emit (self, obj_signals[SIGNAL_NEIGHBORS_CHANGED], 0);
+    }
+    if (events & MPD_IDLE_MOUNT)
+    {
+      g_debug ("MPD: the mount list has changed\n");
+      g_signal_emit (self, obj_signals[SIGNAL_MOUNT_LIST_CHANGED], 0);
+    }
+
+    mpd_send_idle (self->idle_mpd_connection);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static void
+polyhymnia_mpd_client_append_anything_to_queue(PolyhymniaMpdClient *self,
+                                               const gchar         *filter,
+                                               enum  mpd_tag_type  filter_tag,
+                                               GError              **error)
+{
+  GError *inner_error = NULL;
+
+  g_return_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+  g_return_if_fail (self->main_mpd_connection != NULL);
+  g_return_if_fail (filter != NULL && !g_str_equal (filter, ""));
+
+  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  if (inner_error != NULL)
+  {
+    g_propagate_error (error, inner_error);
+    return;
+  }
+
+  if (!mpd_search_add_db_songs (self->main_mpd_connection, TRUE))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "request failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return;
+  }
+  if (!mpd_search_add_tag_constraint (self->main_mpd_connection,
+                                      MPD_OPERATOR_DEFAULT,
+                                      filter_tag,
+                                      filter))
+  {
+    mpd_search_cancel (self->main_mpd_connection);
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "filter failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return;
+  }
+  if (!mpd_search_commit (self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "start failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+    return;
+  }
+  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish(self->main_mpd_connection))
+  {
+    g_set_error (error,
+                 POLYHYMNIA_MPD_CLIENT_ERROR,
+                 POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                 "cleanup failed - %s",
+                 mpd_connection_get_error_message(self->main_mpd_connection));
+    mpd_connection_clear_error (self->main_mpd_connection);
+  }
+}
+
+static void
+polyhymnia_mpd_client_connect_idle(PolyhymniaMpdClient *self)
+{
+  gint fd;
+  GError *inner_error = NULL;
+
+  self->idle_mpd_connection = polyhymnia_mpd_client_connection_init (&inner_error);
+  if (inner_error != NULL)
+  {
+    g_warning ("MPD client event loop initialization error: %s\n",
+              inner_error->message);
+    g_error_free (inner_error);
+    return;
+  }
+
+  if (!mpd_send_idle(self->idle_mpd_connection))
+  {
+    g_warning ("MPD send idle failed: %s",
+             mpd_connection_get_error_message(self->idle_mpd_connection));
+    mpd_connection_clear_error (self->idle_mpd_connection);
+    mpd_connection_free (self->idle_mpd_connection);
+    self->idle_mpd_connection = NULL;
+    return;
+  }
+
+  fd = mpd_connection_get_fd(self->idle_mpd_connection);
+
+  self->idle_channel = g_io_channel_unix_new (fd);
+  g_io_channel_set_encoding (self->idle_channel, NULL, NULL);
+  g_io_add_watch (self->idle_channel, G_IO_IN | G_IO_HUP,
+                  polyhymnia_mpd_client_accept_idle_channel,
+                  self);
+}
+
+static void
+polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
+                                              GError              **error)
+{
+  // Check on MPD and try to reconnect when needed.
+  if (!mpd_send_command (self->main_mpd_connection, "ping", NULL)
+      || !mpd_response_finish(self->main_mpd_connection))
+  {
+    // Destroy currently invalid connection
+    g_clear_pointer (&(self->main_mpd_connection), mpd_connection_free);
+    // Try to open new connection
+    self->main_mpd_connection = polyhymnia_mpd_client_connection_init (error);
+    // Failed reconnection means that something is wrong.
+    // So let's cleanup all other resources and let user figure it out.
+    if (self->main_mpd_connection == NULL)
+    {
+      g_clear_pointer (&(self->idle_channel), g_io_channel_unref);
+      g_clear_pointer (&(self->idle_mpd_connection), mpd_connection_free);
+      self->initialized = FALSE;
+      g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
+    }
+  }
+}
+
+static void
+polyhymnia_mpd_client_get_statistics_async_thread (GTask         *task,
+                                                   gpointer       source_object,
+                                                   gpointer       task_data,
+                                                   GCancellable  *cancellable)
+{
+  GError *error = NULL;
+  PolyhymniaStatistics *result;
+
+  result = polyhymnia_mpd_client_get_statistics (source_object, &error);
+
+  if (error != NULL)
+  {
+    g_task_return_error (task, error);
+  }
+  else if (g_task_set_return_on_cancel (task, FALSE))
+  {
+    g_task_return_pointer (task, result, g_object_unref);
+  }
+  else
+  {
+    g_object_unref (result);
   }
 }
