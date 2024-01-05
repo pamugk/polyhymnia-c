@@ -130,7 +130,6 @@ polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
   new_statistics = polyhymnia_mpd_client_get_statistics_finish (mpd_client, result, &error);
   g_clear_object (&(self->statistics));
 
-  gtk_spinner_stop (self->spinner);
   if (error == NULL)
   {
     guint artists_count = polyhymnia_statistics_get_artists_count (new_statistics);
@@ -185,6 +184,7 @@ polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
     error = NULL;
   }
 
+  gtk_spinner_stop (self->spinner);
   g_clear_object (&(self->statistics_cancellable));
 }
 

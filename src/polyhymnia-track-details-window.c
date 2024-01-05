@@ -474,6 +474,7 @@ polyhymnia_track_details_window_get_song_details_callback (GObject *source_objec
     error = NULL;
   }
 
+  gtk_spinner_stop (self->spinner);
   g_clear_object (&(self->song_details_cancellable));
 }
 

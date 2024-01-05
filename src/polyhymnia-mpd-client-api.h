@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <glib-2.0/gio/gio.h>
+
 #include "polyhymnia-mpd-client-common.h"
 
 #include "polyhymnia-album.h"
@@ -89,5 +91,17 @@ GPtrArray *
 polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
                                     const gchar         *query,
                                     GError              **error);
+
+void
+polyhymnia_mpd_client_search_tracks_async (PolyhymniaMpdClient *self,
+                                           const gchar         *query,
+                                           GCancellable        *cancellable,
+                                           GAsyncReadyCallback  callback,
+                                           gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_search_tracks_finish (PolyhymniaMpdClient *self,
+                                            GAsyncResult        *result,
+                                            GError             **error);
 
 G_END_DECLS

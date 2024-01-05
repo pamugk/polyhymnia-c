@@ -7,6 +7,12 @@
     <property name="title" translatable="yes">Songs</property>
   </template>
 
+  <object class="GtkSpinner" id="spinner">
+    <property name="halign">center</property>
+    <property name="height-request">64</property>
+    <property name="valign">center</property>
+    <property name="width-request">64</property>
+  </object>
   <object class="AdwToolbarView" id="track_toolbar_view">
     <property name="content">
       <object class="GtkScrolledWindow">
