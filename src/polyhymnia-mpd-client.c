@@ -336,6 +336,12 @@ polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
                                               GError              **error);
 
 static void
+polyhymnia_mpd_client_get_song_details_async_thread (GTask         *task,
+                                                     gpointer       source_object,
+                                                     gpointer       task_data,
+                                                     GCancellable  *cancellable);
+
+static void
 polyhymnia_mpd_client_get_statistics_async_thread (GTask         *task,
                                                    gpointer       source_object,
                                                    gpointer       task_data,
@@ -1620,6 +1626,32 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
   }
 
   return song_object;
+}
+
+void
+polyhymnia_mpd_client_get_song_details_async (PolyhymniaMpdClient *self,
+                                              const gchar         *song_uri,
+                                              GCancellable        *cancellable,
+                                              GAsyncReadyCallback  callback,
+                                              gpointer             user_data)
+{
+  GTask *task;
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_task_data (task, g_strdup (song_uri), (GDestroyNotify) g_free);
+  g_task_set_source_tag (task, polyhymnia_mpd_client_get_song_details_async);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_run_in_thread (task, polyhymnia_mpd_client_get_song_details_async_thread);
+  g_object_unref (task);
+}
+
+PolyhymniaTrackFullInfo *
+polyhymnia_mpd_client_get_song_details_finish (PolyhymniaMpdClient *self,
+                                               GAsyncResult        *result,
+                                               GError             **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 PolyhymniaTrack *
@@ -3067,6 +3099,31 @@ polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
       self->initialized = FALSE;
       g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
     }
+  }
+}
+
+static void
+polyhymnia_mpd_client_get_song_details_async_thread (GTask         *task,
+                                                     gpointer       source_object,
+                                                     gpointer       task_data,
+                                                     GCancellable  *cancellable)
+{
+  GError *error = NULL;
+  PolyhymniaTrackFullInfo *result;
+
+  result = polyhymnia_mpd_client_get_song_details (source_object, task_data, &error);
+
+  if (error != NULL)
+  {
+    g_task_return_error (task, error);
+  }
+  else if (g_task_set_return_on_cancel (task, FALSE))
+  {
+    g_task_return_pointer (task, result, g_object_unref);
+  }
+  else
+  {
+    g_object_unref (result);
   }
 }
 

@@ -40,8 +40,8 @@ G_DEFINE_FINAL_TYPE (PolyhymniaStatisticsWindow, polyhymnia_statistics_window, A
 /* Event handlers declaration */
 static void
 polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
-                                                      GAsyncResult *res,
-                                                      gpointer data);
+                                                      GAsyncResult *result,
+                                                      gpointer user_data);
 
 static void
 polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
