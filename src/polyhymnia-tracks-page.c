@@ -320,6 +320,7 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   }
 
   gtk_spinner_stop (self->spinner);
+  g_clear_object (&(self->tracks_cancellable));
 }
 
 static void

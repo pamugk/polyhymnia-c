@@ -42,14 +42,26 @@ polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
                                        GError              **error);
 
 GPtrArray *
-polyhymnia_mpd_client_get_artist_discography(PolyhymniaMpdClient *self,
-                                             const gchar         *artist,
-                                             GError              **error);
+polyhymnia_mpd_client_get_artist_discography (PolyhymniaMpdClient *self,
+                                              const gchar         *artist,
+                                              GError             **error);
 
 GPtrArray *
-polyhymnia_mpd_client_get_last_modified_tracks(PolyhymniaMpdClient *self,
-                                               GDateTime           *since,
-                                               GError              **error);
+polyhymnia_mpd_client_get_last_modified_tracks (PolyhymniaMpdClient *self,
+                                                GDateTime           *since,
+                                                GError             **error);
+
+void
+polyhymnia_mpd_client_get_last_modified_tracks_async (PolyhymniaMpdClient *self,
+                                                      GDateTime           *since,
+                                                      GCancellable        *cancellable,
+                                                      GAsyncReadyCallback  callback,
+                                                      gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_get_last_modified_tracks_finish (PolyhymniaMpdClient *self,
+                                                       GAsyncResult        *result,
+                                                       GError             **error);
 
 void
 polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
