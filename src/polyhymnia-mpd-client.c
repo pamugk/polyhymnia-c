@@ -336,6 +336,12 @@ polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
                                               GError              **error);
 
 static void
+polyhymnia_mpd_client_get_queue_async_thread (GTask         *task,
+                                              gpointer       source_object,
+                                              gpointer       task_data,
+                                              GCancellable  *cancellable);
+
+static void
 polyhymnia_mpd_client_get_song_details_async_thread (GTask         *task,
                                                      gpointer       source_object,
                                                      gpointer       task_data,
@@ -1342,6 +1348,7 @@ GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error)
 {
+  struct mpd_connection *connection;
   struct mpd_entity *entity;
   GError *inner_error = NULL;
   GPtrArray *results;
@@ -1350,7 +1357,7 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
   g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
 
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  connection = polyhymnia_mpd_client_connection_init (&inner_error);
   if (inner_error != NULL)
   {
     g_propagate_error (error, inner_error);
@@ -1365,6 +1372,7 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                  "request failed - %s",
                  mpd_connection_get_error_message(self->main_mpd_connection));
     mpd_connection_clear_error (self->main_mpd_connection);
+    mpd_connection_free (connection);
     return NULL;
   }
 
@@ -1405,8 +1413,33 @@ polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                  mpd_connection_get_error_message(self->main_mpd_connection));
     mpd_connection_clear_error (self->main_mpd_connection);
   }
+  mpd_connection_free (connection);
 
   return results;
+}
+
+void
+polyhymnia_mpd_client_get_queue_async (PolyhymniaMpdClient *self,
+                                       GCancellable        *cancellable,
+                                       GAsyncReadyCallback  callback,
+                                       gpointer             user_data)
+{
+  GTask *task;
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, polyhymnia_mpd_client_get_queue_async);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_run_in_thread (task, polyhymnia_mpd_client_get_queue_async_thread);
+  g_object_unref (task);
+}
+
+GPtrArray *
+polyhymnia_mpd_client_get_queue_finish (PolyhymniaMpdClient *self,
+                                        GAsyncResult        *result,
+                                        GError             **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 GBytes *
@@ -3136,6 +3169,31 @@ polyhymnia_mpd_client_reconnect_if_necessary (PolyhymniaMpdClient *self,
       self->initialized = FALSE;
       g_object_notify_by_pspec (G_OBJECT (self), obj_properties[PROP_INITIALIZED]);
     }
+  }
+}
+
+static void
+polyhymnia_mpd_client_get_queue_async_thread (GTask         *task,
+                                              gpointer       source_object,
+                                              gpointer       task_data,
+                                              GCancellable  *cancellable)
+{
+  GError *error = NULL;
+  GPtrArray *result;
+
+  result = polyhymnia_mpd_client_get_queue (source_object, &error);
+
+  if (error != NULL)
+  {
+    g_task_return_error (task, error);
+  }
+  else if (g_task_set_return_on_cancel (task, FALSE))
+  {
+    g_task_return_pointer (task, result, (GDestroyNotify) g_ptr_array_unref);
+  }
+  else
+  {
+    g_ptr_array_unref (result);
   }
 }
 

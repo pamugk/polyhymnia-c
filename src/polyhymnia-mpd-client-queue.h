@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <glib-2.0/gio/gio.h>
+
 #include "polyhymnia-mpd-client-common.h"
 
 G_BEGIN_DECLS
@@ -22,6 +24,17 @@ polyhymnia_mpd_client_delete_songs_from_queue(PolyhymniaMpdClient *self,
 GPtrArray *
 polyhymnia_mpd_client_get_queue(PolyhymniaMpdClient *self,
                                 GError              **error);
+
+void
+polyhymnia_mpd_client_get_queue_async (PolyhymniaMpdClient *self,
+                                       GCancellable        *cancellable,
+                                       GAsyncReadyCallback  callback,
+                                       gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_get_queue_finish (PolyhymniaMpdClient *self,
+                                        GAsyncResult        *result,
+                                        GError             **error);
 
 void
 polyhymnia_mpd_client_play_song_from_queue(PolyhymniaMpdClient *self,

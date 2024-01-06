@@ -191,6 +191,7 @@ polyhymnia_tracks_page_mpd_client_initialized (PolyhymniaTracksPage *self,
   }
   else
   {
+    g_cancellable_cancel (self->tracks_cancellable);
     g_list_store_remove_all (self->tracks_model);
   }
 }

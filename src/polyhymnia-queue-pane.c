@@ -26,6 +26,7 @@ struct _PolyhymniaQueuePane
   /* Stored UI state */
   GHashTable             *album_covers;
   GHashTable             *known_playlists;
+  GCancellable           *queue_cancellable;
 
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
@@ -35,6 +36,7 @@ struct _PolyhymniaQueuePane
   GtkListView         *queue_list_view;
   GtkScrolledWindow   *queue_page_content;
   AdwStatusPage       *queue_status_page;
+  GtkSpinner          *spinner;
   GtkButton           *play_button;
   GtkButton           *up_button;
   GtkButton           *down_button;
@@ -64,6 +66,11 @@ polyhymnia_queue_pane_clear_selection_button_clicked (PolyhymniaQueuePane *self,
 static void
 polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
                                            GtkButton           *user_data);
+
+static void
+polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
+                                          GAsyncResult *result,
+                                          gpointer user_data);
 
 static void
 polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
@@ -134,9 +141,6 @@ polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
 
 /* Private methods*/
 static void
-polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self);
-
-static void
 polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
                                    GPtrArray             *tracks);
 
@@ -146,6 +150,7 @@ polyhymnia_queue_pane_dispose(GObject *gobject)
 {
   PolyhymniaQueuePane *self = POLYHYMNIA_QUEUE_PANE (gobject);
 
+  g_cancellable_cancel (self->queue_cancellable);
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_QUEUE_PANE);
   g_clear_pointer (&(self->album_covers), g_hash_table_unref);
@@ -183,6 +188,7 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_list_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_page_content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, spinner);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, play_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, up_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, down_button);
@@ -316,6 +322,58 @@ polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
 }
 
 static void
+polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
+                                          GAsyncResult *result,
+                                          gpointer user_data)
+{
+  GError *error = NULL;
+  PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
+  GPtrArray *queue = polyhymnia_mpd_client_get_queue_finish (mpd_client, result, &error);
+  PolyhymniaQueuePane *self = user_data;
+
+  g_hash_table_remove_all (self->album_covers);
+  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
+  if (error == NULL)
+  {
+    if (queue->len == 0)
+    {
+      g_ptr_array_free (queue, FALSE);
+      g_object_set (G_OBJECT (self->queue_status_page),
+                    "description", _("Queue is empty"),
+                    NULL);
+      gtk_scrolled_window_set_child (self->queue_page_content,
+                                     GTK_WIDGET (self->queue_status_page));
+      g_list_store_remove_all (self->queue_model);
+    }
+    else
+    {
+      polyhymnia_queue_pane_fill_covers (self, queue);
+      g_list_store_splice (self->queue_model, 0,
+                            g_list_model_get_n_items (G_LIST_MODEL (self->queue_model)),
+                            queue->pdata, queue->len);
+      g_ptr_array_free (queue, TRUE);
+      gtk_scrolled_window_set_child (self->queue_page_content,
+                                     GTK_WIDGET (self->queue_list_view));
+      adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
+      adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
+    }
+  }
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    g_object_set (G_OBJECT (self->queue_status_page),
+                  "description", _("Failed to fetch queue"),
+                  NULL);
+    gtk_scrolled_window_set_child (self->queue_page_content,
+                                   GTK_WIDGET (self->queue_status_page));
+    g_warning("Queue fetch failed: %s\n", error->message);
+    g_list_store_remove_all (self->queue_model);
+  }
+
+  gtk_spinner_stop (self->spinner);
+  g_clear_object (&(self->queue_cancellable));
+}
+
+static void
 polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
                                               GParamSpec          *pspec,
                                               PolyhymniaMpdClient *user_data)
@@ -325,10 +383,11 @@ polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     polyhymnia_queue_pane_mpd_playlists_changed (self, self->mpd_client);
-    polyhymnia_queue_pane_fill (self);
+    polyhymnia_queue_pane_mpd_queue_modified (self, self->mpd_client);
   }
   else
   {
+    g_cancellable_cancel (self->queue_cancellable);
     g_hash_table_remove_all (self->album_covers);
     g_hash_table_remove_all (self->known_playlists);
     g_list_store_remove_all (self->queue_model);
@@ -341,7 +400,19 @@ polyhymnia_queue_pane_mpd_queue_modified (PolyhymniaQueuePane *self,
 {
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
 
-  polyhymnia_queue_pane_fill (self);
+  if (self->queue_cancellable == NULL)
+  {
+    self->queue_cancellable = g_cancellable_new ();
+    polyhymnia_mpd_client_get_queue_async (user_data, self->queue_cancellable,
+                                           polyhymnia_queue_pane_get_queue_callback,
+                                           self);
+
+    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, FALSE);
+    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, FALSE);
+    gtk_scrolled_window_set_child (self->queue_page_content,
+                                   GTK_WIDGET (self->spinner));
+    gtk_spinner_start (self->spinner);
+  }
 }
 
 static void
@@ -691,54 +762,6 @@ polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
 }
 
 /* Private methods implementation */
-static void
-polyhymnia_queue_pane_fill (PolyhymniaQueuePane *self)
-{
-  GError *error = NULL;
-  GPtrArray *queue = polyhymnia_mpd_client_get_queue (self->mpd_client,
-                                                      &error);
-  g_hash_table_remove_all (self->album_covers);
-  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
-  if (error != NULL)
-  {
-    g_object_set (G_OBJECT (self->queue_status_page),
-                  "description", _("Failed to fetch queue"),
-                  NULL);
-    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, FALSE);
-    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, FALSE);
-    gtk_scrolled_window_set_child (self->queue_page_content,
-                                   GTK_WIDGET (self->queue_status_page));
-    g_warning("Queue fetch failed: %s\n", error->message);
-    g_error_free (error);
-    error = NULL;
-    g_list_store_remove_all (self->queue_model);
-  }
-  else if (queue->len == 0)
-  {
-    g_ptr_array_free (queue, FALSE);
-    g_object_set (G_OBJECT (self->queue_status_page),
-                  "description", _("Queue is empty"),
-                  NULL);
-    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, FALSE);
-    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, FALSE);
-    gtk_scrolled_window_set_child (self->queue_page_content,
-                                   GTK_WIDGET (self->queue_status_page));
-    g_list_store_remove_all (self->queue_model);
-  }
-  else
-  {
-    polyhymnia_queue_pane_fill_covers (self, queue);
-    g_list_store_splice (self->queue_model, 0,
-                          g_list_model_get_n_items (G_LIST_MODEL (self->queue_model)),
-                          queue->pdata, queue->len);
-    g_ptr_array_free (queue, TRUE);
-    gtk_scrolled_window_set_child (self->queue_page_content,
-                                   GTK_WIDGET (self->queue_list_view));
-    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
-    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
-  }
-}
-
 static void
 polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
                                    GPtrArray             *tracks)
