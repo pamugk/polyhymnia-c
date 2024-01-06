@@ -466,6 +466,8 @@ polyhymnia_artists_page_mpd_client_initialized (PolyhymniaArtistsPage *self,
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     polyhymnia_artists_page_mpd_database_updated (self, user_data);
+    polyhymnia_artists_page_artist_selection_changed (self, 0, 0,
+                                                      GTK_SELECTION_MODEL (self->artists_selection_model));
   }
   else
   {
@@ -581,7 +583,7 @@ polyhymnia_artists_page_search_artists_callback (GObject *source_object,
   GtkWidget             *previous_child;
   PolyhymniaArtistsPage *self = user_data;
 
-  artists = polyhymnia_mpd_client_search_artists (mpd_client, &error);
+  artists = polyhymnia_mpd_client_search_artists_finish (mpd_client, result, &error);
   if (error == NULL)
   {
     if (artists->len == 0)

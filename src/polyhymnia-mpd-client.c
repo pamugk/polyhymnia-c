@@ -366,6 +366,12 @@ polyhymnia_mpd_client_get_statistics_async_thread (GTask         *task,
                                                    GCancellable  *cancellable);
 
 static void
+polyhymnia_mpd_client_search_albums_async_thread (GTask         *task,
+                                                  gpointer       source_object,
+                                                  gpointer       task_data,
+                                                  GCancellable  *cancellable);
+
+static void
 polyhymnia_mpd_client_search_artists_async_thread (GTask         *task,
                                                    gpointer       source_object,
                                                    gpointer       task_data,
@@ -1600,9 +1606,10 @@ polyhymnia_mpd_client_get_song_album_cover(PolyhymniaMpdClient *self,
 
 PolyhymniaTrackFullInfo *
 polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
-                                        const gchar         *song_uri,
-                                        GError              **error)
+                                        const char          *song_uri,
+                                        GError             **error)
 {
+  struct mpd_connection   *connection;
   GError                  *inner_error = NULL;
   PolyhymniaAudioFormat   *audio_format_object = NULL;
   PolyhymniaTrackFullInfo *song_object = NULL;
@@ -1612,47 +1619,50 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
   g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
 
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  connection = polyhymnia_mpd_client_connection_init (&inner_error);
   if (inner_error != NULL)
   {
     g_propagate_error (error, inner_error);
     return NULL;
   }
 
-  if (!mpd_search_db_songs (self->main_mpd_connection, TRUE))
+  if (!mpd_search_db_songs (connection, TRUE))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "search initialization failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
+    mpd_connection_free (connection);
     return NULL;
   }
-  if (!mpd_search_add_uri_constraint (self->main_mpd_connection,
+  if (!mpd_search_add_uri_constraint (connection,
                                       MPD_OPERATOR_DEFAULT,
                                       song_uri))
   {
-    mpd_search_cancel (self->main_mpd_connection);
+    mpd_search_cancel (connection);
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "search filter failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
+    mpd_connection_free (connection);
     return NULL;
   }
-  if (!mpd_search_commit (self->main_mpd_connection))
+  if (!mpd_search_commit (connection))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "search start failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
+    mpd_connection_free (connection);
     return NULL;
   }
-  while ((song = mpd_recv_song(self->main_mpd_connection)) != NULL
+  while ((song = mpd_recv_song(connection)) != NULL
           && song_object == NULL)
   {
     const struct mpd_audio_format *audio_format = mpd_song_get_audio_format (song);
@@ -1740,17 +1750,18 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
     mpd_song_free (song);
   }
 
-  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
-      || !mpd_response_finish(self->main_mpd_connection))
+  if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish (connection))
   {
     g_clear_object (&song_object);
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "cleanup failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
   }
+  mpd_connection_free (connection);
 
   return song_object;
 }
@@ -1904,31 +1915,31 @@ PolyhymniaStatistics *
 polyhymnia_mpd_client_get_statistics (PolyhymniaMpdClient *self,
                                       GError              **error)
 {
-  GError               *inner_error = NULL;
-  struct mpd_stats     *mpd_statistics;
-  PolyhymniaStatistics *statistics = NULL;
+  struct mpd_connection *connection;
+  GError                *inner_error = NULL;
+  struct mpd_stats      *mpd_statistics;
+  PolyhymniaStatistics  *statistics = NULL;
 
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), statistics);
   g_return_val_if_fail (error == NULL || *error == NULL, statistics);
   g_return_val_if_fail (self->main_mpd_connection != NULL, statistics);
 
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  connection = polyhymnia_mpd_client_connection_init (&inner_error);
   if (inner_error != NULL)
   {
     g_propagate_error (error, inner_error);
     return statistics;
   }
 
-  mpd_statistics = mpd_run_stats (self->main_mpd_connection);
-
+  mpd_statistics = mpd_run_stats (connection);
   if (mpd_statistics == NULL)
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
   }
   else
   {
@@ -1950,6 +1961,7 @@ polyhymnia_mpd_client_get_statistics (PolyhymniaMpdClient *self,
                                NULL);
     mpd_stats_free (mpd_statistics);
   }
+  mpd_connection_free (connection);
 
   return statistics;
 }
@@ -2461,48 +2473,51 @@ polyhymnia_mpd_client_scan(PolyhymniaMpdClient *self,
 }
 
 GPtrArray *
-polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
-                                    GError              **error)
+polyhymnia_mpd_client_search_albums (PolyhymniaMpdClient *self,
+                                     GError              **error)
 {
-  GError *inner_error = NULL;
-  struct mpd_pair *pair;
-  GPtrArray * results;
+  struct mpd_connection *connection;
+  GError                *inner_error = NULL;
+  struct mpd_pair       *pair;
+  GPtrArray             *results;
 
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
   g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
 
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  connection = polyhymnia_mpd_client_connection_init (&inner_error);
   if (inner_error != NULL)
   {
     g_propagate_error (error, inner_error);
     return NULL;
   }
 
-  if (!mpd_search_db_tags (self->main_mpd_connection, MPD_TAG_ALBUM))
+  if (!mpd_search_db_tags (connection, MPD_TAG_ALBUM))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "search initialization failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
+    mpd_connection_free (connection);
     return NULL;
   }
-  if (!mpd_search_commit (self->main_mpd_connection))
+  if (!mpd_search_commit (connection))
   {
     g_set_error (error,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "search start failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
+    mpd_connection_free (connection);
     return NULL;
   }
 
   results = g_ptr_array_new ();
   g_ptr_array_set_free_func (results, g_object_unref);
-  while ((pair = mpd_recv_pair_tag(self->main_mpd_connection,
+  while ((pair = mpd_recv_pair_tag(connection,
 				    MPD_TAG_ALBUM)) != NULL)
   {
     if (pair->value != NULL && !g_str_equal (pair->value, ""))
@@ -2512,11 +2527,11 @@ polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
                                              NULL);
       g_ptr_array_add (results, album_object);
     }
-    mpd_return_pair(self->main_mpd_connection, pair);
+    mpd_return_pair(connection, pair);
   }
 
-  if (mpd_connection_get_error(self->main_mpd_connection) != MPD_ERROR_SUCCESS
-      || !mpd_response_finish(self->main_mpd_connection))
+  if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS
+      || !mpd_response_finish (connection))
   {
     g_ptr_array_free (results, TRUE);
     results = NULL;
@@ -2524,11 +2539,36 @@ polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
                  POLYHYMNIA_MPD_CLIENT_ERROR,
                  POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                  "cleanup failed - %s",
-                 mpd_connection_get_error_message(self->main_mpd_connection));
-    mpd_connection_clear_error (self->main_mpd_connection);
+                 mpd_connection_get_error_message (connection));
+    mpd_connection_clear_error (connection);
   }
+  mpd_connection_free (connection);
 
   return results;
+}
+
+void
+polyhymnia_mpd_client_search_albums_async (PolyhymniaMpdClient *self,
+                                           GCancellable        *cancellable,
+                                           GAsyncReadyCallback  callback,
+                                           gpointer             user_data)
+{
+  GTask *task;
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, polyhymnia_mpd_client_search_albums_async);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_run_in_thread (task, polyhymnia_mpd_client_search_albums_async_thread);
+  g_object_unref (task);
+}
+
+GPtrArray *
+polyhymnia_mpd_client_search_albums_finish (PolyhymniaMpdClient *self,
+                                            GAsyncResult        *result,
+                                            GError             **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 GPtrArray *
@@ -3439,6 +3479,31 @@ polyhymnia_mpd_client_get_statistics_async_thread (GTask         *task,
   else
   {
     g_object_unref (result);
+  }
+}
+
+static void
+polyhymnia_mpd_client_search_albums_async_thread (GTask         *task,
+                                                  gpointer       source_object,
+                                                  gpointer       task_data,
+                                                  GCancellable  *cancellable)
+{
+  GError *error = NULL;
+  GPtrArray *result;
+
+  result = polyhymnia_mpd_client_search_albums (source_object, &error);
+
+  if (error != NULL)
+  {
+    g_task_return_error (task, error);
+  }
+  else if (g_task_set_return_on_cancel (task, FALSE))
+  {
+    g_task_return_pointer (task, result, (GDestroyNotify) g_ptr_array_unref);
+  }
+  else
+  {
+    g_ptr_array_unref (result);
   }
 }
 

@@ -18,8 +18,12 @@ struct _PolyhymniaAlbumsPage
 {
   AdwNavigationPage  parent_instance;
 
+  /* Stored UI state */
+  GCancellable         *albums_cancellable;
+
   /* Template widgets */
   GtkGridView         *albums_content;
+  GtkSpinner          *albums_spinner;
   AdwStatusPage       *albums_status_page;
 
   /* Template objects */
@@ -36,7 +40,7 @@ static guint obj_signals[N_SIGNALS] = { 0, };
 /* Event handler declarations */
 static void
 polyhymnia_albums_page_album_clicked (PolyhymniaAlbumsPage *self,
-                                      guint                position,
+                                      guint                 position,
                                       GtkGridView          *user_data);
 
 static void
@@ -47,6 +51,11 @@ polyhymnia_albums_page_mpd_client_initialized (PolyhymniaAlbumsPage *self,
 static void
 polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                                              PolyhymniaMpdClient  *user_data);
+
+static void
+polyhymnia_tracks_page_search_albums_callback (GObject      *source_object,
+                                               GAsyncResult *result,
+                                               gpointer      user_data);
 
 /* Class stuff */
 static void
@@ -82,6 +91,7 @@ polyhymnia_albums_page_class_init (PolyhymniaAlbumsPageClass *klass)
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-albums-page.ui");
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumsPage, albums_content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumsPage, albums_spinner);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumsPage, albums_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumsPage, mpd_client);
@@ -111,7 +121,7 @@ polyhymnia_albums_page_init (PolyhymniaAlbumsPage *self)
 /* Event handler functions implementation */
 static void
 polyhymnia_albums_page_album_clicked (PolyhymniaAlbumsPage *self,
-                                      guint                position,
+                                      guint                 position,
                                       GtkGridView          *user_data)
 {
   PolyhymniaAlbum *album;
@@ -144,17 +154,75 @@ static void
 polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                                              PolyhymniaMpdClient  *user_data)
 {
-  GPtrArray *albums;
-  GError    *error = NULL;
   GtkWidget *new_child;
   GtkWidget *previous_child;
 
   g_assert (POLYHYMNIA_IS_ALBUMS_PAGE (self));
 
+  if (self->albums_cancellable != NULL)
+  {
+    return;
+  }
+
+  self->albums_cancellable = g_cancellable_new ();
+  polyhymnia_mpd_client_search_albums_async (user_data,
+                                             self->albums_cancellable,
+                                             polyhymnia_tracks_page_search_albums_callback,
+                                             self);
+
+  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
+  new_child = GTK_WIDGET (self->albums_spinner);
+  gtk_spinner_start (self->albums_spinner);
+
+  if (new_child != previous_child)
+  {
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
+    if (previous_child != NULL)
+    {
+      gtk_widget_unparent (previous_child);
+    }
+  }
+}
+
+static void
+polyhymnia_tracks_page_search_albums_callback (GObject      *source_object,
+                                               GAsyncResult *result,
+                                               gpointer      user_data)
+{
+  GPtrArray            *albums;
+  GError               *error = NULL;
+  PolyhymniaMpdClient  *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
+  GtkWidget            *new_child;
+  GtkWidget            *previous_child;
+  PolyhymniaAlbumsPage *self = user_data;
+
   previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
-  albums = polyhymnia_mpd_client_search_albums (self->mpd_client, &error);
-  if (error != NULL)
+  albums = polyhymnia_mpd_client_search_albums_finish (mpd_client, result,
+                                                       &error);
+  if (error == NULL)
+  {
+    if (albums->len == 0)
+    {
+      g_ptr_array_free (albums, FALSE);
+      g_object_set (G_OBJECT (self->albums_status_page),
+                    "description", _("If something is missing, try launching library scanning"),
+                    "icon-name", "question-round-symbolic",
+                    "title", _("No albums found"),
+                    NULL);
+      new_child = GTK_WIDGET (self->albums_status_page);
+      g_list_store_remove_all (self->albums_model);
+    }
+    else
+    {
+      g_list_store_splice (self->albums_model,
+                           0, g_list_model_get_n_items (G_LIST_MODEL (self->albums_model)),
+                           albums->pdata, albums->len);
+      g_ptr_array_free (albums, TRUE);
+      new_child = GTK_WIDGET (self->albums_content);
+    }
+  }
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
     g_object_set (G_OBJECT (self->albums_status_page),
                   "description", NULL,
@@ -163,28 +231,12 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                   NULL);
     new_child = GTK_WIDGET (self->albums_status_page);
     g_warning("Search for albums failed: %s\n", error->message);
-    g_error_free (error);
-    error = NULL;
-    g_list_store_remove_all (self->albums_model);
-  }
-  else if (albums->len == 0)
-  {
-    g_ptr_array_free (albums, FALSE);
-    g_object_set (G_OBJECT (self->albums_status_page),
-                  "description", _("If something is missing, try launching library scanning"),
-                  "icon-name", "question-round-symbolic",
-                  "title", _("No albums found"),
-                  NULL);
-    new_child = GTK_WIDGET (self->albums_status_page);
     g_list_store_remove_all (self->albums_model);
   }
   else
   {
-    g_list_store_splice (self->albums_model,
-                         0, g_list_model_get_n_items (G_LIST_MODEL (self->albums_model)),
-                         albums->pdata, albums->len);
-    g_ptr_array_free (albums, TRUE);
-    new_child = GTK_WIDGET (self->albums_content);
+    g_clear_object (&(self->albums_cancellable));
+    return;
   }
 
   if (new_child != previous_child)
@@ -195,4 +247,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
       gtk_widget_unparent (previous_child);
     }
   }
+
+  gtk_spinner_stop (self->albums_spinner);
+  g_clear_object (&(self->albums_cancellable));
 }

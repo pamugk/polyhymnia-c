@@ -103,6 +103,17 @@ GPtrArray *
 polyhymnia_mpd_client_search_albums (PolyhymniaMpdClient *self,
                                      GError             **error);
 
+void
+polyhymnia_mpd_client_search_albums_async (PolyhymniaMpdClient *self,
+                                           GCancellable        *cancellable,
+                                           GAsyncReadyCallback  callback,
+                                           gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_search_albums_finish (PolyhymniaMpdClient *self,
+                                            GAsyncResult        *result,
+                                            GError             **error);
+
 GPtrArray *
 polyhymnia_mpd_client_search_artists (PolyhymniaMpdClient *self,
                                       GError             **error);
