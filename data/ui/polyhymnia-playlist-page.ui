@@ -137,6 +137,12 @@
     </child>
     <property name="orientation">vertical</property>
   </object>
+  <object class="GtkSpinner" id="spinner">
+    <property name="halign">center</property>
+    <property name="height-request">64</property>
+    <property name="valign">center</property>
+    <property name="width-request">64</property>
+  </object>
   <object class="AdwStatusPage" id="tracks_status_page" />
 
   <object class="AdwMessageDialog" id="delete_dialog">

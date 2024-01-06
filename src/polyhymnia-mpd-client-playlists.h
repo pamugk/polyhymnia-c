@@ -34,6 +34,18 @@ polyhymnia_mpd_client_get_playlist_tracks (PolyhymniaMpdClient *self,
                                            GError             **error);
 
 void
+polyhymnia_mpd_client_get_playlist_tracks_async (PolyhymniaMpdClient *self,
+                                                 const char          *name,
+                                                 GCancellable        *cancellable,
+                                                 GAsyncReadyCallback  callback,
+                                                 void                *user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_get_playlist_tracks_finish (PolyhymniaMpdClient *self,
+                                                  GAsyncResult        *result,
+                                                  GError             **error);
+
+void
 polyhymnia_mpd_client_play_playlist (PolyhymniaMpdClient *self,
                                      const char          *name,
                                      GError             **error);

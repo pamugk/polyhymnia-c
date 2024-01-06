@@ -28,23 +28,25 @@ struct _PolyhymniaPlaylistPage
   AdwNavigationPage  parent_instance;
 
   /* Stored UI state */
-  GHashTable                *album_covers;
+  GHashTable          *album_covers;
+  GCancellable        *tracks_cancellable;
 
   /* Template widgets */
-  AdwMessageDialog          *delete_dialog;
-  AdwToolbarView            *root_toolbar_view;
-  AdwBreakpointBin          *root_content;
+  AdwMessageDialog    *delete_dialog;
+  AdwToolbarView      *root_toolbar_view;
+  AdwBreakpointBin    *root_content;
 
-  GtkLabel                  *statistics_label;
-  GtkLabel                  *duration_label;
+  GtkLabel            *statistics_label;
+  GtkLabel            *duration_label;
 
-  AdwStatusPage             *tracks_status_page;
+  GtkSpinner          *spinner;
+  AdwStatusPage       *tracks_status_page;
 
   /* Template objects */
-  PolyhymniaMpdClient       *mpd_client;
+  PolyhymniaMpdClient *mpd_client;
 
-  GListStore                *tracks_model;
-  GtkNoSelection            *tracks_selection_model;
+  GListStore          *tracks_model;
+  GtkNoSelection      *tracks_selection_model;
 
   /* Instance properties */
   gboolean deleted;
@@ -55,7 +57,7 @@ G_DEFINE_FINAL_TYPE (PolyhymniaPlaylistPage, polyhymnia_playlist_page, ADW_TYPE_
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-static guint obj_signals[N_SIGNALS] = { 0, };
+static unsigned int obj_signals[N_SIGNALS] = { 0, };
 
 /* Event handler declarations */
 static void
@@ -72,6 +74,11 @@ polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage 
                                                          GtkButton              *user_data);
 
 static void
+polyhymnia_tracks_page_get_playlist_tracks_callback (GObject      *source_object,
+                                                     GAsyncResult *result,
+                                                     void         *user_data);
+
+static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
                                                  GParamSpec             *pspec,
                                                  PolyhymniaMpdClient    *user_data);
@@ -86,7 +93,7 @@ polyhymnia_playlist_page_play_playlist_button_clicked (PolyhymniaPlaylistPage *s
 
 static void
 polyhymnia_playlist_page_track_activated (PolyhymniaPlaylistPage *self,
-                                          guint                  position,
+                                          unsigned int            position,
                                           GtkColumnView          *user_data);
 
 static void
@@ -109,10 +116,6 @@ polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage    *s
                                                     GtkListItem              *object,
                                                     GtkSignalListItemFactory *user_data);
 
-/* Private function declarations */
-static void
-polyhymnia_playlist_page_fill (PolyhymniaPlaylistPage *self);
-
 /* Class stuff */
 static void
 polyhymnia_playlist_page_constructed (GObject *gobject)
@@ -130,6 +133,7 @@ polyhymnia_playlist_page_dispose(GObject *gobject)
 {
   PolyhymniaPlaylistPage *self = POLYHYMNIA_PLAYLIST_PAGE (gobject);
 
+  g_cancellable_cancel (self->tracks_cancellable);
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PLAYLIST_PAGE);
   g_clear_pointer (&(self->playlist_title), g_free);
@@ -139,10 +143,10 @@ polyhymnia_playlist_page_dispose(GObject *gobject)
 }
 
 static void
-polyhymnia_playlist_page_get_property (GObject    *object,
-                                       guint       property_id,
-                                       GValue     *value,
-                                       GParamSpec *pspec)
+polyhymnia_playlist_page_get_property (GObject     *object,
+                                       unsigned int property_id,
+                                       GValue      *value,
+                                       GParamSpec  *pspec)
 {
   PolyhymniaPlaylistPage *self = POLYHYMNIA_PLAYLIST_PAGE (object);
 
@@ -160,7 +164,7 @@ polyhymnia_playlist_page_get_property (GObject    *object,
 
 static void
 polyhymnia_playlist_page_set_property (GObject      *object,
-                                       guint         property_id,
+                                       unsigned int  property_id,
                                        const GValue *value,
                                        GParamSpec   *pspec)
 {
@@ -224,6 +228,8 @@ polyhymnia_playlist_page_class_init (PolyhymniaPlaylistPageClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, statistics_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, duration_label);
+
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, spinner);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlaylistPage, tracks_status_page);
 
@@ -320,6 +326,123 @@ polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage 
 }
 
 static void
+polyhymnia_playlist_page_get_playlist_tracks_callback (GObject     *source_object,
+                                                      GAsyncResult *result,
+                                                      void         *user_data)
+{
+  GError                 *error = NULL;
+  PolyhymniaMpdClient    *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
+  PolyhymniaPlaylistPage *self = user_data;
+  GPtrArray              *tracks;
+
+  tracks = polyhymnia_mpd_client_get_playlist_tracks_finish (self->mpd_client,
+                                                             result,
+                                                            &error);
+  if (error == NULL)
+  {
+    if (tracks->len == 0)
+    {
+      g_ptr_array_free (tracks, TRUE);
+      g_list_store_remove_all (self->tracks_model);
+      g_hash_table_remove_all (self->album_covers);
+      g_object_set (G_OBJECT (self->tracks_status_page),
+                    "description", _("Playlist is empty"),
+                    "icon-name", "playlist2-symbolic",
+                    NULL);
+      adw_toolbar_view_set_content (self->root_toolbar_view,
+                                    GTK_WIDGET (self->tracks_status_page));
+    }
+    else
+    {
+      unsigned int total_duration = 0;
+      char        *total_duration_translated;
+      unsigned int hours;
+      unsigned int minutes;
+      char        *statistics = g_strdup_printf (g_dngettext (GETTEXT_PACKAGE, "%d song", "%d songs", tracks->len),
+                                                 tracks->len);
+      for (unsigned int i = 0; i < tracks->len; i++)
+      {
+        const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
+        const char            *album = polyhymnia_track_get_album (track);
+        total_duration += polyhymnia_track_get_duration (track);
+        if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+        {
+          GBytes *cover = NULL;
+          //cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+          //                                                    polyhymnia_track_get_uri (track),
+          //                                                    &error);
+          if (error != NULL)
+          {
+            g_warning ("Failed to get album cover: %s\n", error->message);
+            g_error_free (error);
+            error = NULL;
+          }
+          else if (cover != NULL)
+          {
+            GdkTexture *album_cover;
+            album_cover = gdk_texture_new_from_bytes (cover, &error);
+            if (error != NULL)
+            {
+              g_warning ("Failed to convert album cover: %s\n", error->message);
+              g_error_free (error);
+              error = NULL;
+            }
+            else
+            {
+              g_hash_table_insert (self->album_covers,
+                                  g_strdup (album),
+                                  album_cover);
+            }
+            g_bytes_unref (cover);
+          }
+        }
+      }
+
+      minutes = (total_duration % 3600) / 60;
+      hours = total_duration / 3600;
+      if (hours > 0)
+      {
+        total_duration_translated = g_strdup_printf (_("%d h. %d min."),
+                                                     hours, minutes);
+      }
+      else
+      {
+        total_duration_translated = g_strdup_printf (_("%d min."), minutes);
+      }
+
+      gtk_label_set_text (self->statistics_label, statistics);
+      gtk_label_set_text (self->duration_label, total_duration_translated);
+      g_free (total_duration_translated);
+      g_free (statistics);
+
+      g_list_store_splice (self->tracks_model, 0,
+                            g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
+                            tracks->pdata, tracks->len);
+      g_ptr_array_free (tracks, TRUE);
+      adw_toolbar_view_set_content (self->root_toolbar_view,
+                                    GTK_WIDGET (self->root_content));
+    }
+  }
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    g_list_store_remove_all (self->tracks_model);
+    g_hash_table_remove_all (self->album_covers);
+    g_object_set (G_OBJECT (self->tracks_status_page),
+                  "description", _("Failed to get a playlist"),
+                  "icon-name", NULL,
+                  NULL);
+    adw_toolbar_view_set_content (self->root_toolbar_view,
+                                  GTK_WIDGET (self->tracks_status_page));
+    g_warning ("Failed to find a playlist: %s", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+
+  gtk_spinner_stop (self->spinner);
+  g_clear_object (&(self->tracks_cancellable));
+}
+
+static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
                                                  GParamSpec             *pspec,
                                                  PolyhymniaMpdClient    *user_data)
@@ -328,10 +451,11 @@ polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
 
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
-    polyhymnia_playlist_page_fill (self);
+    polyhymnia_playlist_page_mpd_playlists_changed (self, user_data);
   }
   else
   {
+    g_cancellable_cancel (self->tracks_cancellable);
     g_list_store_remove_all (self->tracks_model);
     g_hash_table_remove_all (self->album_covers);
   }
@@ -342,12 +466,18 @@ polyhymnia_playlist_page_mpd_playlists_changed (PolyhymniaPlaylistPage *self,
                                                 PolyhymniaMpdClient    *user_data)
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
-  if (self->deleted)
+  if (!self->deleted && self->tracks_cancellable == NULL)
   {
-    g_list_store_remove_all (self->tracks_model);
-    g_hash_table_remove_all (self->album_covers);
-  } else {
-    polyhymnia_playlist_page_fill (self);
+    self->tracks_cancellable = g_cancellable_new ();
+    polyhymnia_mpd_client_get_playlist_tracks_async (user_data,
+                                                     self->playlist_title,
+                                                     self->tracks_cancellable,
+                                                     polyhymnia_playlist_page_get_playlist_tracks_callback,
+                                                     self);
+
+    adw_toolbar_view_set_content (self->root_toolbar_view,
+                                  GTK_WIDGET (self->spinner));
+    gtk_spinner_start (self->spinner);
   }
 }
 
@@ -364,7 +494,7 @@ polyhymnia_playlist_page_play_playlist_button_clicked (PolyhymniaPlaylistPage *s
 
   if (error != NULL)
   {
-    g_warning("Failed to start playing playlist: %s\n", error->message);
+    g_warning ("Failed to start playing playlist: %s\n", error->message);
     g_error_free (error);
     error = NULL;
   }
@@ -372,7 +502,7 @@ polyhymnia_playlist_page_play_playlist_button_clicked (PolyhymniaPlaylistPage *s
 
 static void
 polyhymnia_playlist_page_track_activated (PolyhymniaPlaylistPage *self,
-                                          guint                  position,
+                                          unsigned int            position,
                                           GtkColumnView          *user_data)
 {
   PolyhymniaTrack *track;
@@ -385,16 +515,16 @@ polyhymnia_playlist_page_track_activated (PolyhymniaPlaylistPage *self,
 }
 
 static void
-polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage    *self,
+polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage   *self,
                                                   GtkListItem              *object,
                                                   GtkSignalListItemFactory *user_data)
 {
-  const gchar *album;
+  const char      *album;
   PolyhymniaTrack *track;
 
-  GtkWidget *album_cover;
-  GtkWidget *track_root;
-  GtkWidget *track_label;
+  GtkWidget       *album_cover;
+  GtkWidget       *track_root;
+  GtkWidget       *track_label;
 
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
 
@@ -420,11 +550,11 @@ polyhymnia_playlist_page_track_title_column_bind (PolyhymniaPlaylistPage    *sel
 }
 
 static void
-polyhymnia_playlist_page_track_title_column_setup (PolyhymniaPlaylistPage   *self,
+polyhymnia_playlist_page_track_title_column_setup (PolyhymniaPlaylistPage    *self,
                                                     GtkListItem              *object,
                                                     GtkSignalListItemFactory *user_data)
 {
-  GtkBox *track_root;
+  GtkBox    *track_root;
   GtkImage  *album_cover;
   GtkLabel  *track_label;
 
@@ -447,7 +577,7 @@ polyhymnia_playlist_page_track_title_column_setup (PolyhymniaPlaylistPage   *sel
 }
 
 static void
-polyhymnia_playlist_page_track_title_column_teardown (PolyhymniaPlaylistPage    *self,
+polyhymnia_playlist_page_track_title_column_teardown (PolyhymniaPlaylistPage   *self,
                                                       GtkListItem              *object,
                                                       GtkSignalListItemFactory *user_data)
 {
@@ -455,7 +585,7 @@ polyhymnia_playlist_page_track_title_column_teardown (PolyhymniaPlaylistPage    
 }
 
 static void
-polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage    *self,
+polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage   *self,
                                                     GtkListItem              *object,
                                                     GtkSignalListItemFactory *user_data)
 {
@@ -468,114 +598,4 @@ polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage    *s
   album_cover = gtk_widget_get_first_child (track_root);
   gtk_image_set_from_paintable (GTK_IMAGE (album_cover), NULL);
   gtk_label_set_text (GTK_LABEL (gtk_widget_get_next_sibling (album_cover)), NULL);
-}
-
-/* Private function declarations */
-static void
-polyhymnia_playlist_page_fill (PolyhymniaPlaylistPage *self)
-{
-  GError    *error = NULL;
-  GPtrArray *tracks;
-
-  tracks = polyhymnia_mpd_client_get_playlist_tracks (self->mpd_client,
-                                                      self->playlist_title,
-                                                      &error);
-  if (error != NULL)
-  {
-    g_list_store_remove_all (self->tracks_model);
-    g_hash_table_remove_all (self->album_covers);
-    g_object_set (G_OBJECT (self->tracks_status_page),
-                  "description", _("Failed to get a playlist"),
-                  "icon-name", NULL,
-                  NULL);
-    adw_toolbar_view_set_content (self->root_toolbar_view,
-                                  GTK_WIDGET (self->tracks_status_page));
-    g_warning("Failed to find a playlist: %s", error->message);
-    g_error_free (error);
-    error = NULL;
-  }
-  else if (tracks->len == 0)
-  {
-    g_ptr_array_free (tracks, TRUE);
-    g_list_store_remove_all (self->tracks_model);
-    g_hash_table_remove_all (self->album_covers);
-    g_object_set (G_OBJECT (self->tracks_status_page),
-                  "description", _("Playlist is empty"),
-                  "icon-name", "playlist2-symbolic",
-                  NULL);
-    adw_toolbar_view_set_content (self->root_toolbar_view,
-                                  GTK_WIDGET (self->tracks_status_page));
-  }
-  else
-  {
-    guint total_duration = 0;
-    gchar *total_duration_translated;
-    guint hours;
-    guint minutes;
-    gchar *statistics = g_strdup_printf (g_dngettext(GETTEXT_PACKAGE,
-                                                     "%d song", "%d songs",
-                                                     tracks->len),
-                                         tracks->len);
-    for (guint i = 0; i < tracks->len; i++)
-    {
-      const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
-      const gchar *album = polyhymnia_track_get_album (track);
-      total_duration += polyhymnia_track_get_duration (track);
-      if (album != NULL && !g_hash_table_contains(self->album_covers, album))
-      {
-        GBytes *cover;
-        cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
-                                                            polyhymnia_track_get_uri (track),
-                                                            &error);
-       if (error != NULL)
-        {
-          g_warning ("Failed to get album cover: %s\n", error->message);
-          g_error_free (error);
-          error = NULL;
-        }
-        else if (cover != NULL)
-        {
-          GdkTexture *album_cover;
-          album_cover = gdk_texture_new_from_bytes (cover, &error);
-          if (error != NULL)
-          {
-            g_warning ("Failed to convert album cover: %s\n", error->message);
-            g_error_free (error);
-            error = NULL;
-          }
-          else
-          {
-            g_hash_table_insert (self->album_covers,
-                                g_strdup (album),
-                                album_cover);
-          }
-          g_bytes_unref (cover);
-        }
-      }
-    }
-
-    minutes = (total_duration % 3600) / 60;
-    hours = total_duration / 3600;
-    if (hours > 0)
-    {
-      total_duration_translated = g_strdup_printf (_("%d h. %d min."),
-                                                   hours, minutes);
-    }
-    else
-    {
-      total_duration_translated = g_strdup_printf (_("%d min."), minutes);
-    }
-
-    gtk_label_set_text (self->statistics_label, statistics);
-    gtk_label_set_text (self->duration_label, total_duration_translated);
-    g_free (total_duration_translated);
-    g_free (statistics);
-
-    g_list_store_splice (self->tracks_model, 0,
-                          g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
-                          tracks->pdata, tracks->len);
-    g_ptr_array_free (tracks, TRUE);
-    adw_toolbar_view_set_content (self->root_toolbar_view,
-                                  GTK_WIDGET (self->root_content));
-  }
 }
