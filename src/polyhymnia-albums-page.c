@@ -53,7 +53,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                                              PolyhymniaMpdClient  *user_data);
 
 static void
-polyhymnia_tracks_page_search_albums_callback (GObject      *source_object,
+polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
                                                GAsyncResult *result,
                                                gpointer      user_data);
 
@@ -167,7 +167,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
   self->albums_cancellable = g_cancellable_new ();
   polyhymnia_mpd_client_search_albums_async (user_data,
                                              self->albums_cancellable,
-                                             polyhymnia_tracks_page_search_albums_callback,
+                                             polyhymnia_albums_page_search_albums_callback,
                                              self);
 
   previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
@@ -185,7 +185,7 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
 }
 
 static void
-polyhymnia_tracks_page_search_albums_callback (GObject      *source_object,
+polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
                                                GAsyncResult *result,
                                                gpointer      user_data)
 {
@@ -251,3 +251,4 @@ polyhymnia_tracks_page_search_albums_callback (GObject      *source_object,
   gtk_spinner_stop (self->albums_spinner);
   g_clear_object (&(self->albums_cancellable));
 }
+

@@ -74,9 +74,9 @@ polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage 
                                                          GtkButton              *user_data);
 
 static void
-polyhymnia_tracks_page_get_playlist_tracks_callback (GObject      *source_object,
-                                                     GAsyncResult *result,
-                                                     void         *user_data);
+polyhymnia_playlist_page_get_playlist_tracks_callback (GObject      *source_object,
+                                                       GAsyncResult *result,
+                                                       void         *user_data);
 
 static void
 polyhymnia_playlist_page_mpd_client_initialized (PolyhymniaPlaylistPage *self,
@@ -335,9 +335,9 @@ polyhymnia_playlist_page_get_playlist_tracks_callback (GObject     *source_objec
   PolyhymniaPlaylistPage *self = user_data;
   GPtrArray              *tracks;
 
-  tracks = polyhymnia_mpd_client_get_playlist_tracks_finish (self->mpd_client,
+  tracks = polyhymnia_mpd_client_get_playlist_tracks_finish (mpd_client,
                                                              result,
-                                                            &error);
+                                                             &error);
   if (error == NULL)
   {
     if (tracks->len == 0)
@@ -434,8 +434,6 @@ polyhymnia_playlist_page_get_playlist_tracks_callback (GObject     *source_objec
     adw_toolbar_view_set_content (self->root_toolbar_view,
                                   GTK_WIDGET (self->tracks_status_page));
     g_warning ("Failed to find a playlist: %s", error->message);
-    g_error_free (error);
-    error = NULL;
   }
 
   gtk_spinner_stop (self->spinner);
@@ -599,3 +597,4 @@ polyhymnia_playlist_page_track_title_column_unbind (PolyhymniaPlaylistPage   *se
   gtk_image_set_from_paintable (GTK_IMAGE (album_cover), NULL);
   gtk_label_set_text (GTK_LABEL (gtk_widget_get_next_sibling (album_cover)), NULL);
 }
+

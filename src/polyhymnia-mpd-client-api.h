@@ -41,6 +41,18 @@ polyhymnia_mpd_client_get_album_tracks (PolyhymniaMpdClient *self,
                                         const char          *album,
                                         GError             **error);
 
+void
+polyhymnia_mpd_client_get_album_tracks_async (PolyhymniaMpdClient *self,
+                                              const char          *album,
+                                              GCancellable        *cancellable,
+                                              GAsyncReadyCallback  callback,
+                                              void                *user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_get_album_tracks_finish (PolyhymniaMpdClient *self,
+                                               GAsyncResult        *result,
+                                               GError             **error);
+
 GPtrArray *
 polyhymnia_mpd_client_get_artist_discography (PolyhymniaMpdClient *self,
                                               const char          *artist,
@@ -51,7 +63,7 @@ polyhymnia_mpd_client_get_artist_discography_async (PolyhymniaMpdClient *self,
                                                     const char          *artist,
                                                     GCancellable        *cancellable,
                                                     GAsyncReadyCallback  callback,
-                                                    gpointer             user_data);
+                                                    void                *user_data);
 
 GPtrArray *
 polyhymnia_mpd_client_get_artist_discography_finish (PolyhymniaMpdClient *self,
@@ -68,7 +80,7 @@ polyhymnia_mpd_client_get_last_modified_tracks_async (PolyhymniaMpdClient *self,
                                                       GDateTime           *since,
                                                       GCancellable        *cancellable,
                                                       GAsyncReadyCallback  callback,
-                                                      gpointer             user_data);
+                                                      void                *user_data);
 
 GPtrArray *
 polyhymnia_mpd_client_get_last_modified_tracks_finish (PolyhymniaMpdClient *self,
@@ -107,7 +119,7 @@ void
 polyhymnia_mpd_client_search_albums_async (PolyhymniaMpdClient *self,
                                            GCancellable        *cancellable,
                                            GAsyncReadyCallback  callback,
-                                           gpointer             user_data);
+                                           void                *user_data);
 
 GPtrArray *
 polyhymnia_mpd_client_search_albums_finish (PolyhymniaMpdClient *self,
@@ -122,7 +134,7 @@ void
 polyhymnia_mpd_client_search_artists_async (PolyhymniaMpdClient *self,
                                             GCancellable        *cancellable,
                                             GAsyncReadyCallback  callback,
-                                            gpointer             user_data);
+                                            void                *user_data);
 
 GPtrArray *
 polyhymnia_mpd_client_search_artists_finish (PolyhymniaMpdClient *self,
@@ -143,7 +155,7 @@ polyhymnia_mpd_client_search_tracks_async (PolyhymniaMpdClient *self,
                                            const char          *query,
                                            GCancellable        *cancellable,
                                            GAsyncReadyCallback  callback,
-                                           gpointer             user_data);
+                                           void                *user_data);
 
 GPtrArray *
 polyhymnia_mpd_client_search_tracks_finish (PolyhymniaMpdClient *self,

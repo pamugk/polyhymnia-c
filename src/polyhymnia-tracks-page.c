@@ -19,7 +19,7 @@ struct _PolyhymniaTracksPage
   AdwNavigationPage  parent_instance;
 
   /* Stored UI state */
-  GCancellable         *tracks_cancellable;
+  GCancellable        *tracks_cancellable;
 
   /* Template widgets */
   GtkSpinner          *spinner;
