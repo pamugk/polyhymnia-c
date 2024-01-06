@@ -11,7 +11,7 @@
 
 G_BEGIN_DECLS
 
-gint
+int
 polyhymnia_mpd_client_add_next_to_queue (PolyhymniaMpdClient *self,
                                          const gchar         *song_uri,
                                          GError             **error);
@@ -26,7 +26,7 @@ polyhymnia_mpd_client_append_artist_to_queue (PolyhymniaMpdClient *self,
                                               const char          *artist,
                                               GError             **error);
 
-gint
+int
 polyhymnia_mpd_client_append_song_to_queue (PolyhymniaMpdClient *self,
                                             const char          *song_uri,
                                             GError             **error);

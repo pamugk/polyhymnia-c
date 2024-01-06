@@ -2,7 +2,6 @@
 #pragma once
 
 #include <glib-2.0/gio/gio.h>
-#include <glib-2.0/glib.h>
 
 #include "polyhymnia-mpd-client-common.h"
 #include "polyhymnia-statistics.h"
@@ -17,7 +16,7 @@ void
 polyhymnia_mpd_client_get_statistics_async (PolyhymniaMpdClient *self,
                                             GCancellable        *cancellable,
                                             GAsyncReadyCallback  callback,
-                                            gpointer             user_data);
+                                            void                *user_data);
 
 PolyhymniaStatistics *
 polyhymnia_mpd_client_get_statistics_finish (PolyhymniaMpdClient *self,

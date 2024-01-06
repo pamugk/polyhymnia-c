@@ -8,8 +8,8 @@
 G_BEGIN_DECLS
 
 GBytes *
-polyhymnia_mpd_client_get_song_album_cover(PolyhymniaMpdClient *self,
-                                           const gchar         *song_uri,
-                                           GError              **error);
+polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
+                                            const char          *song_uri,
+                                            GError             **error);
 
 G_END_DECLS
