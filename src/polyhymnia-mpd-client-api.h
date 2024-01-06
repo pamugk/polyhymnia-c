@@ -12,39 +12,51 @@
 G_BEGIN_DECLS
 
 gint
-polyhymnia_mpd_client_add_next_to_queue(PolyhymniaMpdClient *self,
-                                        const gchar         *song_uri,
-                                        GError              **error);
+polyhymnia_mpd_client_add_next_to_queue (PolyhymniaMpdClient *self,
+                                         const gchar         *song_uri,
+                                         GError             **error);
 
 void
-polyhymnia_mpd_client_append_album_to_queue(PolyhymniaMpdClient *self,
-                                            const gchar         *album,
-                                            GError              **error);
+polyhymnia_mpd_client_append_album_to_queue (PolyhymniaMpdClient *self,
+                                             const gchar         *album,
+                                             GError             **error);
 
 void
-polyhymnia_mpd_client_append_artist_to_queue(PolyhymniaMpdClient *self,
-                                             const gchar         *artist,
-                                             GError              **error);
+polyhymnia_mpd_client_append_artist_to_queue (PolyhymniaMpdClient *self,
+                                              const char          *artist,
+                                              GError             **error);
 
 gint
-polyhymnia_mpd_client_append_song_to_queue(PolyhymniaMpdClient *self,
-                                           const gchar         *song_uri,
-                                           GError              **error);
+polyhymnia_mpd_client_append_song_to_queue (PolyhymniaMpdClient *self,
+                                            const char          *song_uri,
+                                            GError             **error);
 
 void
-polyhymnia_mpd_client_append_songs_to_queue(PolyhymniaMpdClient *self,
-                                            GPtrArray           *songs_uri,
-                                            GError              **error);
+polyhymnia_mpd_client_append_songs_to_queue (PolyhymniaMpdClient *self,
+                                             GPtrArray           *songs_uri,
+                                             GError             **error);
 
 GPtrArray *
-polyhymnia_mpd_client_get_album_tracks(PolyhymniaMpdClient *self,
-                                       const gchar         *album,
-                                       GError              **error);
+polyhymnia_mpd_client_get_album_tracks (PolyhymniaMpdClient *self,
+                                        const char          *album,
+                                        GError             **error);
 
 GPtrArray *
 polyhymnia_mpd_client_get_artist_discography (PolyhymniaMpdClient *self,
-                                              const gchar         *artist,
+                                              const char          *artist,
                                               GError             **error);
+
+void
+polyhymnia_mpd_client_get_artist_discography_async (PolyhymniaMpdClient *self,
+                                                    const char          *artist,
+                                                    GCancellable        *cancellable,
+                                                    GAsyncReadyCallback  callback,
+                                                    gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_get_artist_discography_finish (PolyhymniaMpdClient *self,
+                                                     GAsyncResult        *result,
+                                                     GError             **error);
 
 GPtrArray *
 polyhymnia_mpd_client_get_last_modified_tracks (PolyhymniaMpdClient *self,
@@ -65,48 +77,59 @@ polyhymnia_mpd_client_get_last_modified_tracks_finish (PolyhymniaMpdClient *self
 
 void
 polyhymnia_mpd_client_play (PolyhymniaMpdClient *self,
-                            GError              **error);
+                            GError             **error);
 
 void
-polyhymnia_mpd_client_play_album(PolyhymniaMpdClient *self,
-                                 const gchar         *album,
-                                 GError              **error);
+polyhymnia_mpd_client_play_album (PolyhymniaMpdClient *self,
+                                  const char          *album,
+                                  GError             **error);
 
 void
-polyhymnia_mpd_client_play_artist(PolyhymniaMpdClient *self,
-                                  const gchar         *artist,
-                                  GError              **error);
+polyhymnia_mpd_client_play_artist (PolyhymniaMpdClient *self,
+                                   const char          *artist,
+                                   GError             **error);
 
 gint
-polyhymnia_mpd_client_play_song(PolyhymniaMpdClient *self,
-                                const gchar         *song_uri,
-                                GError              **error);
+polyhymnia_mpd_client_play_song (PolyhymniaMpdClient *self,
+                                 const char          *song_uri,
+                                 GError             **error);
 
 void
-polyhymnia_mpd_client_play_songs(PolyhymniaMpdClient *self,
-                                 GPtrArray           *songs_uri,
-                                 GError              **error);
+polyhymnia_mpd_client_play_songs (PolyhymniaMpdClient *self,
+                                  GPtrArray           *songs_uri,
+                                  GError             **error);
 
 GPtrArray *
-polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
-                                    GError              **error);
+polyhymnia_mpd_client_search_albums (PolyhymniaMpdClient *self,
+                                     GError             **error);
 
 GPtrArray *
-polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
-                                     GError              **error);
+polyhymnia_mpd_client_search_artists (PolyhymniaMpdClient *self,
+                                      GError             **error);
+
+void
+polyhymnia_mpd_client_search_artists_async (PolyhymniaMpdClient *self,
+                                            GCancellable        *cancellable,
+                                            GAsyncReadyCallback  callback,
+                                            gpointer             user_data);
 
 GPtrArray *
-polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,
-                                    GError              **error);
+polyhymnia_mpd_client_search_artists_finish (PolyhymniaMpdClient *self,
+                                             GAsyncResult        *result,
+                                             GError             **error);
 
 GPtrArray *
-polyhymnia_mpd_client_search_tracks(PolyhymniaMpdClient *self,
-                                    const gchar         *query,
-                                    GError              **error);
+polyhymnia_mpd_client_search_genres (PolyhymniaMpdClient *self,
+                                     GError             **error);
+
+GPtrArray *
+polyhymnia_mpd_client_search_tracks (PolyhymniaMpdClient *self,
+                                     const char          *query,
+                                     GError             **error);
 
 void
 polyhymnia_mpd_client_search_tracks_async (PolyhymniaMpdClient *self,
-                                           const gchar         *query,
+                                           const char          *query,
                                            GCancellable        *cancellable,
                                            GAsyncReadyCallback  callback,
                                            gpointer             user_data);
