@@ -465,13 +465,18 @@ polyhymnia_track_details_window_get_song_details_callback (GObject *source_objec
       g_object_unref (details);
     }
   }
-  else if(!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
     gtk_scrolled_window_set_child (self->main_scrolled_window,
                                    GTK_WIDGET (self->error_status_page));
     g_warning ("Failed to get track details: %s\n", error->message);
     g_error_free (error);
     error = NULL;
+  }
+  else
+  {
+    g_clear_object (&(self->song_details_cancellable));
+    return;
   }
 
   gtk_spinner_stop (self->spinner);

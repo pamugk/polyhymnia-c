@@ -8,7 +8,7 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <child type="start">
-              <object class="GtkMenuButton">
+              <object class="GtkMenuButton" id="new_playlist_button">
                 <property name="direction">left</property>
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>

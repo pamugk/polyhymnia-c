@@ -48,4 +48,15 @@ GPtrArray *
 polyhymnia_mpd_client_search_playlists (PolyhymniaMpdClient *self,
                                         GError              **error);
 
+void
+polyhymnia_mpd_client_search_playlists_async (PolyhymniaMpdClient *self,
+                                              GCancellable        *cancellable,
+                                              GAsyncReadyCallback  callback,
+                                              gpointer             user_data);
+
+GPtrArray *
+polyhymnia_mpd_client_search_playlists_finish (PolyhymniaMpdClient *self,
+                                               GAsyncResult        *result,
+                                               GError             **error);
+
 G_END_DECLS

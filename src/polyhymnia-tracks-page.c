@@ -264,14 +264,11 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   GtkWidget *previous_child;
   PolyhymniaTracksPage *self = user_data;
   GPtrArray *tracks;
-
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-
-  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->tracks_selection_model));
   tracks = polyhymnia_mpd_client_search_tracks_finish (mpd_client, result, &error);
 
   if (error == NULL)
   {
+    gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->tracks_selection_model));
     if (tracks->len == 0)
     {
       g_ptr_array_free (tracks, FALSE);
@@ -294,6 +291,7 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
+    gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->tracks_selection_model));
     g_object_set (G_OBJECT (self->tracks_status_page),
                   "description", NULL,
                   "icon-name", "error-symbolic",
@@ -307,9 +305,11 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   }
   else
   {
-    new_child = NULL;
+    g_clear_object (&(self->tracks_cancellable));
+    return;
   }
 
+  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
   if (new_child != previous_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
@@ -320,7 +320,6 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   }
 
   gtk_spinner_stop (self->spinner);
-  g_clear_object (&(self->tracks_cancellable));
 }
 
 static void

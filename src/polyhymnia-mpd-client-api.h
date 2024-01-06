@@ -81,7 +81,7 @@ polyhymnia_mpd_client_search_albums(PolyhymniaMpdClient *self,
 
 GPtrArray *
 polyhymnia_mpd_client_search_artists(PolyhymniaMpdClient *self,
-                                      GError              **error);
+                                     GError              **error);
 
 GPtrArray *
 polyhymnia_mpd_client_search_genres(PolyhymniaMpdClient *self,

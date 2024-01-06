@@ -128,7 +128,6 @@ polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
   PolyhymniaStatisticsWindow *self = user_data;
 
   new_statistics = polyhymnia_mpd_client_get_statistics_finish (mpd_client, result, &error);
-  g_clear_object (&(self->statistics));
 
   if (error == NULL)
   {
@@ -173,15 +172,22 @@ polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
 
     gtk_scrolled_window_set_child (self->root_container,
                                    GTK_WIDGET (self->content));
+    g_clear_object (&(self->statistics));
     self->statistics = g_object_ref (new_statistics);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
+    g_clear_object (&(self->statistics));
     gtk_scrolled_window_set_child (self->root_container,
                                    GTK_WIDGET (self->error_status_page));
     g_warning("Failed to fetch statistics: %s\n", error->message);
     g_error_free (error);
     error = NULL;
+  }
+  else
+  {
+    g_clear_object (&(self->statistics_cancellable));
+    return;
   }
 
   gtk_spinner_stop (self->spinner);

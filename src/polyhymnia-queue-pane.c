@@ -24,12 +24,14 @@ struct _PolyhymniaQueuePane
   GtkWidget  parent_instance;
 
   /* Stored UI state */
-  GHashTable             *album_covers;
-  GHashTable             *known_playlists;
-  GCancellable           *queue_cancellable;
+  GHashTable          *album_covers;
+  GHashTable          *known_playlists;
+  GCancellable        *playlists_cancellable;
+  GCancellable        *queue_cancellable;
 
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
+  GtkMenuButton       *new_playlist_button;
   GtkPopover          *new_playlist_popover;
   GtkEntry            *new_playlist_title_entry;
   GtkActionBar        *queue_action_bar;
@@ -68,9 +70,9 @@ polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
                                            GtkButton           *user_data);
 
 static void
-polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
+polyhymnia_queue_pane_get_queue_callback (GObject      *source_object,
                                           GAsyncResult *result,
-                                          gpointer user_data);
+                                          gpointer      user_data);
 
 static void
 polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
@@ -104,6 +106,11 @@ polyhymnia_queue_pane_queue_to_playlist_button_clicked (PolyhymniaQueuePane *sel
 static void
 polyhymnia_queue_pane_remove_button_clicked (PolyhymniaQueuePane *self,
                                              GtkButton           *user_data);
+
+static void
+polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
+                                                 GAsyncResult *result,
+                                                 gpointer      user_data);
 
 static void
 polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
@@ -150,6 +157,7 @@ polyhymnia_queue_pane_dispose(GObject *gobject)
 {
   PolyhymniaQueuePane *self = POLYHYMNIA_QUEUE_PANE (gobject);
 
+  g_cancellable_cancel (self->playlists_cancellable);
   g_cancellable_cancel (self->queue_cancellable);
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_QUEUE_PANE);
@@ -182,6 +190,7 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
                                                "/com/github/pamugk/polyhymnia/ui/polyhymnia-queue-pane.ui");
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, root_toolbar_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, new_playlist_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, new_playlist_popover);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, new_playlist_title_entry);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaQueuePane, queue_action_bar);
@@ -331,10 +340,11 @@ polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
   GPtrArray *queue = polyhymnia_mpd_client_get_queue_finish (mpd_client, result, &error);
   PolyhymniaQueuePane *self = user_data;
 
-  g_hash_table_remove_all (self->album_covers);
-  gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
   if (error == NULL)
   {
+    g_hash_table_remove_all (self->album_covers);
+    gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
+
     if (queue->len == 0)
     {
       g_ptr_array_free (queue, FALSE);
@@ -360,6 +370,9 @@ polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
+    g_hash_table_remove_all (self->album_covers);
+    gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
+
     g_object_set (G_OBJECT (self->queue_status_page),
                   "description", _("Failed to fetch queue"),
                   NULL);
@@ -419,30 +432,17 @@ static void
 polyhymnia_queue_pane_mpd_playlists_changed (PolyhymniaQueuePane *self,
                                              PolyhymniaMpdClient *user_data)
 {
-  GError *error = NULL;
-  GPtrArray *playlists;
-
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
 
-  g_hash_table_remove_all (self->known_playlists);
-  playlists = polyhymnia_mpd_client_search_playlists (self->mpd_client, &error);
-  if (error != NULL)
+  if (self->queue_cancellable == NULL)
   {
-    g_warning("Search for playlists failed: %s\n", error->message);
-    g_error_free (error);
-    error = NULL;
-  }
-  else
-  {
-    for (int i = 0; i < playlists->len; i++)
-    {
-      g_hash_table_add (self->known_playlists, g_ptr_array_index (playlists, i));
-    }
-    g_ptr_array_free (playlists, FALSE);
-  }
+    self->playlists_cancellable = g_cancellable_new ();
+    polyhymnia_mpd_client_search_playlists_async (user_data, self->playlists_cancellable,
+                                                  polyhymnia_queue_pane_search_playlists_callback,
+                                                  self);
 
-  polyhymnia_queue_pane_new_playlist_title_changed (self,
-                                                    GTK_EDITABLE (self->new_playlist_title_entry));
+    gtk_widget_set_sensitive (GTK_WIDGET (self->new_playlist_button), FALSE);
+  }
 }
 
 static void
@@ -559,6 +559,41 @@ polyhymnia_queue_pane_remove_button_clicked (PolyhymniaQueuePane *self,
     g_error_free (error);
     error = NULL;
   }
+}
+
+static void
+polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
+                                                 GAsyncResult *result,
+                                                 gpointer      user_data)
+{
+  GError *error = NULL;
+  PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
+  GPtrArray *playlists;
+  PolyhymniaQueuePane *self = user_data;
+
+  playlists = polyhymnia_mpd_client_search_playlists_finish (mpd_client, result,
+                                                             &error);
+  if (error == NULL)
+  {
+    g_hash_table_remove_all (self->known_playlists);
+    for (int i = 0; i < playlists->len; i++)
+    {
+      g_hash_table_add (self->known_playlists, g_ptr_array_index (playlists, i));
+    }
+
+    gtk_widget_set_sensitive (GTK_WIDGET (self->new_playlist_button), TRUE);
+    polyhymnia_queue_pane_new_playlist_title_changed (self,
+                                                      GTK_EDITABLE (self->new_playlist_title_entry));
+  }
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    g_hash_table_remove_all (self->known_playlists);
+    g_ptr_array_free (playlists, FALSE);
+    g_warning("Search for playlists failed: %s\n", error->message);
+    gtk_menu_button_popdown (self->new_playlist_button);
+  }
+
+  g_clear_object (&(self->queue_cancellable));
 }
 
 static void
