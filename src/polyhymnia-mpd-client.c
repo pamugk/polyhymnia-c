@@ -1577,14 +1577,15 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
                                             const char          *song_uri,
                                             GError             **error)
 {
-  GByteArray *cover_array;
-  GError     *inner_error = NULL;
+  struct mpd_connection *connection;
+  GByteArray            *cover_array;
+  GError                *inner_error = NULL;
 
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
   g_return_val_if_fail (self->main_mpd_connection != NULL, NULL);
 
-  polyhymnia_mpd_client_reconnect_if_necessary (self, &inner_error);
+  connection = polyhymnia_mpd_client_connection_init (&inner_error);
   if (inner_error != NULL)
   {
     g_propagate_error (error, inner_error);
@@ -1595,7 +1596,7 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
   for (unsigned int offset = 0; ; offset += IMAGE_BUFFER_SIZE)
   {
     uint8_t buffer[IMAGE_BUFFER_SIZE];
-    int     read_size = mpd_run_readpicture (self->main_mpd_connection,
+    int     read_size = mpd_run_readpicture (connection,
                                              song_uri, offset, buffer,
                                              IMAGE_BUFFER_SIZE);
     if (read_size > 0)
@@ -1612,28 +1613,29 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
     }
     else
     {
-      enum mpd_error read_error = mpd_connection_get_error (self->main_mpd_connection);
+      enum mpd_error read_error = mpd_connection_get_error (connection);
       if (read_error != MPD_ERROR_SUCCESS)
       {
         // If a server error occurred, let's pretend that
         // cover size in bytes is divisible by buffer size,
         // so client didn't stop sending requests in time.
         if (read_error != MPD_ERROR_SERVER
-            || mpd_connection_get_server_error (self->main_mpd_connection) != MPD_SERVER_ERROR_ARG)
+            || mpd_connection_get_server_error (connection) != MPD_SERVER_ERROR_ARG)
         {
           g_set_error (error,
                        POLYHYMNIA_MPD_CLIENT_ERROR,
                        POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
                        "failed to read portion of cover image - %s",
-                       mpd_connection_get_error_message (self->main_mpd_connection));
+                       mpd_connection_get_error_message (connection));
           g_byte_array_unref (cover_array);
           cover_array = NULL;
         }
-        mpd_connection_clear_error (self->main_mpd_connection);
+        mpd_connection_clear_error (connection);
       }
       break;
     }
   }
+  mpd_connection_free (connection);
 
   return cover_array == NULL ? NULL : g_byte_array_free_to_bytes (cover_array);
 }
