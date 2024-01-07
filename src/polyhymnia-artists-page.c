@@ -159,6 +159,7 @@ polyhymnia_artists_page_dispose(GObject *gobject)
 {
   PolyhymniaArtistsPage *self = POLYHYMNIA_ARTISTS_PAGE (gobject);
 
+  g_cancellable_cancel (self->album_covers_cancellable);
   g_cancellable_cancel (self->artists_cancellable);
   g_cancellable_cancel (self->artist_discography_cancellable);
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
@@ -456,6 +457,7 @@ polyhymnia_artists_page_artist_selection_changed (PolyhymniaArtistsPage *self,
   selected_artists = gtk_selection_model_get_selection (user_data);
 
   g_clear_pointer (&(self->album_covers), g_hash_table_unref);
+  g_cancellable_cancel (self->album_covers_cancellable);
   if (gtk_bitset_get_size (selected_artists) == 0)
   {
     g_cancellable_cancel (self->artist_discography_cancellable);
@@ -520,7 +522,7 @@ polyhymnia_artists_page_get_albums_covers_callback (GObject      *source_object,
     g_signal_emit (self, obj_signals[SIGNAL_ALBUMS_COVERS_READY], 0);
   }
 
-  g_clear_object (&(self->artist_discography_cancellable));
+  g_clear_object (&(self->album_covers_cancellable));
 }
 
 static void
@@ -598,6 +600,7 @@ polyhymnia_artists_page_mpd_client_initialized (PolyhymniaArtistsPage *self,
   }
   else
   {
+    g_cancellable_cancel (self->album_covers_cancellable);
     g_cancellable_cancel (self->artists_cancellable);
     g_cancellable_cancel (self->artist_discography_cancellable);
     g_clear_pointer (&(self->album_covers), g_hash_table_unref);
