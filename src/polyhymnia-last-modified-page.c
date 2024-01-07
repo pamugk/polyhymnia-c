@@ -199,7 +199,6 @@ polyhymnia_last_modified_page_get_last_modified_tracks_callback (GObject      *s
     gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->tracks_selection_model));
     if (tracks->len == 0)
     {
-      g_ptr_array_free (tracks, FALSE);
       g_object_set (G_OBJECT (self->tracks_status_page),
                     "description", _("Songs modified in a last week will be displayed here"),
                     "icon-name", "list-symbolic",
@@ -213,9 +212,9 @@ polyhymnia_last_modified_page_get_last_modified_tracks_callback (GObject      *s
       g_list_store_splice (self->tracks_model,
                            0, g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
                            tracks->pdata, tracks->len);
-      g_ptr_array_free (tracks, TRUE);
       new_child = GTK_WIDGET (self->track_toolbar_view);
     }
+    g_ptr_array_unref (tracks);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {

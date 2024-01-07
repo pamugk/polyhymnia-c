@@ -635,6 +635,7 @@ polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
       g_hash_table_add (self->known_playlists, g_ptr_array_index (playlists, i));
     }
 
+    g_ptr_array_free (playlists, FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (self->new_playlist_button), TRUE);
     polyhymnia_queue_pane_new_playlist_title_changed (self,
                                                       GTK_EDITABLE (self->new_playlist_title_entry));
@@ -642,7 +643,6 @@ polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
     g_hash_table_remove_all (self->known_playlists);
-    g_ptr_array_free (playlists, FALSE);
     g_warning("Search for playlists failed: %s\n", error->message);
     gtk_menu_button_popdown (self->new_playlist_button);
   }

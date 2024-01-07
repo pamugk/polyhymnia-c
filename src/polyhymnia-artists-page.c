@@ -550,7 +550,6 @@ polyhymnia_artists_page_get_artist_discography_callback (GObject      *source_ob
         gtk_scrolled_window_set_child (self->artist_discography_scrolled_window,
                                        GTK_WIDGET(self->artist_discography_status_page));
         g_list_store_remove_all (self->artist_tracks_model);
-        g_ptr_array_free (selected_artist_tracks, FALSE);
     }
     else
     {
@@ -565,8 +564,8 @@ polyhymnia_artists_page_get_artist_discography_callback (GObject      *source_ob
                            selected_artist_tracks->len);
       gtk_scrolled_window_set_child (self->artist_discography_scrolled_window,
                                      GTK_WIDGET(self->artist_discography_column_view));
-      g_ptr_array_unref (selected_artist_tracks);
     }
+    g_ptr_array_unref (selected_artist_tracks);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
@@ -663,7 +662,6 @@ polyhymnia_artists_page_search_artists_callback (GObject      *source_object,
   {
     if (artists->len == 0)
     {
-      g_ptr_array_free (artists, FALSE);
       g_object_set (G_OBJECT (self->artists_status_page),
                     "description", _("If something is missing, try launching library scanning"),
                     "icon-name", "question-round-symbolic",
@@ -678,9 +676,9 @@ polyhymnia_artists_page_search_artists_callback (GObject      *source_object,
       g_list_store_splice (self->artists_model, 0,
                             g_list_model_get_n_items (G_LIST_MODEL (self->artists_model)),
                             artists->pdata, artists->len);
-      g_ptr_array_free (artists, TRUE);
       new_child = GTK_WIDGET (self->artists_split_view);
     }
+    g_ptr_array_unref (artists);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {

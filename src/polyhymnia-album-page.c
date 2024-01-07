@@ -329,7 +329,6 @@ polyhymnia_album_page_get_album_tracks_callback (GObject      *source_object,
     g_clear_object (&(self->album_cover));
     if (tracks->len == 0)
     {
-      g_ptr_array_free (tracks, TRUE);
       g_list_store_remove_all (self->tracks_model);
       g_object_set (G_OBJECT (self->tracks_status_page),
                     "description", _("Album not found"),
@@ -399,10 +398,10 @@ polyhymnia_album_page_get_album_tracks_callback (GObject      *source_object,
       g_list_store_splice (self->tracks_model, 0,
                             g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
                             tracks->pdata, tracks->len);
-      g_ptr_array_unref (tracks);
       adw_toolbar_view_set_content (self->root_toolbar_view,
                                     GTK_WIDGET (self->root_content));
     }
+    g_ptr_array_unref (tracks);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {

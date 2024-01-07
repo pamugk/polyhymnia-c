@@ -146,9 +146,9 @@ polyhymnia_playlists_page_search_playlists_callback (GObject      *source_object
       gtk_string_list_splice (self->playlists_model,
                               0, g_list_model_get_n_items (G_LIST_MODEL (self->playlists_model)),
                               (const gchar *const *) playlists->pdata);
-      g_ptr_array_free (playlists, TRUE);
       new_child = GTK_WIDGET (self->playlists_content);
     }
+    g_ptr_array_unref (playlists);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {

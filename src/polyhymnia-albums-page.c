@@ -204,7 +204,6 @@ polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
   {
     if (albums->len == 0)
     {
-      g_ptr_array_free (albums, FALSE);
       g_object_set (G_OBJECT (self->albums_status_page),
                     "description", _("If something is missing, try launching library scanning"),
                     "icon-name", "question-round-symbolic",
@@ -218,9 +217,9 @@ polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
       g_list_store_splice (self->albums_model,
                            0, g_list_model_get_n_items (G_LIST_MODEL (self->albums_model)),
                            albums->pdata, albums->len);
-      g_ptr_array_free (albums, TRUE);
       new_child = GTK_WIDGET (self->albums_content);
     }
+    g_ptr_array_unref (albums);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
