@@ -15,7 +15,8 @@
 /* Type metadata */
 typedef enum
 {
-  SIGNAL_VIEW_TRACK_DETAILS = 1,
+  SIGNAL_ALBUMS_COVERS_READY = 1,
+  SIGNAL_VIEW_TRACK_DETAILS,
   N_SIGNALS,
 } PolyhymniaTracksPageSignal;
 
@@ -25,6 +26,7 @@ struct _PolyhymniaQueuePane
 
   /* Stored UI state */
   GHashTable          *album_covers;
+  GCancellable        *album_covers_cancellable;
   GHashTable          *known_playlists;
   GCancellable        *playlists_cancellable;
   GCancellable        *queue_cancellable;
@@ -70,9 +72,14 @@ polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
                                            GtkButton           *user_data);
 
 static void
+polyhymnia_queue_pane_get_albums_covers_callback (GObject      *source_object,
+                                                  GAsyncResult *result,
+                                                  void         *user_data);
+
+static void
 polyhymnia_queue_pane_get_queue_callback (GObject      *source_object,
                                           GAsyncResult *result,
-                                          gpointer      user_data);
+                                          void         *user_data);
 
 static void
 polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
@@ -110,22 +117,26 @@ polyhymnia_queue_pane_remove_button_clicked (PolyhymniaQueuePane *self,
 static void
 polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
                                                  GAsyncResult *result,
-                                                 gpointer      user_data);
+                                                 void         *user_data);
 
 static void
 polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane  *self,
-                                         guint                position,
-                                         guint                n_items,
+                                         unsigned int          position,
+                                         unsigned int          n_items,
                                          GtkSelectionModel    *user_data);
 
 static void
 polyhymnia_queue_pane_track_activated (PolyhymniaQueuePane *self,
-                                       guint                position,
-                                       GtkColumnView        *user_data);
+                                       unsigned int         position,
+                                       GtkColumnView       *user_data);
 static void
 polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
                                   GtkListItem              *object,
                                   GtkSignalListItemFactory *user_data);
+
+static void
+polyhymnia_queue_pane_track_title_column_covers_ready (PolyhymniaQueuePane *self,
+                                                       GtkListItem         *object);
 
 static void
 polyhymnia_queue_pane_track_setup (PolyhymniaQueuePane      *self,
@@ -146,10 +157,24 @@ static void
 polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
                                          GtkButton           *user_data);
 
-/* Private methods*/
+/* Private methods */
 static void
-polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
-                                   GPtrArray             *tracks);
+polyhymnia_queue_pane_get_albums_covers_async (PolyhymniaQueuePane *self,
+                                               GPtrArray           *tracks,
+                                               GCancellable        *cancellable,
+                                               GAsyncReadyCallback  callback,
+                                               void                *user_data);
+
+static void
+polyhymnia_queue_pane_get_albums_covers_async_thread (GTask         *task,
+                                                      void          *source_object,
+                                                      void          *task_data,
+                                                      GCancellable  *cancellable);
+
+static GHashTable *
+polyhymnia_queue_pane_get_albums_covers_finish (PolyhymniaQueuePane *self,
+                                                GAsyncResult        *result,
+                                                GError             **error);
 
 /* Class stuff */
 static void
@@ -157,6 +182,7 @@ polyhymnia_queue_pane_dispose(GObject *gobject)
 {
   PolyhymniaQueuePane *self = POLYHYMNIA_QUEUE_PANE (gobject);
 
+  g_cancellable_cancel (self->album_covers_cancellable);
   g_cancellable_cancel (self->playlists_cancellable);
   g_cancellable_cancel (self->queue_cancellable);
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
@@ -177,6 +203,10 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
 
   gobject_class->dispose = polyhymnia_queue_pane_dispose;
 
+  obj_signals[SIGNAL_ALBUMS_COVERS_READY] =
+     g_signal_newv ("albums-covers-ready", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL, G_TYPE_NONE, 0, NULL);
   obj_signals[SIGNAL_VIEW_TRACK_DETAILS] =
      g_signal_newv ("view-track-details", type,
                     G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -250,8 +280,6 @@ polyhymnia_queue_pane_class_init (PolyhymniaQueuePaneClass *klass)
 static void
 polyhymnia_queue_pane_init (PolyhymniaQueuePane *self)
 {
-  self->album_covers = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                              g_free, g_object_unref);
   self->known_playlists = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                  g_free, NULL);
   self->queue_model = g_list_store_new (POLYHYMNIA_TYPE_TRACK);
@@ -331,9 +359,30 @@ polyhymnia_queue_pane_down_button_clicked (PolyhymniaQueuePane *self,
 }
 
 static void
-polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
+polyhymnia_queue_pane_get_albums_covers_callback (GObject      *source_object,
+                                                  GAsyncResult *result,
+                                                  void         *user_data)
+{
+  GHashTable          *album_covers;
+  GError              *error = NULL;
+  PolyhymniaQueuePane *self = POLYHYMNIA_QUEUE_PANE (source_object);
+
+  album_covers = polyhymnia_queue_pane_get_albums_covers_finish (self, result,
+                                                                 &error);
+
+  if (error == NULL)
+  {
+    self->album_covers = album_covers;
+    g_signal_emit (self, obj_signals[SIGNAL_ALBUMS_COVERS_READY], 0);
+  }
+
+  g_clear_object (&(self->album_covers_cancellable));
+}
+
+static void
+polyhymnia_queue_pane_get_queue_callback (GObject      *source_object,
                                           GAsyncResult *result,
-                                          gpointer user_data)
+                                          void         *user_data)
 {
   GError *error = NULL;
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
@@ -342,12 +391,10 @@ polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
 
   if (error == NULL)
   {
-    g_hash_table_remove_all (self->album_covers);
     gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
 
     if (queue->len == 0)
     {
-      g_ptr_array_free (queue, FALSE);
       g_object_set (G_OBJECT (self->queue_status_page),
                     "description", _("Queue is empty"),
                     NULL);
@@ -357,20 +404,23 @@ polyhymnia_queue_pane_get_queue_callback (GObject *source_object,
     }
     else
     {
-      polyhymnia_queue_pane_fill_covers (self, queue);
+      self->album_covers_cancellable = g_cancellable_new ();
+      polyhymnia_queue_pane_get_albums_covers_async (self, queue,
+                                                     self->album_covers_cancellable,
+                                                     polyhymnia_queue_pane_get_albums_covers_callback,
+                                                     NULL);
       g_list_store_splice (self->queue_model, 0,
                             g_list_model_get_n_items (G_LIST_MODEL (self->queue_model)),
                             queue->pdata, queue->len);
-      g_ptr_array_free (queue, TRUE);
       gtk_scrolled_window_set_child (self->queue_page_content,
                                      GTK_WIDGET (self->queue_list_view));
       adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
       adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
     }
+    g_ptr_array_unref (queue);
   }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
-    g_hash_table_remove_all (self->album_covers);
     gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
 
     g_object_set (G_OBJECT (self->queue_status_page),
@@ -400,8 +450,10 @@ polyhymnia_queue_pane_mpd_client_initialized (PolyhymniaQueuePane *self,
   }
   else
   {
+    g_cancellable_cancel (self->album_covers_cancellable);
+    g_cancellable_cancel (self->playlists_cancellable);
     g_cancellable_cancel (self->queue_cancellable);
-    g_hash_table_remove_all (self->album_covers);
+    g_clear_pointer (&(self->album_covers), g_hash_table_unref);
     g_hash_table_remove_all (self->known_playlists);
     g_list_store_remove_all (self->queue_model);
   }
@@ -415,6 +467,8 @@ polyhymnia_queue_pane_mpd_queue_modified (PolyhymniaQueuePane *self,
 
   if (self->queue_cancellable == NULL)
   {
+    g_cancellable_cancel (self->album_covers_cancellable);
+    g_clear_pointer (&(self->album_covers), g_hash_table_unref);
     self->queue_cancellable = g_cancellable_new ();
     polyhymnia_mpd_client_get_queue_async (user_data, self->queue_cancellable,
                                            polyhymnia_queue_pane_get_queue_callback,
@@ -564,7 +618,7 @@ polyhymnia_queue_pane_remove_button_clicked (PolyhymniaQueuePane *self,
 static void
 polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
                                                  GAsyncResult *result,
-                                                 gpointer      user_data)
+                                                 void         *user_data)
 {
   GError *error = NULL;
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
@@ -598,8 +652,8 @@ polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
 
 static void
 polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane *self,
-                                         guint               position,
-                                         guint               n_items,
+                                         unsigned int         position,
+                                         unsigned int         n_items,
                                          GtkSelectionModel   *user_data)
 {
   gboolean  not_first = FALSE;
@@ -625,8 +679,8 @@ polyhymnia_queue_pane_selection_changed (PolyhymniaQueuePane *self,
 
 static void
 polyhymnia_queue_pane_track_activated (PolyhymniaQueuePane *self,
-                                       guint                position,
-                                       GtkColumnView        *user_data)
+                                       unsigned int         position,
+                                       GtkColumnView       *user_data)
 {
   PolyhymniaTrack *track;
 
@@ -642,8 +696,8 @@ polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
                                   GtkListItem              *object,
                                   GtkSignalListItemFactory *user_data)
 {
-  const gchar *album;
-  GtkGrid  *track_root;
+  const gchar     *album;
+  GtkGrid         *track_root;
   PolyhymniaTrack *track;
 
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
@@ -652,7 +706,8 @@ polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
   track = gtk_list_item_get_item (object);
 
   album = polyhymnia_track_get_album (track);
-  if (album != NULL && g_hash_table_contains (self->album_covers, album))
+  if (album != NULL && self->album_covers != NULL
+      && g_hash_table_contains (self->album_covers, album))
   {
     gtk_image_set_from_paintable (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
                                   g_hash_table_lookup (self->album_covers, album));
@@ -670,6 +725,33 @@ polyhymnia_queue_pane_track_bind (PolyhymniaQueuePane      *self,
                       polyhymnia_track_get_album (track));
   gtk_label_set_text (GTK_LABEL (gtk_grid_get_child_at (track_root, 3, 0)),
                       polyhymnia_track_get_duration_readable (track));
+}
+
+static void
+polyhymnia_queue_pane_track_title_column_covers_ready (PolyhymniaQueuePane *self,
+                                                       GtkListItem         *object)
+{
+  const gchar     *album;
+  GtkGrid         *track_root;
+  PolyhymniaTrack *track;
+
+  g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+
+  track_root = GTK_GRID (gtk_list_item_get_child (object));
+  track = gtk_list_item_get_item (object);
+
+  album = polyhymnia_track_get_album (track);
+  if (album != NULL && self->album_covers != NULL
+      && g_hash_table_contains (self->album_covers, album))
+  {
+    gtk_image_set_from_paintable (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
+                                  g_hash_table_lookup (self->album_covers, album));
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (GTK_IMAGE (gtk_grid_get_child_at (track_root, 0, 0)),
+                                  "image-missing-symbolic");
+  }
 }
 
 static void
@@ -724,6 +806,10 @@ polyhymnia_queue_pane_track_setup (PolyhymniaQueuePane      *self,
   gtk_grid_attach (track_root, GTK_WIDGET (duration_label), 3, 0, 1, 2);
 
   gtk_list_item_set_child (object, GTK_WIDGET (track_root));
+
+  g_signal_connect (self, "albums-covers-ready",
+                    G_CALLBACK (polyhymnia_queue_pane_track_title_column_covers_ready),
+                    object);
 }
 
 static void
@@ -732,6 +818,7 @@ polyhymnia_queue_pane_track_teardown (PolyhymniaQueuePane      *self,
                                       GtkSignalListItemFactory *user_data)
 {
   g_assert (POLYHYMNIA_IS_QUEUE_PANE (self));
+  g_signal_handlers_disconnect_by_data (self, object);
 }
 
 static void
@@ -798,15 +885,41 @@ polyhymnia_queue_pane_up_button_clicked (PolyhymniaQueuePane *self,
 
 /* Private methods implementation */
 static void
-polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
-                                   GPtrArray             *tracks)
+polyhymnia_queue_pane_get_albums_covers_async (PolyhymniaQueuePane *self,
+                                               GPtrArray           *tracks,
+                                               GCancellable        *cancellable,
+                                               GAsyncReadyCallback  callback,
+                                               void                *user_data)
 {
-  GError *error = NULL;
+  GTask *task;
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_task_data (task, g_ptr_array_ref (tracks),
+                        (GDestroyNotify) g_ptr_array_unref);
+  g_task_set_source_tag (task, polyhymnia_queue_pane_get_albums_covers_async);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_run_in_thread (task, polyhymnia_queue_pane_get_albums_covers_async_thread);
+  g_object_unref (task);
+}
+
+static void
+polyhymnia_queue_pane_get_albums_covers_async_thread (GTask         *task,
+                                                      void          *source_object,
+                                                      void          *task_data,
+                                                      GCancellable  *cancellable)
+{
+  GHashTable          *album_covers = g_hash_table_new_full (g_str_hash,
+                                                             g_str_equal,
+                                                             g_free,
+                                                             g_object_unref);
+  PolyhymniaQueuePane *self = source_object;
+  GPtrArray           *tracks = task_data;
   for (int i = 0; i < tracks->len; i++)
   {
+    GError                *error = NULL;
     const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
-    const gchar *album = polyhymnia_track_get_album (track);
-    if (album != NULL && !g_hash_table_contains(self->album_covers, album))
+    const gchar           *album = polyhymnia_track_get_album (track);
+    if (album != NULL && !g_hash_table_contains(album_covers, album))
     {
       GBytes *cover;
       cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
@@ -816,7 +929,6 @@ polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
       {
         g_warning ("Failed to get album cover: %s\n", error->message);
         g_error_free (error);
-        error = NULL;
       }
       else if (cover != NULL)
       {
@@ -826,17 +938,31 @@ polyhymnia_queue_pane_fill_covers (PolyhymniaQueuePane *self,
         {
           g_warning ("Failed to convert album cover: %s\n", error->message);
           g_error_free (error);
-          error = NULL;
         }
         else
         {
-          g_hash_table_insert (self->album_covers,
-                               g_strdup (album),
-                               album_cover);
+          g_hash_table_insert (album_covers, g_strdup (album), album_cover);
         }
         g_bytes_unref (cover);
       }
     }
   }
+
+  if (g_task_set_return_on_cancel (task, FALSE))
+  {
+    g_task_return_pointer (task, album_covers, (GDestroyNotify) g_hash_table_unref);
+  }
+  else
+  {
+    g_hash_table_unref (album_covers);
+  }
 }
 
+static GHashTable *
+polyhymnia_queue_pane_get_albums_covers_finish (PolyhymniaQueuePane *self,
+                                                GAsyncResult        *result,
+                                                GError             **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
+}

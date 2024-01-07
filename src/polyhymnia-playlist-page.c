@@ -363,8 +363,8 @@ polyhymnia_playlist_page_get_albums_covers_callback (GObject      *source_object
                                                      GAsyncResult *result,
                                                      void         *user_data)
 {
-  GHashTable            *album_covers;
-  GError                *error = NULL;
+  GHashTable             *album_covers;
+  GError                 *error = NULL;
   PolyhymniaPlaylistPage *self = POLYHYMNIA_PLAYLIST_PAGE (source_object);
 
   album_covers = polyhymnia_playlist_page_get_albums_covers_finish (self, result,
