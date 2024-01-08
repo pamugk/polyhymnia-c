@@ -29,8 +29,28 @@
             "buildsystem" : "meson",
             "sources" : [
                 {
-                    "type" : "git",
-                    "url" : "file:///home/admin/Projects/C"
+                    "type" : "dir",
+                    "path" : "."
+                }
+            ],
+            "modules" : [
+                {
+              	    "name" : "libmpdclient",
+              	    "buildsystem" : "meson",
+              	    "sources" : [
+              	        {
+              	            "type" : "archive",
+              	            "url" : "https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz",
+              	            "sha256": "18793f68e939c3301e34d8fcadea1f7daa24143941263cecadb80126194e277d",
+              	            "x-checker-data" :
+              	            {
+			        "type" : "anitya",
+			        "project-id" : 21364,
+			        "stable-only" : true,
+			        "url-template" : "https://www.musicpd.org/download/libmpdclient/$version0/libmpdclient-$version0.$version1.tar.xz"
+              	            }
+              	        }
+              	    ]
                 }
             ]
         }

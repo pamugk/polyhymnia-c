@@ -2,8 +2,49 @@
 <component type="desktop">
 	<id>com.github.pamugk.polyhymnia.desktop</id>
 	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>LicenseRef-proprietary</project_license>
+	<project_license>GPL-3.0+</project_license>
+
+  <content_rating type="oars-1.0" />
 	<description>
-	  <p>No description</p>
+	  <p>Polyhymnia is a basic MPD frontend, build with LibAdwaita and GTK</p>
 	</description>
+  <name>Polyhymnia</name>
+  <summary>Manage music library and play music with MPD</summary>
+  <url type="homepage">https://github.com/pamugk/polyhymnia-c</url>
+
+  <launchable type="desktop-id">com.github.pamugk.polyhymnia.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Recently modified page</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/recently-modified-full.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Artist discography page</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/discography.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Album page</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/album.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Tracks page</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/tracks.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Playlist page</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/playlist.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Queue pane</caption>
+      <image>https://raw.githubusercontent.com/pamugk/polyhymnia-c/master/docs/queue.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="0.1.0" date="2024-01-08">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
 </component>
