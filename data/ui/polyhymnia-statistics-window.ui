@@ -153,6 +153,12 @@
     <property name="icon-name">error-symbolic</property>
     <property name="title" translatable="yes">Failed to fetch statistics</property>
   </object>
+  <object class="GtkSpinner" id="spinner">
+    <property name="halign">center</property>
+    <property name="height-request">64</property>
+    <property name="valign">center</property>
+    <property name="width-request">64</property>
+  </object>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"

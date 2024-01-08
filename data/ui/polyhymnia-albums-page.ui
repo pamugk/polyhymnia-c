@@ -25,6 +25,12 @@
       </object>
     </property>
   </object>
+  <object class="GtkSpinner" id="albums_spinner">
+    <property name="halign">center</property>
+    <property name="height-request">64</property>
+    <property name="valign">center</property>
+    <property name="width-request">64</property>
+  </object>
   <object class="AdwStatusPage" id="albums_status_page" />
 
   <object class="PolyhymniaMpdClient" id="mpd_client">

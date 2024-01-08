@@ -7,6 +7,12 @@
     <property name="title" translatable="yes">Artists</property>
   </template>
 
+  <object class="GtkSpinner" id="artists_spinner">
+    <property name="halign">center</property>
+    <property name="height-request">64</property>
+    <property name="valign">center</property>
+    <property name="width-request">64</property>
+  </object>
   <object class="AdwNavigationSplitView" id="artists_split_view">
     <property name="sidebar">
       <object class="AdwNavigationPage">
@@ -59,6 +65,7 @@
       </object>
     </property>
   </object>
+  <object class="AdwStatusPage" id="artists_status_page" />
 
   <object class="GtkColumnView" id="artist_discography_column_view">
     <child>
@@ -131,7 +138,12 @@
       handler="polyhymnia_artists_page_track_activated"
       swapped="true" />
   </object>
-  <object class="AdwStatusPage" id="artists_status_page" />
+  <object class="GtkSpinner" id="artist_discography_spinner">
+    <property name="halign">center</property>
+    <property name="height-request">48</property>
+    <property name="valign">center</property>
+    <property name="width-request">48</property>
+  </object>
   <object class="AdwStatusPage" id="artist_discography_status_page" />
 
   <object class="PolyhymniaMpdClient" id="mpd_client">

@@ -8,7 +8,7 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <child type="start">
-              <object class="GtkMenuButton">
+              <object class="GtkMenuButton" id="new_playlist_button">
                 <property name="direction">left</property>
                 <property name="has-tooltip">true</property>
                 <property name="icon-name">playlist-symbolic</property>
@@ -180,6 +180,12 @@
       swapped="true" />
   </object>
   <object class="AdwStatusPage" id="queue_status_page" />
+  <object class="GtkSpinner" id="spinner">
+    <property name="halign">center</property>
+    <property name="height-request">32</property>
+    <property name="valign">center</property>
+    <property name="width-request">32</property>
+  </object>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="notify::initialized"

@@ -19,8 +19,16 @@ struct _PolyhymniaTrackDetailsWindow
 {
   AdwWindow parent_instance;
 
+  /* Stored UI state */
+  GCancellable        *song_details_cancellable;
+
   /* Template widgets */
   AdwNavigationView   *root_navigation_view;
+
+  AdwStatusPage       *error_status_page;
+  AdwClamp            *main_content;
+  GtkScrolledWindow   *main_scrolled_window;
+  GtkSpinner          *spinner;
 
   GtkImage            *album_cover_image;
   GtkLabel            *track_title_label;
@@ -86,6 +94,11 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* Event handlers declaration */
 static void
+polyhymnia_track_details_window_get_song_details_callback (GObject *source_object,
+                                                           GAsyncResult *result,
+                                                           gpointer user_data);
+
+static void
 polyhymnia_track_details_window_mpd_client_initialized (PolyhymniaTrackDetailsWindow *self,
                                                         GParamSpec                   *pspec,
                                                         PolyhymniaMpdClient          *user_data);
@@ -97,9 +110,6 @@ polyhymnia_track_details_window_mpd_database_updated (PolyhymniaTrackDetailsWind
 /* Private methods declaration */
 static void
 polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self);
-
-static void
-polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self);
 
 /* Class stuff */
 static void
@@ -117,6 +127,7 @@ polyhymnia_track_details_window_dispose(GObject *gobject)
 {
   PolyhymniaTrackDetailsWindow *self = POLYHYMNIA_TRACK_DETAILS_WINDOW (gobject);
 
+  g_cancellable_cancel (self->song_details_cancellable);
   g_clear_pointer (&(self->track_uri), g_free);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_TRACK_DETAILS_WINDOW);
 
@@ -190,6 +201,11 @@ polyhymnia_track_details_window_class_init (PolyhymniaTrackDetailsWindowClass *k
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, root_navigation_view);
 
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, error_status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, main_content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, main_scrolled_window);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, spinner);
+
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, album_cover_image);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, track_title_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsWindow, album_title_label);
@@ -257,93 +273,20 @@ polyhymnia_track_details_window_init (PolyhymniaTrackDetailsWindow *self)
 
 /* Event handlers implementation */
 static void
-polyhymnia_track_details_window_mpd_client_initialized (PolyhymniaTrackDetailsWindow *self,
-                                                        GParamSpec                   *pspec,
-                                                        PolyhymniaMpdClient          *user_data)
+polyhymnia_track_details_window_get_song_details_callback (GObject *source_object,
+                                                           GAsyncResult *result,
+                                                           gpointer user_data)
 {
-  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_WINDOW (self));
-
-  if (polyhymnia_mpd_client_is_initialized (user_data))
-  {
-    polyhymnia_track_details_window_mpd_database_updated (self, user_data);
-  }
-  else
-  {
-    gtk_window_close (GTK_WINDOW (self));
-  }
-}
-
-static void
-polyhymnia_track_details_window_mpd_database_updated (PolyhymniaTrackDetailsWindow *self,
-                                                      PolyhymniaMpdClient          *user_data)
-{
-  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_WINDOW (self));
-
-  polyhymnia_track_details_window_fill_cover (self);
-  polyhymnia_track_details_window_fill_details (self);
-}
-
-/* Private methods implementation */
-static void
-polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
-{
-  GError *error = NULL;
-  GBytes *cover;
-  cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
-                                                      self->track_uri,
-                                                      &error);
-
-  if (error != NULL)
-  {
-    g_warning ("Failed to get album cover: %s\n", error->message);
-    g_error_free (error);
-    error = NULL;
-    gtk_image_set_from_icon_name (self->album_cover_image,
-                                  "image-missing-symbolic");
-  }
-  else if (cover != NULL)
-  {
-    GdkTexture *cover_texture = gdk_texture_new_from_bytes (cover, &error);
-    if (error != NULL)
-    {
-      g_warning ("Failed to convert album cover: %s\n", error->message);
-      g_error_free (error);
-      error = NULL;
-      gtk_image_set_from_icon_name (self->album_cover_image,
-                                    "image-missing-symbolic");
-    }
-    else
-    {
-      gtk_image_set_from_paintable (self->album_cover_image,
-                                    GDK_PAINTABLE (cover_texture));
-      g_object_unref (cover_texture);
-    }
-    g_bytes_unref (cover);
-  }
-  else
-  {
-    gtk_image_set_from_icon_name (self->album_cover_image,
-                                  "image-missing-symbolic");
-  }
-}
-
-static void
-polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self)
-{
-  GError *error = NULL;
   PolyhymniaTrackFullInfo *details;
+  GError *error = NULL;
+  PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
+  PolyhymniaTrackDetailsWindow *self = user_data;
 
-  details = polyhymnia_mpd_client_get_song_details (self->mpd_client,
-                                                    self->track_uri,
-                                                    &error);
+  details = polyhymnia_mpd_client_get_song_details_finish (mpd_client,
+                                                           result,
+                                                           &error);
 
-  if (error != NULL)
-  {
-    g_warning ("Failed to get track details: %s\n", error->message);
-    g_error_free (error);
-    error = NULL;
-  }
-  else
+  if (error == NULL)
   {
     const char *title = NULL;
     const char *album = NULL;
@@ -515,10 +458,110 @@ polyhymnia_track_details_window_fill_details (PolyhymniaTrackDetailsWindow *self
                             gtk_widget_get_visible (GTK_WIDGET (self->personnel_row))
                             || gtk_widget_get_visible (GTK_WIDGET (self->legal_row)));
 
-
+    gtk_scrolled_window_set_child (self->main_scrolled_window,
+                                   GTK_WIDGET (self->main_content));
     if (details != NULL)
     {
       g_object_unref (details);
     }
+  }
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    gtk_scrolled_window_set_child (self->main_scrolled_window,
+                                   GTK_WIDGET (self->error_status_page));
+    g_warning ("Failed to get track details: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    g_clear_object (&(self->song_details_cancellable));
+    return;
+  }
+
+  gtk_spinner_stop (self->spinner);
+  g_clear_object (&(self->song_details_cancellable));
+}
+
+static void
+polyhymnia_track_details_window_mpd_client_initialized (PolyhymniaTrackDetailsWindow *self,
+                                                        GParamSpec                   *pspec,
+                                                        PolyhymniaMpdClient          *user_data)
+{
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_WINDOW (self));
+
+  if (polyhymnia_mpd_client_is_initialized (user_data))
+  {
+    polyhymnia_track_details_window_mpd_database_updated (self, user_data);
+  }
+  else
+  {
+    gtk_window_close (GTK_WINDOW (self));
+  }
+}
+
+static void
+polyhymnia_track_details_window_mpd_database_updated (PolyhymniaTrackDetailsWindow *self,
+                                                      PolyhymniaMpdClient          *user_data)
+{
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_WINDOW (self));
+
+  polyhymnia_track_details_window_fill_cover (self);
+
+  if (self->song_details_cancellable == NULL)
+  {
+    self->song_details_cancellable = g_cancellable_new ();
+    polyhymnia_mpd_client_get_song_details_async (self->mpd_client,
+                                                  self->track_uri,
+                                                  self->song_details_cancellable,
+                                                  polyhymnia_track_details_window_get_song_details_callback,
+                                                  self);
+    gtk_spinner_start (self->spinner);
+    gtk_scrolled_window_set_child (self->main_scrolled_window,
+                                   GTK_WIDGET (self->spinner));
+  }
+}
+
+/* Private methods implementation */
+static void
+polyhymnia_track_details_window_fill_cover (PolyhymniaTrackDetailsWindow *self)
+{
+  GError *error = NULL;
+  GBytes *cover;
+  cover = polyhymnia_mpd_client_get_song_album_cover (self->mpd_client,
+                                                      self->track_uri,
+                                                      &error);
+
+  if (error != NULL)
+  {
+    g_warning ("Failed to get album cover: %s\n", error->message);
+    g_error_free (error);
+    error = NULL;
+    gtk_image_set_from_icon_name (self->album_cover_image,
+                                  "image-missing-symbolic");
+  }
+  else if (cover != NULL)
+  {
+    GdkTexture *cover_texture = gdk_texture_new_from_bytes (cover, &error);
+    if (error != NULL)
+    {
+      g_warning ("Failed to convert album cover: %s\n", error->message);
+      g_error_free (error);
+      error = NULL;
+      gtk_image_set_from_icon_name (self->album_cover_image,
+                                    "image-missing-symbolic");
+    }
+    else
+    {
+      gtk_image_set_from_paintable (self->album_cover_image,
+                                    GDK_PAINTABLE (cover_texture));
+      g_object_unref (cover_texture);
+    }
+    g_bytes_unref (cover);
+  }
+  else
+  {
+    gtk_image_set_from_icon_name (self->album_cover_image,
+                                  "image-missing-symbolic");
   }
 }
