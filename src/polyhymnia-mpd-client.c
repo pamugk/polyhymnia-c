@@ -1580,6 +1580,7 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
   struct mpd_connection *connection;
   GByteArray            *cover_array;
   GError                *inner_error = NULL;
+  bool                   received_albumart = FALSE;
 
   g_return_val_if_fail (POLYHYMNIA_IS_MPD_CLIENT (self), NULL);
   g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -1593,14 +1594,16 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
   }
 
   cover_array = g_byte_array_sized_new (IMAGE_BUFFER_SIZE * 115);
+  // First check on separate album art file
   for (unsigned int offset = 0; ; offset += IMAGE_BUFFER_SIZE)
   {
     uint8_t buffer[IMAGE_BUFFER_SIZE];
-    int     read_size = mpd_run_readpicture (connection,
-                                             song_uri, offset, buffer,
-                                             IMAGE_BUFFER_SIZE);
+    int     read_size = mpd_run_albumart (connection,
+                                          song_uri, offset, buffer,
+                                          IMAGE_BUFFER_SIZE);
     if (read_size > 0)
     {
+      received_albumart = TRUE;
       g_byte_array_append (cover_array, buffer, read_size);
       if (read_size < IMAGE_BUFFER_SIZE)
       {
@@ -1619,8 +1622,8 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
         // If a server error occurred, let's pretend that
         // cover size in bytes is divisible by buffer size,
         // so client didn't stop sending requests in time.
-        if (read_error != MPD_ERROR_SERVER
-            || mpd_connection_get_server_error (connection) != MPD_SERVER_ERROR_ARG)
+        if (received_albumart && (read_error != MPD_ERROR_SERVER
+            || mpd_connection_get_server_error (connection) != MPD_SERVER_ERROR_ARG))
         {
           g_set_error (error,
                        POLYHYMNIA_MPD_CLIENT_ERROR,
@@ -1633,6 +1636,52 @@ polyhymnia_mpd_client_get_song_album_cover (PolyhymniaMpdClient *self,
         mpd_connection_clear_error (connection);
       }
       break;
+    }
+  }
+  // Then check embedded album cover if necessary.
+  if (!received_albumart)
+  {
+    for (unsigned int offset = 0; ; offset += IMAGE_BUFFER_SIZE)
+    {
+      uint8_t buffer[IMAGE_BUFFER_SIZE];
+      int     read_size = mpd_run_readpicture (connection,
+                                               song_uri, offset, buffer,
+                                               IMAGE_BUFFER_SIZE);
+      if (read_size > 0)
+      {
+        g_byte_array_append (cover_array, buffer, read_size);
+        if (read_size < IMAGE_BUFFER_SIZE)
+        {
+          break;
+        }
+      }
+      else if (read_size == 0)
+      {
+        break;
+      }
+      else
+      {
+        enum mpd_error read_error = mpd_connection_get_error (connection);
+        if (read_error != MPD_ERROR_SUCCESS)
+        {
+          // If a server error occurred, let's pretend that
+          // cover size in bytes is divisible by buffer size,
+          // so client didn't stop sending requests in time.
+          if (read_error != MPD_ERROR_SERVER
+              || mpd_connection_get_server_error (connection) != MPD_SERVER_ERROR_ARG)
+          {
+            g_set_error (error,
+                         POLYHYMNIA_MPD_CLIENT_ERROR,
+                         POLYHYMNIA_MPD_CLIENT_ERROR_FAIL,
+                         "failed to read portion of cover image - %s",
+                         mpd_connection_get_error_message (connection));
+            g_byte_array_unref (cover_array);
+            cover_array = NULL;
+          }
+          mpd_connection_clear_error (connection);
+        }
+        break;
+      }
     }
   }
   mpd_connection_free (connection);
