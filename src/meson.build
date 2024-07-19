@@ -10,6 +10,7 @@ polyhymnia_sources = [
   'polyhymnia-application.c',
   'polyhymnia-audio-format.c',
   'polyhymnia-format-utils.c',
+  'polyhymnia-genius-client.c',
   'polyhymnia-last-modified-page.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-output.c',
@@ -39,6 +40,7 @@ polyhymnia_deps = [
   dependency('gtk4', version: '>= 4.11.5'),
   dependency('libadwaita-1', version: '>= 1.4'),
   dependency('libmpdclient', version: '>= 2.20'),
+  dependency('libsoup-3.0'),
 ]
 
 executable('polyhymnia', polyhymnia_sources + enums + resources,
