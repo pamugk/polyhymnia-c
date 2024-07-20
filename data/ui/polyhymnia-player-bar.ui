@@ -161,6 +161,10 @@
           <object class="GtkToggleButton" id="lyrics_button">
             <property name="has-tooltip">true</property>
             <property name="icon-name">subtitles-symbolic</property>
+	    <property name="sensitive"
+	      bind-source="player"
+	      bind-property="active"
+	      bind-flags="sync-create" />
             <property name="tooltip-text" translatable="yes">Lyrics</property>
             <property name="valign">center</property>
             <signal name="toggled"

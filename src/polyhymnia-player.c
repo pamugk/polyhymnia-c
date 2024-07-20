@@ -329,7 +329,7 @@ polyhymnia_player_change_volume (PolyhymniaPlayer *self,
                                        volume_diff, error);
 }
 
-const PolyhymniaTrack *
+PolyhymniaTrack *
 polyhymnia_player_get_current_track (PolyhymniaPlayer *self)
 {
   return self->current_track;

@@ -52,12 +52,18 @@
     <property name="width-request">32</property>
   </object>
 
+  <object class="PolyhymniaLyricsProvider" id="lyrics_provider" />
+
   <object class="PolyhymniaMpdClient" id="mpd_client">
-    <signal name="notify::current-track"
-      handler="polyhymnia_current_lyrics_pane_current_track_changed"
-      swapped="true" />
     <signal name="notify::initialized"
       handler="polyhymnia_current_lyrics_pane_mpd_client_initialized"
       swapped="true" />
   </object>
+
+  <object class="PolyhymniaPlayer" id="player">
+    <signal name="notify::current-track"
+      handler="polyhymnia_current_lyrics_pane_current_track_changed"
+      swapped="true" />
+  </object>
+
 </interface>

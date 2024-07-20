@@ -233,6 +233,8 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
     gtk_image_set_from_icon_name (self->current_track_cover_image,
                                   "image-missing-symbolic");
     g_clear_object (&self->current_track_album_cover);
+
+    gtk_toggle_button_set_active (self->lyrics_button, FALSE);
   }
   else
   {

@@ -11,8 +11,8 @@ polyhymnia_sources = [
   'polyhymnia-audio-format.c',
   'polyhymnia-current-lyrics-pane.c',
   'polyhymnia-format-utils.c',
-  'polyhymnia-genius-client.c',
   'polyhymnia-last-modified-page.c',
+  'polyhymnia-lyrics-provider.c',
   'polyhymnia-mpd-client.c',
   'polyhymnia-output.c',
   'polyhymnia-player.c',
@@ -39,7 +39,8 @@ enums = gnome.mkenums_simple('polyhymnia-enums', sources : polyhymnia_enum_heade
 
 polyhymnia_deps = [
   dependency('gtk4', version: '>= 4.11.5'),
-  dependency('libadwaita-1', version: '>= 1.4'),
+  dependency('json-glib-1.0', version: '>= 1.2'),
+  dependency('libadwaita-1', version: '>= 1.5'),
   dependency('libmpdclient', version: '>= 2.20'),
   dependency('libsoup-3.0'),
 ]
