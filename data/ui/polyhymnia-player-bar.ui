@@ -158,12 +158,14 @@
 	  </object>
 	</child>
         <child type="end">
-          <object class="GtkToggleButton">
+          <object class="GtkToggleButton" id="lyrics_button">
             <property name="has-tooltip">true</property>
             <property name="icon-name">subtitles-symbolic</property>
-            <property name="sensitive">false</property>
             <property name="tooltip-text" translatable="yes">Lyrics</property>
             <property name="valign">center</property>
+            <signal name="toggled"
+              handler="polyhymnia_player_bar_lyrics_toggled"
+              swapped="true" />
           </object>
         </child>
         <child type="end">
@@ -172,6 +174,9 @@
             <property name="icon-name">music-queue-symbolic</property>
             <property name="tooltip-text" translatable="yes">Queue</property>
             <property name="valign">center</property>
+            <signal name="toggled"
+              handler="polyhymnia_player_bar_queue_toggled"
+              swapped="true" />
           </object>
         </child>
         <child type="end">

@@ -26,6 +26,7 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-search-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-tracks-page.ui</file>
 
+    <file preprocess="xml-stripblanks">ui/polyhymnia-current-lyrics-pane.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-window.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-queue-pane.ui</file>

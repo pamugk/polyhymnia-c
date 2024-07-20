@@ -9,6 +9,7 @@ polyhymnia_sources = [
   'polyhymnia-artist.c',
   'polyhymnia-application.c',
   'polyhymnia-audio-format.c',
+  'polyhymnia-current-lyrics-pane.c',
   'polyhymnia-format-utils.c',
   'polyhymnia-genius-client.c',
   'polyhymnia-last-modified-page.c',
