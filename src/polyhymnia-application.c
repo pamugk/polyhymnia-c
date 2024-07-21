@@ -4,9 +4,9 @@
 #include "polyhymnia-application.h"
 #include "polyhymnia-mpd-client-core.h"
 #include "polyhymnia-player.h"
-#include "polyhymnia-preferences-window.h"
-#include "polyhymnia-statistics-window.h"
-#include "polyhymnia-track-details-window.h"
+#include "polyhymnia-preferences-dialog.h"
+#include "polyhymnia-statistics-dialog.h"
+#include "polyhymnia-track-details-dialog.h"
 #include "polyhymnia-window.h"
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -114,7 +114,7 @@ polyhymnia_application_about_action (GSimpleAction *action,
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  adw_show_about_window (window,
+  adw_show_about_dialog (GTK_WIDGET (window),
 	                 "application-name", "Polyhymnia",
 	                 "application-icon", "com.github.pamugk.polyhymnia",
                          "comments", _("Simple MPD-based music player."),
@@ -146,20 +146,16 @@ polyhymnia_application_preferences_action (GSimpleAction *action,
                                            gpointer       user_data)
 {
   PolyhymniaApplication *self = user_data;
-  GtkWindow *window = NULL;
-  GtkWindow *preferences_window = NULL;
+  AdwDialog             *preferences_dialog;
+  GtkWindow             *window;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  preferences_window = g_object_new (POLYHYMNIA_TYPE_PREFERENCES_WINDOW,
-	                              "application", self,
-                                      "transient-for", window,
-		                      NULL);
-  gtk_window_set_modal (preferences_window, TRUE);
+  preferences_dialog = g_object_new (POLYHYMNIA_TYPE_PREFERENCES_DIALOG, NULL);
 
-  gtk_window_present (preferences_window);
+  adw_dialog_present (preferences_dialog, GTK_WIDGET (window));
 }
 
 static void
@@ -223,20 +219,16 @@ polyhymnia_application_statistics_action (GSimpleAction *action,
                                           gpointer       user_data)
 {
   PolyhymniaApplication *self = user_data;
-  GtkWindow *window = NULL;
-  GtkWindow *statistics_window = NULL;
+  AdwDialog             *statistics_dialog;
+  GtkWindow             *window;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  statistics_window = g_object_new (POLYHYMNIA_TYPE_STATISTICS_WINDOW,
-                                    "application", self,
-                                    "transient-for", window,
-                                    NULL);
-  gtk_window_set_modal (statistics_window, TRUE);
+  statistics_dialog = g_object_new (POLYHYMNIA_TYPE_STATISTICS_DIALOG, NULL);
 
-  gtk_window_present (statistics_window);
+  adw_dialog_present (statistics_dialog, GTK_WIDGET (window));
 }
 
 static void
@@ -245,21 +237,18 @@ polyhymnia_application_track_details_action (GSimpleAction *action,
                                              gpointer       user_data)
 {
   PolyhymniaApplication *self = user_data;
-  GtkWindow *window;
-  GtkWindow *track_details_window;
+  AdwDialog             *track_details_dialog;
+  GtkWindow             *window;
 
   g_assert (POLYHYMNIA_IS_APPLICATION (self));
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  track_details_window = g_object_new (POLYHYMNIA_TYPE_TRACK_DETAILS_WINDOW,
-                                       "application", self,
+  track_details_dialog = g_object_new (POLYHYMNIA_TYPE_TRACK_DETAILS_DIALOG,
                                        "track-uri", g_variant_get_string (parameter, NULL),
-                                       "transient-for", window,
                                        NULL);
-  gtk_window_set_modal (track_details_window, TRUE);
 
-  gtk_window_present (track_details_window);
+  adw_dialog_present (track_details_dialog, GTK_WIDGET (window));
 }
 
 static const GActionEntry app_actions[] = {

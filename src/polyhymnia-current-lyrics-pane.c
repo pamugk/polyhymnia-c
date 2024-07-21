@@ -4,6 +4,7 @@
 #include "polyhymnia-current-lyrics-pane.h"
 
 #include <libadwaita-1/adwaita.h>
+#include <webkit/webkit.h>
 
 #include "polyhymnia-lyrics-provider.h"
 #include "polyhymnia-mpd-client-common.h"
@@ -20,12 +21,11 @@ struct _PolyhymniaCurrentLyricsPane
   GCancellable        *lyrics_cancellable;
 
   /* Template widgets */
-  AdwToolbarView      *root_toolbar_view;
-  GtkScrolledWindow   *lyrics_page_content;
-  GtkLabel            *lyrics_label;
-  AdwStatusPage       *lyrics_status_page;
-  GtkTextView         *lyrics_text_view;
-  GtkSpinner          *spinner;
+  AdwToolbarView *root_toolbar_view;
+  AdwBin         *lyrics_page_content;
+  AdwStatusPage  *lyrics_status_page;
+  WebKitWebView  *lyrics_web_view;
+  GtkSpinner     *spinner;
 
   /* Template objects */
   PolyhymniaLyricsProvider *lyrics_provider;
@@ -40,6 +40,11 @@ static void
 polyhymnia_current_lyrics_pane_current_track_changed (PolyhymniaCurrentLyricsPane *self,
                                                       GParamSpec                  *pspec,
                                                       PolyhymniaPlayer            *user_data);
+
+static void
+polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed (PolyhymniaCurrentLyricsPane *self,
+                                                             WebKitLoadEvent              load_event,
+                                                             WebKitWebView               *user_data);
 
 static void
 polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
@@ -79,9 +84,8 @@ polyhymnia_current_lyrics_pane_class_init (PolyhymniaCurrentLyricsPaneClass *kla
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_page_content);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_status_page);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_text_view);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_web_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, spinner);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_provider);
@@ -91,13 +95,18 @@ polyhymnia_current_lyrics_pane_class_init (PolyhymniaCurrentLyricsPaneClass *kla
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_current_lyrics_pane_current_track_changed);
   gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_current_lyrics_pane_mpd_client_initialized);
 }
 
 static void
 polyhymnia_current_lyrics_pane_init (PolyhymniaCurrentLyricsPane *self)
 {
+  g_type_ensure (WEBKIT_TYPE_WEB_VIEW);
+
   g_type_ensure (POLYHYMNIA_TYPE_LYRICS_PROVIDER);
+  g_type_ensure (POLYHYMNIA_TYPE_MPD_CLIENT);
 
   gtk_widget_init_template (GTK_WIDGET (self));
 
@@ -114,8 +123,8 @@ polyhymnia_current_lyrics_pane_current_track_changed (PolyhymniaCurrentLyricsPan
 
   g_assert (POLYHYMNIA_IS_CURRENT_LYRICS_PANE (self));
 
-  adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, FALSE);
   adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, FALSE);
+  webkit_web_view_stop_loading (self->lyrics_web_view);
 
   current_track = polyhymnia_player_get_current_track (user_data);
   if (current_track == NULL)
@@ -123,20 +132,40 @@ polyhymnia_current_lyrics_pane_current_track_changed (PolyhymniaCurrentLyricsPan
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("No current song"),
                     NULL);
-      gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                     GTK_WIDGET (self->lyrics_status_page));
+      adw_bin_set_child (self->lyrics_page_content,
+                         GTK_WIDGET (self->lyrics_status_page));
   }
   else
   {
-    gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                   GTK_WIDGET (self->spinner));
+    PolyhymniaSearchLyricsRequest *search_lyrics_request;
+
+    search_lyrics_request = g_malloc (sizeof (PolyhymniaSearchLyricsRequest));
+    search_lyrics_request->artist = g_strdup (polyhymnia_track_get_artist (current_track));
+    search_lyrics_request->title = g_strdup (polyhymnia_track_get_title (current_track));
+
+    adw_bin_set_child (self->lyrics_page_content, GTK_WIDGET (self->spinner));
     gtk_spinner_start (self->spinner);
     self->lyrics_cancellable = g_cancellable_new ();
-    polyhymnia_lyrics_provider_search_track_lyrics_async (self->lyrics_provider,
-                                                          current_track,
-                                                          self->lyrics_cancellable,
-                                                          polyhymnia_current_lyrics_pane_search_lyrics_callback,
-                                                          self);
+    polyhymnia_lyrics_provider_search_lyrics_async (self->lyrics_provider,
+                                                    search_lyrics_request,
+                                                    self->lyrics_cancellable,
+                                                    polyhymnia_current_lyrics_pane_search_lyrics_callback,
+                                                    self);
+  }
+}
+
+static void
+polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed (PolyhymniaCurrentLyricsPane *self,
+                                                             WebKitLoadEvent              load_event,
+                                                             WebKitWebView               *user_data)
+{
+  g_assert (POLYHYMNIA_IS_CURRENT_LYRICS_PANE (self));
+
+  if (load_event == WEBKIT_LOAD_FINISHED)
+  {
+    adw_bin_set_child (self->lyrics_page_content,
+                       GTK_WIDGET (self->lyrics_web_view));
+    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
   }
 }
 
@@ -149,36 +178,35 @@ polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
   char                        *lyrics;
   PolyhymniaCurrentLyricsPane *self = POLYHYMNIA_CURRENT_LYRICS_PANE (user_data);
 
-  lyrics = polyhymnia_lyrics_provider_search_track_lyrics_finish (POLYHYMNIA_LYRICS_PROVIDER (source),
-                                                                  result,
-                                                                  &error);
+  lyrics = polyhymnia_lyrics_provider_search_lyrics_finish (POLYHYMNIA_LYRICS_PROVIDER (source),
+                                                            result,
+                                                            &error);
   if (error != NULL)
   {
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("Failed to find song lyrics"),
                     NULL);
-      gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                     GTK_WIDGET (self->lyrics_status_page));
+      adw_bin_set_child (self->lyrics_page_content,
+                         GTK_WIDGET (self->lyrics_status_page));
   }
   else if (lyrics == NULL)
   {
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("No song lyrics found"),
                     NULL);
-      gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                     GTK_WIDGET (self->lyrics_status_page));
+      adw_bin_set_child (self->lyrics_page_content,
+                         GTK_WIDGET (self->lyrics_status_page));
   }
   else
   {
-    char *lyrics_ui_text = g_strdup_printf ("Lyrics can be viewed <a href=\"%s\">here</a>", lyrics);
-    gtk_label_set_label (self->lyrics_label, lyrics_ui_text);
-    gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                   GTK_WIDGET (self->lyrics_label));
-    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
-    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
+    GString *lyrics_string = g_string_new_take (lyrics);
+    // This is needed to bypass problems with script download
+    g_string_replace (lyrics_string, "src='//", "src='https://", 0);
+    // This is needed to follow dark theme (if enabled)
+    g_string_prepend (lyrics_string, "<style>:root{color-scheme:light dark;} .rg_embed.music{background-color:transparent;}{background-color: transparent;}</style>");
+    webkit_web_view_load_html (self->lyrics_web_view, lyrics_string->str, NULL);
 
-    g_free (lyrics);
-    g_free (lyrics_ui_text);
+    g_string_free (lyrics_string, TRUE);
   }
 
   gtk_spinner_stop (self->spinner);
@@ -198,6 +226,7 @@ polyhymnia_current_lyrics_pane_mpd_client_initialized (PolyhymniaCurrentLyricsPa
   }
   else
   {
+    webkit_web_view_stop_loading (self->lyrics_web_view);
     g_cancellable_cancel (self->lyrics_cancellable);
   }
 }

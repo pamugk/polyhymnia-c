@@ -1,13 +1,13 @@
 
 #include "config.h"
 
-#include "polyhymnia-preferences-window.h"
+#include "polyhymnia-preferences-dialog.h"
 
 #include "polyhymnia-mpd-client-outputs.h"
 
-struct _PolyhymniaPreferencesWindow
+struct _PolyhymniaPreferencesDialog
 {
-  AdwPreferencesWindow  parent_instance;
+  AdwPreferencesDialog  parent_instance;
 
   /* Template widgets */
   AdwPreferencesGroup *audio_outputs_group;
@@ -25,69 +25,69 @@ struct _PolyhymniaPreferencesWindow
   GPtrArray           *output_rows;
 };
 
-G_DEFINE_FINAL_TYPE (PolyhymniaPreferencesWindow, polyhymnia_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
+G_DEFINE_FINAL_TYPE (PolyhymniaPreferencesDialog, polyhymnia_preferences_dialog, ADW_TYPE_PREFERENCES_DIALOG)
 
 /* Event handler declarations */
 static void
-polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindow *self,
+polyhymnia_preferences_dialog_mpd_client_initialized (PolyhymniaPreferencesDialog *self,
                                                       GParamSpec                  *pspec,
                                                       PolyhymniaMpdClient         *user_data);
 
 static void
-polyhymnia_preferences_window_output_state_changed (PolyhymniaPreferencesWindow *self,
+polyhymnia_preferences_dialog_output_state_changed (PolyhymniaPreferencesDialog *self,
                                                     GParamSpec                  *pspec,
                                                     PolyhymniaOutput            *output);
 
 /* Private methods declarations */
 static void
-polyhymnia_preferences_window_clear_outputs (PolyhymniaPreferencesWindow *self);
+polyhymnia_preferences_dialog_clear_outputs (PolyhymniaPreferencesDialog *self);
 
 /* Class stuff */
 static void
-polyhymnia_preferences_window_dispose(GObject *gobject)
+polyhymnia_preferences_dialog_dispose(GObject *gobject)
 {
-  PolyhymniaPreferencesWindow *self = POLYHYMNIA_PREFERENCES_WINDOW (gobject);
+  PolyhymniaPreferencesDialog *self = POLYHYMNIA_PREFERENCES_DIALOG (gobject);
 
-  polyhymnia_preferences_window_clear_outputs (self);
-  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PREFERENCES_WINDOW);
+  polyhymnia_preferences_dialog_clear_outputs (self);
+  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_PREFERENCES_DIALOG);
 
-  G_OBJECT_CLASS (polyhymnia_preferences_window_parent_class)->dispose (gobject);
+  G_OBJECT_CLASS (polyhymnia_preferences_dialog_parent_class)->dispose (gobject);
 }
 
 static void
-polyhymnia_preferences_window_finalize(GObject *gobject)
+polyhymnia_preferences_dialog_finalize(GObject *gobject)
 {
-  G_OBJECT_CLASS (polyhymnia_preferences_window_parent_class)->finalize (gobject);
+  G_OBJECT_CLASS (polyhymnia_preferences_dialog_parent_class)->finalize (gobject);
 }
 
 static void
-polyhymnia_preferences_window_class_init (PolyhymniaPreferencesWindowClass *klass)
+polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class->dispose = polyhymnia_preferences_window_dispose;
-  gobject_class->finalize = polyhymnia_preferences_window_finalize;
+  gobject_class->dispose = polyhymnia_preferences_dialog_dispose;
+  gobject_class->finalize = polyhymnia_preferences_dialog_finalize;
 
-  gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-preferences-window.ui");
+  gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-preferences-dialog.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, audio_outputs_group);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, resume_playback_switch);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, scan_startup_switch);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, audio_outputs_group);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, resume_playback_switch);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, scan_startup_switch);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, mpd_client);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesWindow, settings);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, mpd_client);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, settings);
 
   gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_preferences_window_mpd_client_initialized);
+                                           polyhymnia_preferences_dialog_mpd_client_initialized);
 }
 
 static void
-polyhymnia_preferences_window_init (PolyhymniaPreferencesWindow *self)
+polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  polyhymnia_preferences_window_mpd_client_initialized (self, NULL,
+  polyhymnia_preferences_dialog_mpd_client_initialized (self, NULL,
                                                         self->mpd_client);
   g_settings_bind (self->settings, "app-system-resume-playback",
                   self->resume_playback_switch, "active",
@@ -99,13 +99,13 @@ polyhymnia_preferences_window_init (PolyhymniaPreferencesWindow *self)
 
 /* Event handler implementations */
 static void
-polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindow *self,
+polyhymnia_preferences_dialog_mpd_client_initialized (PolyhymniaPreferencesDialog *self,
                                                       GParamSpec                  *pspec,
                                                       PolyhymniaMpdClient         *user_data)
 {
-  g_assert (POLYHYMNIA_IS_PREFERENCES_WINDOW (self));
+  g_assert (POLYHYMNIA_IS_PREFERENCES_DIALOG (self));
 
-  polyhymnia_preferences_window_clear_outputs (self);
+  polyhymnia_preferences_dialog_clear_outputs (self);
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
     GError *error = NULL;
@@ -128,7 +128,7 @@ polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindo
                                 output_row, "active",
                                 G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
         g_signal_connect_swapped (output, "notify::enabled",
-                                  (GCallback) polyhymnia_preferences_window_output_state_changed,
+                                  (GCallback) polyhymnia_preferences_dialog_output_state_changed,
                                   self);
         adw_preferences_group_add (self->audio_outputs_group, output_row);
         g_ptr_array_add (self->output_rows, output_row);
@@ -148,13 +148,13 @@ polyhymnia_preferences_window_mpd_client_initialized (PolyhymniaPreferencesWindo
 }
 
 static void
-polyhymnia_preferences_window_output_state_changed (PolyhymniaPreferencesWindow *self,
+polyhymnia_preferences_dialog_output_state_changed (PolyhymniaPreferencesDialog *self,
                                                     GParamSpec                  *pspec,
                                                     PolyhymniaOutput            *output)
 {
   GError *error = NULL;
 
-  g_assert (POLYHYMNIA_IS_PREFERENCES_WINDOW (self));
+  g_assert (POLYHYMNIA_IS_PREFERENCES_DIALOG (self));
   g_return_if_fail (POLYHYMNIA_IS_OUTPUT (output));
 
   polyhymnia_mpd_client_toggle_output (self->mpd_client,
@@ -171,7 +171,7 @@ polyhymnia_preferences_window_output_state_changed (PolyhymniaPreferencesWindow 
 
 /* Private methods implementations */
 static void
-polyhymnia_preferences_window_clear_outputs (PolyhymniaPreferencesWindow *self)
+polyhymnia_preferences_dialog_clear_outputs (PolyhymniaPreferencesDialog *self)
 {
   if (self->output_rows != NULL)
   {

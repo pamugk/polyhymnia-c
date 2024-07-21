@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="PolyhymniaPreferencesWindow" parent="AdwPreferencesWindow">
+  <template class="PolyhymniaPreferencesDialog" parent="AdwPreferencesDialog">
     <child>
       <object class="AdwPreferencesPage">
         <property name="icon-name">preferences-system-symbolic</property>
@@ -59,14 +59,11 @@
         </child>
       </object>
     </child>
-    <property name="destroy-with-parent">True</property>
-    <property name="icon-name">gtk-preferences</property>
-    <property name="modal">True</property>
   </template>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="notify::initialized"
-      handler="polyhymnia_preferences_window_mpd_client_initialized"
+      handler="polyhymnia_preferences_dialog_mpd_client_initialized"
       swapped="true" />
   </object>
   <object class="GSettings" id="settings">

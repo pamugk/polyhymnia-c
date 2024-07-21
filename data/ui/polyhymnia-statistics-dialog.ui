@@ -2,8 +2,8 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
-  <template class="PolyhymniaStatisticsWindow" parent="AdwWindow">
-    <property name="content">
+  <template class="PolyhymniaStatisticsDialog" parent="AdwDialog">
+    <property name="child">
       <object class="AdwToolbarView">
         <child type="top">
           <object class="AdwHeaderBar">
@@ -18,8 +18,8 @@
         </property>
       </object>
     </property>
-    <property name="default-height">320</property>
-    <property name="default-width">360</property>
+    <property name="content-height">320</property>
+    <property name="content-width">360</property>
     <property name="height-request">320</property>
     <property name="title" translatable="yes">Statistics</property>
     <property name="width-request">300</property>
@@ -162,10 +162,10 @@
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"
-      handler="polyhymnia_statistics_window_mpd_database_updated"
+      handler="polyhymnia_statistics_dialog_mpd_database_updated"
       swapped="true" />
     <signal name="notify::initialized"
-      handler="polyhymnia_statistics_window_mpd_client_initialized"
+      handler="polyhymnia_statistics_dialog_mpd_client_initialized"
       swapped="true" />
   </object>
 </interface>

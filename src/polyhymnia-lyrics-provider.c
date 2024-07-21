@@ -6,6 +6,16 @@
 #include <json-glib-1.0/json-glib/json-glib.h>
 #include <libsoup/soup.h>
 
+void
+polyhymnia_search_lyrics_request_free (PolyhymniaSearchLyricsRequest *self)
+{
+  g_return_if_fail (self != NULL);
+
+  g_free (self->artist);
+  g_free (self->title);
+  g_free (self);
+}
+
 /* Type metadata */
 struct _PolyhymniaLyricsProvider
 {
@@ -89,22 +99,24 @@ polyhymnia_lyrics_provider_init (PolyhymniaLyricsProvider *self)
 
 /* Instance methods */
 void
-polyhymnia_lyrics_provider_search_track_lyrics_async (PolyhymniaLyricsProvider *self,
-                                                      PolyhymniaTrack          *track,
-                                                      GCancellable             *cancellable,
-                                                      GAsyncReadyCallback       callback,
-                                                      void                     *user_data)
+polyhymnia_lyrics_provider_search_lyrics_async (PolyhymniaLyricsProvider      *self,
+                                                PolyhymniaSearchLyricsRequest *track_info,
+                                                GCancellable                  *cancellable,
+                                                GAsyncReadyCallback            callback,
+                                                void                          *user_data)
 {
   GTask            *task;
 
   g_assert (POLYHYMNIA_IS_LYRICS_PROVIDER (self));
+  g_assert_nonnull (track_info);
 
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_return_on_cancel (task, TRUE);
-  g_task_set_source_tag (task, polyhymnia_lyrics_provider_search_track_lyrics_async);
+  g_task_set_source_tag (task, polyhymnia_lyrics_provider_search_lyrics_async);
+  g_task_set_task_data (task, track_info,
+                        (GDestroyNotify) polyhymnia_search_lyrics_request_free);
 
-  if (polyhymnia_track_get_title (track) == NULL
-      || polyhymnia_track_get_artist (track) == NULL)
+  if (track_info->title == NULL || track_info->artist == NULL)
   {
     g_task_return_pointer (task, NULL, g_free);
   }
@@ -115,8 +127,8 @@ polyhymnia_lyrics_provider_search_track_lyrics_async (PolyhymniaLyricsProvider *
     SoupMessage      *message;
 
     genius_query = g_strjoin(" ",
-                             polyhymnia_track_get_title (track),
-                             polyhymnia_track_get_artist (track),
+                             track_info->title,
+                             track_info->artist,
                              NULL);
     genius_encoded_query = g_uri_escape_string (genius_query, NULL, FALSE);
     message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
@@ -124,8 +136,6 @@ polyhymnia_lyrics_provider_search_track_lyrics_async (PolyhymniaLyricsProvider *
                                                   g_strconcat ("q=", genius_encoded_query, NULL));
     soup_message_headers_append (soup_message_get_request_headers (message),
                                  "Authorization", "Bearer " POLYHYMNIA_GENIUS_CLIENT_ACCESS_TOKEN);
-
-    g_task_set_task_data (task, g_object_ref (track), g_object_unref);
 
     soup_session_send_async (self->common_session, message,
                              G_PRIORITY_DEFAULT, g_task_get_cancellable (task),
@@ -140,9 +150,9 @@ polyhymnia_lyrics_provider_search_track_lyrics_async (PolyhymniaLyricsProvider *
 }
 
 char *
-polyhymnia_lyrics_provider_search_track_lyrics_finish (PolyhymniaLyricsProvider *self,
-                                                       GAsyncResult             *result,
-                                                       GError                  **error)
+polyhymnia_lyrics_provider_search_lyrics_finish (PolyhymniaLyricsProvider *self,
+                                                 GAsyncResult             *result,
+                                                 GError                  **error)
 {
   g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
   return g_task_propagate_pointer (G_TASK (result), error);
@@ -194,20 +204,20 @@ polyhymnia_lyris_provider_genius_get_song_callback (GObject      *source,
       }
       else
       {
-        char *song_lyrics_uri;
+        char *song_lyrics_embeddable_content;
 
         json_reader_end_member (response_reader);
         json_reader_end_member (response_reader);
 
         json_reader_read_member (response_reader, "response");
         json_reader_read_member (response_reader, "song");
-        json_reader_read_member (response_reader, "url");
-        song_lyrics_uri = g_strdup (json_reader_get_string_value (response_reader));
+        json_reader_read_member (response_reader, "embed_content");
+        song_lyrics_embeddable_content = g_strdup (json_reader_get_string_value (response_reader));
         json_reader_end_member (response_reader);
         json_reader_end_member (response_reader);
         json_reader_end_member (response_reader);
 
-        g_task_return_pointer (task, song_lyrics_uri, g_free);
+        g_task_return_pointer (task, song_lyrics_embeddable_content, g_free);
       }
       g_object_unref (response_reader);
     }
@@ -262,10 +272,10 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
       }
       else
       {
-        gboolean         found_song = FALSE;
-        long             found_song_id;
-        int              hit_index = 0;
-        PolyhymniaTrack *processed_track = g_task_get_task_data (task);
+        gboolean                       found_song = FALSE;
+        long                           found_song_id;
+        int                            hit_index = 0;
+        PolyhymniaSearchLyricsRequest *processed_track = g_task_get_task_data (task);
 
         json_reader_end_member (response_reader);
         json_reader_end_member (response_reader);
@@ -289,12 +299,12 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
 
             // TODO: do fuzzy comparison?
             json_reader_read_member (response_reader, "primary_artist_names");
-            same_artist = g_strcmp0 (polyhymnia_track_get_artist (processed_track),
-                                    json_reader_get_string_value (response_reader)) == 0;
+            same_artist = g_strcmp0 (processed_track->artist,
+                                     json_reader_get_string_value (response_reader)) == 0;
             json_reader_end_member (response_reader);
 
             json_reader_read_member (response_reader, "title");
-            same_title = g_strcmp0 (polyhymnia_track_get_title (processed_track),
+            same_title = g_strcmp0 (processed_track->title,
                                     json_reader_get_string_value (response_reader)) == 0;
             json_reader_end_member (response_reader);
 

@@ -28,10 +28,10 @@
 
     <file preprocess="xml-stripblanks">ui/polyhymnia-current-lyrics-pane.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-queue-pane.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-statistics-window.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-track-details-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-statistics-dialog.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-track-details-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-window.ui</file>
 
     <file alias="gtk/help-overlay.ui" preprocess="xml-stripblanks">ui/gtk/help-overlay.ui</file>

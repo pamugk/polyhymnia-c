@@ -2,6 +2,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
+  <requires lib="WebKit" version="6.0"/>
   <template class="PolyhymniaCurrentLyricsPane" parent="GtkWidget">
     <child>
       <object class="AdwToolbarView" id="root_toolbar_view">
@@ -19,34 +20,16 @@
           </object>
         </child>
         <property name="content">
-          <object class="GtkScrolledWindow" id="lyrics_page_content" />
+          <object class="AdwBin" id="lyrics_page_content" />
         </property>
-        <child type="bottom">
-          <object class="GtkBox">
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">Powered by &lt;a href="https://genius.com/"&gt;Genius&lt;/a&gt;</property>
-                <property name="use-markup">true</property>
-                <property name="xalign">0</property>
-              </object>
-            </child>
-            <property name="orientation">vertical</property>
-            <style>
-              <class name="toolbar"/>
-            </style>
-          </object>
-        </child>
       </object>
     </child>
   </template>
 
-  <object class="GtkTextView" id="lyrics_text_view">
-    <property name="editable">false</property>
-    <property name="justification">center</property>
-  </object>
-  <object class="GtkLabel" id="lyrics_label">
-    <property name="use-markup">true</property>
-    <property name="wrap">true</property>
+  <object class="WebKitWebView" id="lyrics_web_view">
+    <signal name="load-changed"
+      handler="polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed"
+      swapped="true" />
   </object>
   <object class="AdwStatusPage" id="lyrics_status_page" />
   <object class="GtkSpinner" id="spinner">
