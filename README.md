@@ -42,7 +42,7 @@
 * [GTK](https://gitlab.gnome.org/GNOME/gtk/) - основа для UI.
 * [LibAdwaita](https://gitlab.gnome.org/GNOME/libadwaita) - дополнительные готовые UI-компоненты и стили.
 * [libmpdclient](https://github.com/MusicPlayerDaemon/libmpdclient) - взаимодейтвие с MPD,
-* [WebKit](https://github.com/WebKit/WebKit) - встраивание веб-содержимого.
+* [WebKitGtk](https://webkitgtk.org/) - встраивание веб-содержимого.
 
 Для функционирования проигрывателя также необходимы следующие компоненты:
 * [MPD](https://www.musicpd.org/) - управление базой песен и их воспроизведение.
