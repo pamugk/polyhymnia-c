@@ -44,6 +44,10 @@
     <property name="editable">false</property>
     <property name="justification">center</property>
   </object>
+  <object class="GtkLabel" id="lyrics_label">
+    <property name="use-markup">true</property>
+    <property name="wrap">true</property>
+  </object>
   <object class="AdwStatusPage" id="lyrics_status_page" />
   <object class="GtkSpinner" id="spinner">
     <property name="halign">center</property>

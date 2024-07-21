@@ -19,7 +19,7 @@ polyhymnia_lyrics_provider_search_track_lyrics_async (PolyhymniaLyricsProvider *
                                                       GAsyncReadyCallback       callback,
                                                       void                     *user_data);
 
-gboolean
+char *
 polyhymnia_lyrics_provider_search_track_lyrics_finish (PolyhymniaLyricsProvider *self,
                                                        GAsyncResult             *result,
                                                        GError                  **error);

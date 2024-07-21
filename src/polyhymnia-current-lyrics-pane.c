@@ -22,6 +22,7 @@ struct _PolyhymniaCurrentLyricsPane
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
   GtkScrolledWindow   *lyrics_page_content;
+  GtkLabel            *lyrics_label;
   AdwStatusPage       *lyrics_status_page;
   GtkTextView         *lyrics_text_view;
   GtkSpinner          *spinner;
@@ -78,6 +79,7 @@ polyhymnia_current_lyrics_pane_class_init (PolyhymniaCurrentLyricsPaneClass *kla
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_page_content);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_status_page);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_text_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, spinner);
@@ -144,7 +146,7 @@ polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
                                                        void         *user_data)
 {
   GError                      *error = NULL;
-  gboolean                     lyrics;
+  char                        *lyrics;
   PolyhymniaCurrentLyricsPane *self = POLYHYMNIA_CURRENT_LYRICS_PANE (user_data);
 
   lyrics = polyhymnia_lyrics_provider_search_track_lyrics_finish (POLYHYMNIA_LYRICS_PROVIDER (source),
@@ -158,7 +160,7 @@ polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
       gtk_scrolled_window_set_child (self->lyrics_page_content,
                                      GTK_WIDGET (self->lyrics_status_page));
   }
-  else if (!lyrics)
+  else if (lyrics == NULL)
   {
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("No song lyrics found"),
@@ -168,10 +170,15 @@ polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
   }
   else
   {
-    gtk_text_buffer_set_text (gtk_text_view_get_buffer (self->lyrics_text_view),
-                              "Stub song lyrics", -1);
+    char *lyrics_ui_text = g_strdup_printf ("Lyrics can be viewed <a href=\"%s\">here</a>", lyrics);
+    gtk_label_set_label (self->lyrics_label, lyrics_ui_text);
     gtk_scrolled_window_set_child (self->lyrics_page_content,
-                                   GTK_WIDGET (self->lyrics_text_view));
+                                   GTK_WIDGET (self->lyrics_label));
+    adw_toolbar_view_set_reveal_bottom_bars (self->root_toolbar_view, TRUE);
+    adw_toolbar_view_set_reveal_top_bars (self->root_toolbar_view, TRUE);
+
+    g_free (lyrics);
+    g_free (lyrics_ui_text);
   }
 
   gtk_spinner_stop (self->spinner);
