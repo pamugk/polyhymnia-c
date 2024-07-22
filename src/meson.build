@@ -1,3 +1,8 @@
+configure_file(input : 'secrets.h.in', output: 'secrets.h',
+               configuration: {
+               	'genius_client_access_token': get_option('genius_client_access_token')
+               })
+
 polyhymnia_sources = [
   'main.c',
   'polyhymnia-album.c',
