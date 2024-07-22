@@ -21,6 +21,7 @@ struct _PolyhymniaLyricsProvider
 {
   GObject  parent_instance;
 
+  GSettings   *application_settings;
   SoupSession *common_session;
 };
 
@@ -67,6 +68,7 @@ polyhymnia_lyrics_provider_dispose (GObject *gobject)
 {
   PolyhymniaLyricsProvider *self = POLYHYMNIA_LYRICS_PROVIDER (gobject);
 
+  g_clear_object (&(self->application_settings));
   g_clear_object (&(self->common_session));
 
   G_OBJECT_CLASS (polyhymnia_lyrics_provider_parent_class)->dispose (gobject);
@@ -94,6 +96,7 @@ polyhymnia_lyrics_provider_class_init (PolyhymniaLyricsProviderClass *klass)
 static void
 polyhymnia_lyrics_provider_init (PolyhymniaLyricsProvider *self)
 {
+  self->application_settings = g_settings_new ("com.github.pamugk.polyhymnia");
   self->common_session = soup_session_new();
 }
 
@@ -105,6 +108,7 @@ polyhymnia_lyrics_provider_search_lyrics_async (PolyhymniaLyricsProvider      *s
                                                 GAsyncReadyCallback            callback,
                                                 void                          *user_data)
 {
+  gboolean          started_search = FALSE;
   GTask            *task;
 
   g_assert (POLYHYMNIA_IS_LYRICS_PROVIDER (self));
@@ -116,27 +120,22 @@ polyhymnia_lyrics_provider_search_lyrics_async (PolyhymniaLyricsProvider      *s
   g_task_set_task_data (task, track_info,
                         (GDestroyNotify) polyhymnia_search_lyrics_request_free);
 
-  if (track_info->title == NULL || track_info->artist == NULL)
-  {
-    g_task_return_pointer (task, NULL, g_free);
-  }
-  else
+  if (g_settings_get_boolean (self->application_settings, "app-external-data-lyrics-genius")
+      && track_info->title != NULL && track_info->artist != NULL)
   {
     char             *genius_encoded_query;
     char             *genius_query;
     SoupMessage      *message;
 
-    genius_query = g_strjoin(" ",
-                             track_info->title,
-                             track_info->artist,
-                             NULL);
+    genius_query = g_strjoin(" ", track_info->title, track_info->artist, NULL);
     genius_encoded_query = g_uri_escape_string (genius_query, NULL, FALSE);
     message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
                                                   "https://api.genius.com/search",
                                                   g_strconcat ("q=", genius_encoded_query, NULL));
     soup_message_headers_append (soup_message_get_request_headers (message),
-                                 "Authorization", "Bearer " POLYHYMNIA_GENIUS_CLIENT_ACCESS_TOKEN);
+                                  "Authorization", "Bearer " POLYHYMNIA_GENIUS_CLIENT_ACCESS_TOKEN);
 
+    started_search = TRUE;
     soup_session_send_async (self->common_session, message,
                              G_PRIORITY_DEFAULT, g_task_get_cancellable (task),
                              polyhymnia_lyrics_provider_genius_search_callback,
@@ -146,6 +145,11 @@ polyhymnia_lyrics_provider_search_lyrics_async (PolyhymniaLyricsProvider      *s
     g_free (genius_query);
     g_object_unref (message);
     g_object_unref (task);
+  }
+
+  if (!started_search)
+  {
+    g_task_return_pointer (task, NULL, g_free);
   }
 }
 

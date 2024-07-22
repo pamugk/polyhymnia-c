@@ -16,6 +16,8 @@ struct _PolyhymniaPreferencesDialog
 
   AdwSwitchRow        *scan_startup_switch;
 
+  AdwSwitchRow        *lyrics_genius_switch;
+
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
   GSettings           *settings;
@@ -74,6 +76,7 @@ polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klas
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, audio_outputs_group);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, resume_playback_switch);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, scan_startup_switch);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, lyrics_genius_switch);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, settings);
@@ -94,6 +97,9 @@ polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
                   G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "app-library-scan-startup",
                   self->scan_startup_switch, "active",
+                  G_SETTINGS_BIND_DEFAULT);
+  g_settings_bind (self->settings, "app-external-data-lyrics-genius",
+                  self->lyrics_genius_switch, "active",
                   G_SETTINGS_BIND_DEFAULT);
 }
 
