@@ -27,6 +27,9 @@
   </template>
 
   <object class="WebKitWebView" id="lyrics_web_view">
+    <signal name="decide-policy"
+      handler="polyhymnia_current_lyrics_pane_lyrics_web_view_decide_policy"
+      swapped="true" />
     <signal name="load-changed"
       handler="polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed"
       swapped="true" />
@@ -52,5 +55,8 @@
       handler="polyhymnia_current_lyrics_pane_current_track_changed"
       swapped="true" />
   </object>
+
+  <object class="GtkUriLauncher" id="uri_launcher" />
+  <object class="GCancellable" id="uri_launcher_cancellable" />
 
 </interface>

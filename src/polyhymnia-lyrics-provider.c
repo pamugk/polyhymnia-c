@@ -276,6 +276,11 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
         long                           found_song_id;
         int                            hit_index = 0;
         PolyhymniaSearchLyricsRequest *processed_track = g_task_get_task_data (task);
+        gchar                         *target_case_insensitive_artist;
+        gchar                         *target_case_insensitive_title;
+
+        target_case_insensitive_artist = g_utf8_casefold (processed_track->artist, -1);
+        target_case_insensitive_title = g_utf8_casefold (processed_track->title, -1);
 
         json_reader_end_member (response_reader);
         json_reader_end_member (response_reader);
@@ -291,21 +296,38 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
           hit_type = json_reader_get_string_value (response_reader);
           if (g_strcmp0 ("song", hit_type) == 0)
           {
-            gboolean same_artist;
-            gboolean same_title;
+            gboolean     same_artist;
+            gboolean     same_title;
+
             json_reader_end_member (response_reader);
 
             json_reader_read_member (response_reader, "result");
 
             // TODO: do fuzzy comparison?
             json_reader_read_member (response_reader, "primary_artist_names");
-            same_artist = g_strcmp0 (processed_track->artist,
-                                     json_reader_get_string_value (response_reader)) == 0;
+            if (json_reader_get_string_value (response_reader) != NULL)
+            {
+              gchar *case_insensitive_artist = g_utf8_casefold (json_reader_get_string_value (response_reader), -1);
+              same_artist = g_utf8_collate (target_case_insensitive_artist, case_insensitive_artist) == 0;
+              g_free (case_insensitive_artist);
+            }
+            else
+            {
+              same_artist = FALSE;
+            }
             json_reader_end_member (response_reader);
 
             json_reader_read_member (response_reader, "title");
-            same_title = g_strcmp0 (processed_track->title,
-                                    json_reader_get_string_value (response_reader)) == 0;
+            if (json_reader_get_string_value (response_reader) != NULL)
+            {
+              gchar *case_insensitive_title = g_utf8_casefold (json_reader_get_string_value (response_reader), -1);
+              same_title = g_utf8_collate (target_case_insensitive_title, case_insensitive_title) == 0;
+              g_free (case_insensitive_title);
+            }
+            else
+            {
+              same_title = FALSE;
+            }
             json_reader_end_member (response_reader);
 
             if (same_artist && same_title)
@@ -364,6 +386,9 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
         {
           g_task_return_pointer (task, NULL, g_free);
         }
+
+        g_free (target_case_insensitive_artist);
+        g_free (target_case_insensitive_title);
       }
       g_object_unref (response_reader);
     }

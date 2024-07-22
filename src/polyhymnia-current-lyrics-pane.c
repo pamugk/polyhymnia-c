@@ -31,6 +31,8 @@ struct _PolyhymniaCurrentLyricsPane
   PolyhymniaLyricsProvider *lyrics_provider;
   PolyhymniaMpdClient      *mpd_client;
   PolyhymniaPlayer         *player;
+  GtkUriLauncher           *uri_launcher;
+  GCancellable             *uri_launcher_cancellable;
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaCurrentLyricsPane, polyhymnia_current_lyrics_pane, GTK_TYPE_WIDGET)
@@ -40,6 +42,12 @@ static void
 polyhymnia_current_lyrics_pane_current_track_changed (PolyhymniaCurrentLyricsPane *self,
                                                       GParamSpec                  *pspec,
                                                       PolyhymniaPlayer            *user_data);
+
+static gboolean
+polyhymnia_current_lyrics_pane_lyrics_web_view_decide_policy (PolyhymniaCurrentLyricsPane *self,
+                                                              WebKitPolicyDecision        *decision,
+                                                              WebKitPolicyDecisionType     decision_type,
+                                                              WebKitWebView               *user_data);
 
 static void
 polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed (PolyhymniaCurrentLyricsPane *self,
@@ -56,6 +64,11 @@ polyhymnia_current_lyrics_pane_mpd_client_initialized (PolyhymniaCurrentLyricsPa
                                                        GParamSpec                  *pspec,
                                                        PolyhymniaMpdClient         *user_data);
 
+static void
+polyhymnia_current_lyrics_pane_show_uri_callback (GObject      *source_object,
+                                                  GAsyncResult *result,
+                                                  gpointer      user_data);
+
 /* Class stuff */
 static void
 polyhymnia_current_lyrics_pane_dispose(GObject *gobject)
@@ -63,6 +76,7 @@ polyhymnia_current_lyrics_pane_dispose(GObject *gobject)
   PolyhymniaCurrentLyricsPane *self = POLYHYMNIA_CURRENT_LYRICS_PANE (gobject);
 
   g_cancellable_cancel (self->lyrics_cancellable);
+  g_cancellable_cancel (self->uri_launcher_cancellable);
   gtk_widget_unparent (GTK_WIDGET (self->root_toolbar_view));
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_CURRENT_LYRICS_PANE);
 
@@ -91,9 +105,13 @@ polyhymnia_current_lyrics_pane_class_init (PolyhymniaCurrentLyricsPaneClass *kla
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, lyrics_provider);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, player);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, uri_launcher);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaCurrentLyricsPane, uri_launcher_cancellable);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_current_lyrics_pane_current_track_changed);
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_current_lyrics_pane_lyrics_web_view_decide_policy);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -152,6 +170,56 @@ polyhymnia_current_lyrics_pane_current_track_changed (PolyhymniaCurrentLyricsPan
                                                     polyhymnia_current_lyrics_pane_search_lyrics_callback,
                                                     self);
   }
+}
+
+static gboolean
+polyhymnia_current_lyrics_pane_lyrics_web_view_decide_policy (PolyhymniaCurrentLyricsPane *self,
+                                                              WebKitPolicyDecision        *decision,
+                                                              WebKitPolicyDecisionType     decision_type,
+                                                              WebKitWebView               *user_data)
+{
+  g_assert (POLYHYMNIA_IS_CURRENT_LYRICS_PANE (self));
+
+  switch (decision_type)
+  {
+    case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+    case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+    {
+      WebKitNavigationAction         *navigation_action;
+      WebKitNavigationPolicyDecision *navigation_decision;
+      const char                     *uri;
+      WebKitURIRequest               *uri_request;
+
+      navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
+      navigation_action = webkit_navigation_policy_decision_get_navigation_action (navigation_decision);
+      uri_request = webkit_navigation_action_get_request (navigation_action);
+      uri = webkit_uri_request_get_uri (uri_request);
+
+      // about:blank used for embedded content, it should be opened in WebView
+      if (g_strcmp0 ("about:blank", uri) == 0)
+      {
+        webkit_policy_decision_use (decision);
+      }
+      else
+      {
+        webkit_policy_decision_ignore (decision);
+        gtk_uri_launcher_set_uri (self->uri_launcher,
+                                  webkit_uri_request_get_uri (uri_request));
+        gtk_uri_launcher_launch (self->uri_launcher,
+                                 GTK_WINDOW (gtk_widget_get_root (GTK_WIDGET (self))),
+                                 self->uri_launcher_cancellable,
+                                 polyhymnia_current_lyrics_pane_show_uri_callback,
+                                 self);
+      }
+
+      break;
+    }
+    default:
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 
 static void
@@ -228,5 +296,23 @@ polyhymnia_current_lyrics_pane_mpd_client_initialized (PolyhymniaCurrentLyricsPa
   {
     webkit_web_view_stop_loading (self->lyrics_web_view);
     g_cancellable_cancel (self->lyrics_cancellable);
+  }
+}
+
+static void
+polyhymnia_current_lyrics_pane_show_uri_callback (GObject      *source_object,
+                                                  GAsyncResult *result,
+                                                  gpointer      user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_CURRENT_LYRICS_PANE (user_data));
+
+  gtk_uri_launcher_launch_finish (GTK_URI_LAUNCHER (source_object), result,
+                                  &error);
+  if (error != NULL)
+  {
+    g_warning ("Failed to open requested URI. Error: %s", error->message);
+    g_error_free (error);
   }
 }

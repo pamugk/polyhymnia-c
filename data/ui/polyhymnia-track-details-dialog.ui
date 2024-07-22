@@ -594,6 +594,9 @@
   </template>
 
   <object class="WebKitWebView" id="lyrics_web_view">
+    <signal name="decide-policy"
+      handler="polyhymnia_track_details_dialog_lyrics_web_view_decide_policy"
+      swapped="true" />
     <signal name="load-changed"
       handler="polyhymnia_track_details_dialog_lyrics_web_view_load_changed"
       swapped="true" />
@@ -738,7 +741,6 @@
   </object>
 
   <object class="PolyhymniaLyricsProvider" id="lyrics_provider" />
-
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"
       handler="polyhymnia_track_details_dialog_mpd_database_updated"
@@ -747,4 +749,6 @@
       handler="polyhymnia_track_details_dialog_mpd_client_initialized"
       swapped="true" />
   </object>
+  <object class="GtkUriLauncher" id="uri_launcher" />
+  <object class="GCancellable" id="uri_launcher_cancellable" />
 </interface>

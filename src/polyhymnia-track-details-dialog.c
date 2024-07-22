@@ -94,6 +94,8 @@ struct _PolyhymniaTrackDetailsDialog
   /* Template objects */
   PolyhymniaLyricsProvider *lyrics_provider;
   PolyhymniaMpdClient      *mpd_client;
+  GtkUriLauncher           *uri_launcher;
+  GCancellable             *uri_launcher_cancellable;
 
   /* Instance properties */
   gchar *track_uri;
@@ -108,6 +110,12 @@ static void
 polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_object,
                                                            GAsyncResult *result,
                                                            gpointer      user_data);
+
+static gboolean
+polyhymnia_track_details_dialog_lyrics_web_view_decide_policy (PolyhymniaTrackDetailsDialog *self,
+                                                               WebKitPolicyDecision         *decision,
+                                                               WebKitPolicyDecisionType      decision_type,
+                                                               WebKitWebView                *user_data);
 
 static void
 polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDetailsDialog *self,
@@ -127,6 +135,11 @@ static void
 polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *source,
                                                              GAsyncResult *result,
                                                              gpointer      user_data);
+
+static void
+polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
+                                                   GAsyncResult *result,
+                                                   gpointer      user_data);
 
 /* Private methods declaration */
 static void
@@ -150,6 +163,7 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
 
   g_cancellable_cancel (self->song_details_cancellable);
   g_cancellable_cancel (self->song_lyrics_cancellable);
+  g_cancellable_cancel (self->uri_launcher_cancellable);
   g_clear_pointer (&(self->track_uri), g_free);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_TRACK_DETAILS_DIALOG);
 
@@ -287,7 +301,11 @@ polyhymnia_track_details_dialog_class_init (PolyhymniaTrackDetailsDialogClass *k
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_provider);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, mpd_client);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, uri_launcher);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, uri_launcher_cancellable);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_track_details_dialog_lyrics_web_view_decide_policy);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_track_details_dialog_lyrics_web_view_load_changed);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -536,6 +554,56 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
   g_clear_object (&(self->song_details_cancellable));
 }
 
+static gboolean
+polyhymnia_track_details_dialog_lyrics_web_view_decide_policy (PolyhymniaTrackDetailsDialog *self,
+                                                               WebKitPolicyDecision         *decision,
+                                                               WebKitPolicyDecisionType      decision_type,
+                                                               WebKitWebView                *user_data)
+{
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
+
+  switch (decision_type)
+  {
+    case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+    case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+    {
+      WebKitNavigationAction         *navigation_action;
+      WebKitNavigationPolicyDecision *navigation_decision;
+      const char                     *uri;
+      WebKitURIRequest               *uri_request;
+
+      navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
+      navigation_action = webkit_navigation_policy_decision_get_navigation_action (navigation_decision);
+      uri_request = webkit_navigation_action_get_request (navigation_action);
+      uri = webkit_uri_request_get_uri (uri_request);
+
+      // about:blank used for embedded content, it should be opened in WebView
+      if (g_strcmp0 ("about:blank", uri) == 0)
+      {
+        webkit_policy_decision_use (decision);
+      }
+      else
+      {
+        webkit_policy_decision_ignore (decision);
+        gtk_uri_launcher_set_uri (self->uri_launcher,
+                                  webkit_uri_request_get_uri (uri_request));
+        gtk_uri_launcher_launch (self->uri_launcher,
+                                 GTK_WINDOW (gtk_widget_get_root (GTK_WIDGET (self))),
+                                 self->uri_launcher_cancellable,
+                                 polyhymnia_track_details_dialog_show_uri_callback,
+                                 self);
+      }
+
+      break;
+    }
+    default:
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 static void
 polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDetailsDialog *self,
                                                               WebKitLoadEvent               load_event,
@@ -634,6 +702,24 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
 
   gtk_spinner_stop (self->spinner);
   g_clear_object (&(self->song_lyrics_cancellable));
+}
+
+static void
+polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
+                                                   GAsyncResult *result,
+                                                   gpointer      user_data)
+{
+  GError *error = NULL;
+
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (user_data));
+
+  gtk_uri_launcher_launch_finish (GTK_URI_LAUNCHER (source_object), result,
+                                  &error);
+  if (error != NULL)
+  {
+    g_warning ("Failed to open requested URI. Error: %s", error->message);
+    g_error_free (error);
+  }
 }
 
 /* Private methods implementation */
