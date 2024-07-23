@@ -1,9 +1,13 @@
 
+#include "config.h"
+
 #include <gdk/gdk.h>
 
 #include "polyhymnia-format-utils.h"
 #include "polyhymnia-player.h"
 #include "polyhymnia-player-bar.h"
+
+#define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
 /* Type metadata */
 typedef enum
@@ -24,7 +28,6 @@ struct _PolyhymniaPlayerBar
   GtkLabel            *current_track_artist_label;
   GtkImage            *current_track_cover_image;
   GtkLabel            *current_track_title_label;
-  GtkToggleButton     *lyrics_button;
   GtkToggleButton     *queue_button;
   GtkButton           *play_button;
   GtkAdjustment       *playback_adjustment;
@@ -34,6 +37,10 @@ struct _PolyhymniaPlayerBar
 
   /* Template objects */
   PolyhymniaPlayer    *player;
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  GtkToggleButton     *lyrics_button;
+#endif
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaPlayerBar, polyhymnia_player_bar, GTK_TYPE_WIDGET)
@@ -68,10 +75,6 @@ polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
                                       PolyhymniaPlayer    *user_data);
 
 static void
-polyhymnia_player_bar_lyrics_toggled(PolyhymniaPlayerBar *self,
-                                     gpointer             user_data);
-
-static void
 polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
                                           gpointer             user_data);
 
@@ -90,10 +93,6 @@ polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
                                               gpointer             user_data);
 
 static void
-polyhymnia_player_bar_queue_toggled(PolyhymniaPlayerBar *self,
-                                    gpointer             user_data);
-
-static void
 polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
                             GParamSpec          *pspec,
                             PolyhymniaPlayer    *user_data);
@@ -105,6 +104,16 @@ polyhymnia_player_bar_volume_minus_button_clicked(PolyhymniaPlayerBar *self,
 static void
 polyhymnia_player_bar_volume_plus_button_clicked(PolyhymniaPlayerBar *self,
                                                  gpointer             user_data);
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+static void
+polyhymnia_player_bar_lyrics_toggled(PolyhymniaPlayerBar *self,
+                                     gpointer             user_data);
+
+static void
+polyhymnia_player_bar_queue_toggled(PolyhymniaPlayerBar *self,
+                                    gpointer             user_data);
+#endif
 
 /* Class stuff */
 static void
@@ -145,7 +154,6 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_artist_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_cover_image);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, current_track_title_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, lyrics_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, queue_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, play_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPlayerBar, playback_adjustment);
@@ -158,8 +166,6 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_details_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_player_bar_lyrics_toggled);
-  gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_next_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_play_button_clicked);
@@ -167,8 +173,6 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
                                            polyhymnia_player_bar_playback_seek);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_previous_button_clicked);
-  gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_player_bar_queue_toggled);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_current_track);
@@ -176,6 +180,11 @@ polyhymnia_player_bar_class_init (PolyhymniaPlayerBarClass *klass)
                                            polyhymnia_player_bar_elapsed_seconds);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_player_bar_state);
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_player_bar_queue_toggled);
+#endif
 }
 
 static void
@@ -193,6 +202,27 @@ polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
                             G_CALLBACK (polyhymnia_player_bar_volume_plus_button_clicked),
                             self);
 
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  self->lyrics_button = GTK_TOGGLE_BUTTON (gtk_toggle_button_new ());
+  gtk_widget_set_has_tooltip (GTK_WIDGET (self->lyrics_button), TRUE);
+  gtk_button_set_icon_name (GTK_BUTTON (self->lyrics_button), "subtitles-symbolic");
+  g_object_bind_property (self->player, "active",
+                          self->lyrics_button, "sensitive",
+                          G_BINDING_SYNC_CREATE);
+  gtk_widget_set_tooltip_text (GTK_WIDGET (self->lyrics_button), _("Lyrics"));
+  gtk_widget_set_valign (GTK_WIDGET (self->lyrics_button), GTK_ALIGN_CENTER);
+  gtk_action_bar_pack_end (self->root_action_bar, GTK_WIDGET (self->lyrics_button));
+
+  g_signal_connect_swapped (self->lyrics_button, "toggled",
+                            (GCallback) polyhymnia_player_bar_lyrics_toggled,
+                            self);
+  g_signal_connect_swapped (self->queue_button, "toggled",
+                            (GCallback) polyhymnia_player_bar_queue_toggled,
+                            self);
+#endif
+  gtk_action_bar_pack_end (self->root_action_bar, GTK_WIDGET (self->queue_button));
+  gtk_action_bar_pack_end (self->root_action_bar, GTK_WIDGET (self->volume_scale_button));
+
   polyhymnia_player_bar_current_track (self, NULL, self->player);
   polyhymnia_player_bar_elapsed_seconds (self, NULL, self->player);
   polyhymnia_player_bar_state (self, NULL, self->player);
@@ -200,16 +230,18 @@ polyhymnia_player_bar_init (PolyhymniaPlayerBar *self)
 
 /* Instance methods */
 GtkWidget *
-polyhymnia_player_bar_get_lyrics_toggle_button (const PolyhymniaPlayerBar *self)
-{
-  return GTK_WIDGET (self->lyrics_button);
-}
-
-GtkWidget *
 polyhymnia_player_bar_get_queue_toggle_button (const PolyhymniaPlayerBar *self)
 {
   return GTK_WIDGET (self->queue_button);
 }
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+GtkWidget *
+polyhymnia_player_bar_get_lyrics_toggle_button (const PolyhymniaPlayerBar *self)
+{
+  return GTK_WIDGET (self->lyrics_button);
+}
+#endif
 
 /* Event handler implementation */
 static void
@@ -233,8 +265,9 @@ polyhymnia_player_bar_current_track(PolyhymniaPlayerBar *self,
     gtk_image_set_from_icon_name (self->current_track_cover_image,
                                   "image-missing-symbolic");
     g_clear_object (&self->current_track_album_cover);
-
+#ifdef POLYHYMNIA_FEATURE_LYRICS
     gtk_toggle_button_set_active (self->lyrics_button, FALSE);
+#endif
   }
   else
   {
@@ -311,19 +344,6 @@ polyhymnia_player_bar_elapsed_seconds(PolyhymniaPlayerBar *self,
 }
 
 static void
-polyhymnia_player_bar_lyrics_toggled(PolyhymniaPlayerBar *self,
-                                     gpointer             user_data)
-{
-  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
-  g_return_if_fail (GTK_IS_TOGGLE_BUTTON (user_data));
-
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (user_data)))
-  {
-    gtk_toggle_button_set_active (self->queue_button, FALSE);
-  }
-}
-
-static void
 polyhymnia_player_bar_next_button_clicked(PolyhymniaPlayerBar *self,
                                           gpointer            user_data)
 {
@@ -362,19 +382,6 @@ polyhymnia_player_bar_previous_button_clicked(PolyhymniaPlayerBar *self,
 }
 
 static void
-polyhymnia_player_bar_queue_toggled(PolyhymniaPlayerBar *self,
-                                    gpointer             user_data)
-{
-  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
-  g_return_if_fail (GTK_IS_TOGGLE_BUTTON (user_data));
-
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (user_data)))
-  {
-    gtk_toggle_button_set_active (self->lyrics_button, FALSE);
-  }
-}
-
-static void
 polyhymnia_player_bar_state(PolyhymniaPlayerBar *self,
                             GParamSpec          *pspec,
                             PolyhymniaPlayer    *user_data)
@@ -402,6 +409,34 @@ polyhymnia_player_bar_volume_plus_button_clicked(PolyhymniaPlayerBar *self,
 {
   polyhymnia_player_change_volume (self->player, 5, NULL);
 }
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+static void
+polyhymnia_player_bar_lyrics_toggled(PolyhymniaPlayerBar *self,
+                                     gpointer             user_data)
+{
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (GTK_IS_TOGGLE_BUTTON (user_data));
+
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (user_data)))
+  {
+    gtk_toggle_button_set_active (self->queue_button, FALSE);
+  }
+}
+
+static void
+polyhymnia_player_bar_queue_toggled(PolyhymniaPlayerBar *self,
+                                    gpointer             user_data)
+{
+  g_return_if_fail (POLYHYMNIA_IS_PLAYER_BAR (self));
+  g_return_if_fail (GTK_IS_TOGGLE_BUTTON (user_data));
+
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (user_data)))
+  {
+    gtk_toggle_button_set_active (self->lyrics_button, FALSE);
+  }
+}
+#endif
 
 /* Utility functions implementation*/
 static const gchar *

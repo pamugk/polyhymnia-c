@@ -1,13 +1,16 @@
 
+#include "app-features.h"
 #include "config.h"
 
 #include "polyhymnia-track-details-dialog.h"
 
-#include <webkit/webkit.h>
-
-#include "polyhymnia-lyrics-provider.h"
 #include "polyhymnia-mpd-client-details.h"
 #include "polyhymnia-mpd-client-images.h"
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+#include <webkit/webkit.h>
+#include "polyhymnia-lyrics-provider.h"
+#endif
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -24,7 +27,6 @@ struct _PolyhymniaTrackDetailsDialog
 
   /* Stored UI state */
   GCancellable             *song_details_cancellable;
-  GCancellable             *song_lyrics_cancellable;
 
   /* Template widgets */
   AdwNavigationView        *root_navigation_view;
@@ -41,7 +43,6 @@ struct _PolyhymniaTrackDetailsDialog
 
   AdwPreferencesGroup      *details_group;
   AdwActionRow             *details_row;
-  AdwActionRow             *lyrics_row;
   AdwActionRow             *audio_format_row;
 
   GtkBox                   *genre_row;
@@ -65,11 +66,6 @@ struct _PolyhymniaTrackDetailsDialog
   GtkBox                   *comment_row;
   GtkLabel                 *comment_label;
 
-  AdwBin                   *lyrics_page_content;
-  GtkSpinner               *lyrics_spinner;
-  AdwStatusPage            *lyrics_status_page;
-  WebKitWebView            *lyrics_web_view;
-
   GtkLabel                 *sample_rate_label;
   GtkLabel                 *bps_label;
   GtkLabel                 *channels_label;
@@ -92,13 +88,25 @@ struct _PolyhymniaTrackDetailsDialog
   GtkLabel                 *publisher_label;
 
   /* Template objects */
-  PolyhymniaLyricsProvider *lyrics_provider;
   PolyhymniaMpdClient      *mpd_client;
-  GtkUriLauncher           *uri_launcher;
-  GCancellable             *uri_launcher_cancellable;
 
   /* Instance properties */
   gchar *track_uri;
+
+  /* Feature-specific fields */
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  AdwActionRow             *lyrics_row;
+
+  AdwBin                   *lyrics_page_content;
+  GtkSpinner               *lyrics_spinner;
+  AdwStatusPage            *lyrics_status_page;
+  WebKitWebView            *lyrics_web_view;
+
+  PolyhymniaLyricsProvider *lyrics_provider;
+  GCancellable             *song_lyrics_cancellable;
+  GtkUriLauncher           *uri_launcher;
+  GCancellable             *uri_launcher_cancellable;
+#endif
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaTrackDetailsDialog, polyhymnia_track_details_dialog, ADW_TYPE_DIALOG)
@@ -111,6 +119,16 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
                                                            GAsyncResult *result,
                                                            gpointer      user_data);
 
+static void
+polyhymnia_track_details_dialog_mpd_client_initialized (PolyhymniaTrackDetailsDialog *self,
+                                                        GParamSpec                   *pspec,
+                                                        PolyhymniaMpdClient          *user_data);
+
+static void
+polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDialog *self,
+                                                      PolyhymniaMpdClient          *user_data);
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
 static gboolean
 polyhymnia_track_details_dialog_lyrics_web_view_decide_policy (PolyhymniaTrackDetailsDialog *self,
                                                                WebKitPolicyDecision         *decision,
@@ -123,15 +141,6 @@ polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDet
                                                               WebKitWebView                *user_data);
 
 static void
-polyhymnia_track_details_dialog_mpd_client_initialized (PolyhymniaTrackDetailsDialog *self,
-                                                        GParamSpec                   *pspec,
-                                                        PolyhymniaMpdClient          *user_data);
-
-static void
-polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDialog *self,
-                                                      PolyhymniaMpdClient          *user_data);
-
-static void
 polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *source,
                                                              GAsyncResult *result,
                                                              gpointer      user_data);
@@ -140,6 +149,7 @@ static void
 polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
                                                    GAsyncResult *result,
                                                    gpointer      user_data);
+#endif
 
 /* Private methods declaration */
 static void
@@ -162,8 +172,17 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
   PolyhymniaTrackDetailsDialog *self = POLYHYMNIA_TRACK_DETAILS_DIALOG (gobject);
 
   g_cancellable_cancel (self->song_details_cancellable);
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  adw_bin_set_child (self->lyrics_page_content, NULL);
+  g_clear_object (&(self->lyrics_status_page));
+  //g_clear_object (&(self->lyrics_spinner));
+  g_clear_object (&(self->lyrics_web_view));
   g_cancellable_cancel (self->song_lyrics_cancellable);
+  g_clear_object (&(self->lyrics_provider));
   g_cancellable_cancel (self->uri_launcher_cancellable);
+  g_clear_object (&(self->uri_launcher_cancellable));
+  g_clear_object (&(self->uri_launcher));
+#endif
   g_clear_pointer (&(self->track_uri), g_free);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_TRACK_DETAILS_DIALOG);
 
@@ -249,7 +268,6 @@ polyhymnia_track_details_dialog_class_init (PolyhymniaTrackDetailsDialogClass *k
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, details_group);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, details_row);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_row);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, audio_format_row);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, genre_row);
@@ -273,11 +291,6 @@ polyhymnia_track_details_dialog_class_init (PolyhymniaTrackDetailsDialogClass *k
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, comment_row);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, comment_label);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_page_content);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_spinner);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_status_page);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_web_view);
-
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, sample_rate_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, bps_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, channels_label);
@@ -299,15 +312,8 @@ polyhymnia_track_details_dialog_class_init (PolyhymniaTrackDetailsDialogClass *k
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, publisher_label);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, lyrics_provider);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, mpd_client);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, uri_launcher);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaTrackDetailsDialog, uri_launcher_cancellable);
 
-  gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_track_details_dialog_lyrics_web_view_decide_policy);
-  gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_track_details_dialog_lyrics_web_view_load_changed);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_track_details_dialog_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -317,12 +323,41 @@ polyhymnia_track_details_dialog_class_init (PolyhymniaTrackDetailsDialogClass *k
 static void
 polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
 {
-  g_type_ensure (WEBKIT_TYPE_WEB_VIEW);
-
-  g_type_ensure (POLYHYMNIA_TYPE_LYRICS_PROVIDER);
   g_type_ensure (POLYHYMNIA_TYPE_MPD_CLIENT);
 
   gtk_widget_init_template (GTK_WIDGET (self));
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  self->lyrics_page_content = ADW_BIN (adw_bin_new ());
+  adw_navigation_view_add (self->root_navigation_view,
+                           adw_navigation_page_new_with_tag (GTK_WIDGET (self->lyrics_page_content),
+                                                             _("Lyrics"),
+                                                             "lyrics-page"));
+
+  self->lyrics_row = ADW_ACTION_ROW (adw_action_row_new ());
+  adw_action_row_add_suffix (self->lyrics_row, gtk_image_new_from_icon_name ("right-symbolic"));
+  gtk_actionable_set_action_name (GTK_ACTIONABLE (self->lyrics_row), "navigation.push");
+  gtk_actionable_set_action_target (GTK_ACTIONABLE (self->lyrics_row), "lyrics-page");
+  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->lyrics_row), _("Lyrics"));
+  adw_preferences_group_add (self->details_group, GTK_WIDGET (self->lyrics_row));
+
+  self->lyrics_status_page = ADW_STATUS_PAGE (adw_status_page_new ());
+  self->lyrics_spinner = GTK_SPINNER (gtk_spinner_new ());
+  gtk_widget_set_halign (GTK_WIDGET (self->lyrics_spinner), GTK_ALIGN_CENTER);
+  gtk_widget_set_size_request (GTK_WIDGET (self->lyrics_spinner), 32, 32);
+  gtk_widget_set_valign (GTK_WIDGET (self->lyrics_spinner), GTK_ALIGN_CENTER);
+  self->lyrics_web_view = WEBKIT_WEB_VIEW (webkit_web_view_new ());
+  g_signal_connect_swapped (self->lyrics_web_view, "decide-policy",
+                            (GCallback) polyhymnia_track_details_dialog_lyrics_web_view_decide_policy,
+                            self);
+  g_signal_connect_swapped (self->lyrics_web_view, "load-changed",
+                            (GCallback) polyhymnia_track_details_dialog_lyrics_web_view_load_changed,
+                            self);
+
+  self->lyrics_provider = g_object_new (POLYHYMNIA_TYPE_LYRICS_PROVIDER, NULL);
+  self->uri_launcher = gtk_uri_launcher_new (NULL);
+  self->uri_launcher_cancellable = g_cancellable_new ();
+#endif
 }
 
 /* Event handlers implementation */
@@ -437,6 +472,7 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
                             || gtk_widget_get_visible (GTK_WIDGET (self->location_row))
                             || gtk_widget_get_visible (GTK_WIDGET (self->comment_row)));
 
+#ifdef POLYHYMNIA_FEATURE_LYRICS
     {
       PolyhymniaSearchLyricsRequest *search_lyrics_request;
 
@@ -453,6 +489,7 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
                                                       polyhymnia_track_details_dialog_search_song_lyrics_callback,
                                                       self);
     }
+#endif
 
     if (audio_format == NULL)
     {
@@ -554,6 +591,51 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
   g_clear_object (&(self->song_details_cancellable));
 }
 
+static void
+polyhymnia_track_details_dialog_mpd_client_initialized (PolyhymniaTrackDetailsDialog *self,
+                                                        GParamSpec                   *pspec,
+                                                        PolyhymniaMpdClient          *user_data)
+{
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
+
+  if (polyhymnia_mpd_client_is_initialized (user_data))
+  {
+    polyhymnia_track_details_dialog_mpd_database_updated (self, user_data);
+  }
+  else
+  {
+    adw_dialog_close (ADW_DIALOG (self));
+  }
+}
+
+static void
+polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDialog *self,
+                                                      PolyhymniaMpdClient          *user_data)
+{
+  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
+
+  polyhymnia_track_details_dialog_fill_cover (self);
+
+  if (self->song_details_cancellable == NULL)
+  {
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+    webkit_web_view_stop_loading (self->lyrics_web_view);
+    g_cancellable_cancel (self->song_lyrics_cancellable);
+#endif
+
+    self->song_details_cancellable = g_cancellable_new ();
+    polyhymnia_mpd_client_get_song_details_async (self->mpd_client,
+                                                  self->track_uri,
+                                                  self->song_details_cancellable,
+                                                  polyhymnia_track_details_dialog_get_song_details_callback,
+                                                  self);
+    gtk_spinner_start (self->spinner);
+    gtk_scrolled_window_set_child (self->main_scrolled_window,
+                                   GTK_WIDGET (self->spinner));
+  }
+}
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
 static gboolean
 polyhymnia_track_details_dialog_lyrics_web_view_decide_policy (PolyhymniaTrackDetailsDialog *self,
                                                                WebKitPolicyDecision         *decision,
@@ -619,48 +701,6 @@ polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDet
 }
 
 static void
-polyhymnia_track_details_dialog_mpd_client_initialized (PolyhymniaTrackDetailsDialog *self,
-                                                        GParamSpec                   *pspec,
-                                                        PolyhymniaMpdClient          *user_data)
-{
-  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
-
-  if (polyhymnia_mpd_client_is_initialized (user_data))
-  {
-    polyhymnia_track_details_dialog_mpd_database_updated (self, user_data);
-  }
-  else
-  {
-    adw_dialog_close (ADW_DIALOG (self));
-  }
-}
-
-static void
-polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDialog *self,
-                                                      PolyhymniaMpdClient          *user_data)
-{
-  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
-
-  polyhymnia_track_details_dialog_fill_cover (self);
-
-  if (self->song_details_cancellable == NULL)
-  {
-    webkit_web_view_stop_loading (self->lyrics_web_view);
-    g_cancellable_cancel (self->song_lyrics_cancellable);
-
-    self->song_details_cancellable = g_cancellable_new ();
-    polyhymnia_mpd_client_get_song_details_async (self->mpd_client,
-                                                  self->track_uri,
-                                                  self->song_details_cancellable,
-                                                  polyhymnia_track_details_dialog_get_song_details_callback,
-                                                  self);
-    gtk_spinner_start (self->spinner);
-    gtk_scrolled_window_set_child (self->main_scrolled_window,
-                                   GTK_WIDGET (self->spinner));
-  }
-}
-
-static void
 polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *source,
                                                              GAsyncResult *result,
                                                              gpointer      user_data)
@@ -721,6 +761,7 @@ polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
     g_error_free (error);
   }
 }
+#endif
 
 /* Private methods implementation */
 static void

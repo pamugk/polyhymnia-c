@@ -1,0 +1,4 @@
+
+#pragma once
+
+#mesondefine POLYHYMNIA_FEATURE_LYRICS

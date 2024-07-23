@@ -157,55 +157,34 @@
 	      swapped="true" />
 	  </object>
 	</child>
-        <child type="end">
-          <object class="GtkToggleButton" id="lyrics_button">
-            <property name="has-tooltip">true</property>
-            <property name="icon-name">subtitles-symbolic</property>
-	    <property name="sensitive"
-	      bind-source="player"
-	      bind-property="active"
-	      bind-flags="sync-create" />
-            <property name="tooltip-text" translatable="yes">Lyrics</property>
-            <property name="valign">center</property>
-            <signal name="toggled"
-              handler="polyhymnia_player_bar_lyrics_toggled"
-              swapped="true" />
-          </object>
-        </child>
-        <child type="end">
-          <object class="GtkToggleButton" id="queue_button">
-            <property name="has-tooltip">true</property>
-            <property name="icon-name">music-queue-symbolic</property>
-            <property name="tooltip-text" translatable="yes">Queue</property>
-            <property name="valign">center</property>
-            <signal name="toggled"
-              handler="polyhymnia_player_bar_queue_toggled"
-              swapped="true" />
-          </object>
-        </child>
-        <child type="end">
-          <object class="GtkScaleButton" id="volume_scale_button">
-            <property name="adjustment">
-              <object class="GtkAdjustment">
-                <property name="lower">0</property>
-                <property name="step-increment">5</property>
-                <property name="upper">100</property>
-                <property name="value"
-                  bind-source="player"
-                  bind-property="volume"
-                  bind-flags="bidirectional|sync-create" />
-              </object>
-            </property>
-            <property name="sensitive"
-              bind-source="player"
-              bind-property="audio-available"
-              bind-flags="sync-create" />
-            <property name="valign">center</property>
-          </object>
-        </child>
       </object>
     </child>
   </template>
+
+  <object class="GtkToggleButton" id="queue_button">
+    <property name="has-tooltip">true</property>
+    <property name="icon-name">music-queue-symbolic</property>
+    <property name="tooltip-text" translatable="yes">Queue</property>
+    <property name="valign">center</property>
+  </object>
+  <object class="GtkScaleButton" id="volume_scale_button">
+    <property name="adjustment">
+      <object class="GtkAdjustment">
+        <property name="lower">0</property>
+        <property name="step-increment">5</property>
+        <property name="upper">100</property>
+        <property name="value"
+          bind-source="player"
+          bind-property="volume"
+          bind-flags="bidirectional|sync-create" />
+      </object>
+    </property>
+    <property name="sensitive"
+      bind-source="player"
+      bind-property="audio-available"
+      bind-flags="sync-create" />
+    <property name="valign">center</property>
+  </object>
 
   <object class="PolyhymniaPlayer" id="player">
     <signal name="notify::current-track"
