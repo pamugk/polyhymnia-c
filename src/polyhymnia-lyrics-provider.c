@@ -174,7 +174,10 @@ polyhymnia_lyris_provider_genius_get_song_callback (GObject      *source,
   input_stream = soup_session_send_finish (SOUP_SESSION (source), result, &error);
   if (error != NULL)
   {
-    g_warning ("Failed to get song on Genius: %s", error->message);
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_warning ("Failed to get song on Genius: %s", error->message);
+    }
     g_task_return_error (G_TASK (user_data), error);
   }
   else
@@ -186,7 +189,10 @@ polyhymnia_lyris_provider_genius_get_song_callback (GObject      *source,
                                   g_task_get_cancellable (task), &error);
     if (error != NULL)
     {
-      g_warning ("Failed to parse Genius response for song: %s", error->message);
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+      {
+        g_warning ("Failed to parse Genius response for song: %s", error->message);
+      }
       g_task_return_error (task, error);
     }
     else
@@ -242,7 +248,10 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
   input_stream = soup_session_send_finish (SOUP_SESSION (source), result, &error);
   if (error != NULL)
   {
-    g_warning ("Failed to search for song on Genius: %s", error->message);
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_warning ("Failed to search for song on Genius: %s", error->message);
+    }
     g_task_return_error (G_TASK (user_data), error);
   }
   else
@@ -254,7 +263,10 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
                                    g_task_get_cancellable (task), &error);
     if (error != NULL)
     {
-      g_warning ("Failed to parse Genius response for song search: %s", error->message);
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+      {
+        g_warning ("Failed to parse Genius response for song search: %s", error->message);
+      }
       g_task_return_error (task, error);
     }
     else
@@ -374,7 +386,7 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
                                   NULL);
           message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
                                                         song_uri,
-                                                        "text_format=plain");
+                                                        g_strdup ("text_format=plain"));
           soup_message_headers_append (soup_message_get_request_headers (message),
                                        "Authorization", "Bearer " POLYHYMNIA_GENIUS_CLIENT_ACCESS_TOKEN);
           soup_session_send_async (self->common_session, message,
