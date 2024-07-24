@@ -154,9 +154,6 @@ static void
 polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                                              PolyhymniaMpdClient  *user_data)
 {
-  GtkWidget *new_child;
-  GtkWidget *previous_child;
-
   g_assert (POLYHYMNIA_IS_ALBUMS_PAGE (self));
 
   if (self->albums_cancellable != NULL)
@@ -170,17 +167,11 @@ polyhymnia_albums_page_mpd_database_updated (PolyhymniaAlbumsPage *self,
                                              polyhymnia_albums_page_search_albums_callback,
                                              self);
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  new_child = GTK_WIDGET (self->albums_spinner);
   gtk_spinner_start (self->albums_spinner);
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != GTK_WIDGET (self->albums_spinner))
   {
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->albums_spinner));
   }
 }
 
@@ -193,10 +184,7 @@ polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
   GError               *error = NULL;
   PolyhymniaMpdClient  *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   GtkWidget            *new_child;
-  GtkWidget            *previous_child;
   PolyhymniaAlbumsPage *self = user_data;
-
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   albums = polyhymnia_mpd_client_search_albums_finish (mpd_client, result,
                                                        &error);
@@ -238,13 +226,9 @@ polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
     return;
   }
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 
   gtk_spinner_stop (self->albums_spinner);

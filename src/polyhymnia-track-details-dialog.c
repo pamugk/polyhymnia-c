@@ -485,12 +485,11 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
       search_lyrics_request->title = g_strdup (polyhymnia_track_full_info_get_title (details));
 
       self->song_lyrics_cancellable = g_cancellable_new ();
-      if (adw_toolbar_view_get_content (self->lyrics_page_content) != NULL)
+      if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_spinner))
       {
-        gtk_widget_unparent (adw_toolbar_view_get_content (self->lyrics_page_content));
+        adw_toolbar_view_set_content (self->lyrics_page_content,
+                                      GTK_WIDGET (g_object_ref (self->lyrics_spinner)));
       }
-      adw_toolbar_view_set_content (self->lyrics_page_content,
-                                    GTK_WIDGET (g_object_ref (self->lyrics_spinner)));
       gtk_spinner_start (self->lyrics_spinner);
       polyhymnia_lyrics_provider_search_lyrics_async (self->lyrics_provider,
                                                       search_lyrics_request,
@@ -705,12 +704,11 @@ polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDet
 
   if (load_event == WEBKIT_LOAD_FINISHED)
   {
-    if (adw_toolbar_view_get_content (self->lyrics_page_content) != NULL)
+    if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_web_view))
     {
-      gtk_widget_unparent (adw_toolbar_view_get_content (self->lyrics_page_content));
+      adw_toolbar_view_set_content (self->lyrics_page_content,
+                                    GTK_WIDGET (g_object_ref (self->lyrics_web_view)));
     }
-    adw_toolbar_view_set_content (self->lyrics_page_content,
-                                  GTK_WIDGET (g_object_ref (self->lyrics_web_view)));
   }
 }
 
@@ -737,12 +735,11 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("Failed to find song lyrics"),
                     NULL);
-      if (adw_toolbar_view_get_content (self->lyrics_page_content) != NULL)
+      if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_status_page))
       {
-        gtk_widget_unparent (adw_toolbar_view_get_content (self->lyrics_page_content));
+        adw_toolbar_view_set_content (self->lyrics_page_content,
+                                      GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
       }
-      adw_toolbar_view_set_content (self->lyrics_page_content,
-                                    GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
       gtk_spinner_stop (GTK_SPINNER (self->lyrics_spinner));
     }
   }
@@ -751,12 +748,11 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
     g_object_set (G_OBJECT (self->lyrics_status_page),
                   "description", _("No song lyrics found"),
                   NULL);
-    if (adw_toolbar_view_get_content (self->lyrics_page_content) != NULL)
+    if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_status_page))
     {
-      gtk_widget_unparent (adw_toolbar_view_get_content (self->lyrics_page_content));
+      adw_toolbar_view_set_content (self->lyrics_page_content,
+                                    GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
     }
-    adw_toolbar_view_set_content (self->lyrics_page_content,
-                                  GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
     gtk_spinner_stop (GTK_SPINNER (self->lyrics_spinner));
   }
   else

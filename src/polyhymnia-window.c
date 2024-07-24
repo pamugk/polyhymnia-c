@@ -323,10 +323,6 @@ polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
   if (new_child != previous_child)
   {
     adw_toast_overlay_set_child (self->root_toast_overlay, new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 }
 
