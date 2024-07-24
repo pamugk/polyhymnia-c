@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <requires lib="WebKit" version="6.0"/>
+  <template class="PolyhymniaCurrentLyricsPane" parent="GtkWidget">
+    <child>
+      <object class="AdwToolbarView" id="root_toolbar_view">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Lyrics</property>
+                <style>
+                  <class name="title"/>
+                </style>
+              </object>
+            </property>
+            <property name="show-end-title-buttons">false</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+
+  <object class="WebKitWebView" id="lyrics_web_view">
+    <signal name="decide-policy"
+      handler="polyhymnia_current_lyrics_pane_lyrics_web_view_decide_policy"
+      swapped="true" />
+    <signal name="load-changed"
+      handler="polyhymnia_current_lyrics_pane_lyrics_web_view_load_changed"
+      swapped="true" />
+  </object>
+  <object class="AdwStatusPage" id="lyrics_status_page" />
+  <object class="GtkSpinner" id="spinner">
+    <property name="halign">center</property>
+    <property name="height-request">32</property>
+    <property name="valign">center</property>
+    <property name="width-request">32</property>
+  </object>
+
+  <object class="PolyhymniaLyricsProvider" id="lyrics_provider" />
+
+  <object class="PolyhymniaMpdClient" id="mpd_client">
+    <signal name="notify::initialized"
+      handler="polyhymnia_current_lyrics_pane_mpd_client_initialized"
+      swapped="true" />
+  </object>
+
+  <object class="PolyhymniaPlayer" id="player">
+    <signal name="notify::current-track"
+      handler="polyhymnia_current_lyrics_pane_current_track_changed"
+      swapped="true" />
+  </object>
+
+  <object class="GtkUriLauncher" id="uri_launcher" />
+  <object class="GCancellable" id="uri_launcher_cancellable" />
+
+</interface>

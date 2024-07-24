@@ -2,8 +2,9 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
-  <template class="PolyhymniaTrackDetailsWindow" parent="AdwWindow">
-    <property name="content">
+  <requires lib="WebKit" version="6.0"/>
+  <template class="PolyhymniaTrackDetailsDialog" parent="AdwDialog">
+    <property name="child">
       <object class="AdwNavigationView" id="root_navigation_view">
         <child>
           <object class="AdwNavigationPage">
@@ -569,8 +570,8 @@
         </child>
       </object>
     </property>
-    <property name="default-height">588</property>
-    <property name="default-width">360</property>
+    <property name="content-height">588</property>
+    <property name="content-width">360</property>
     <property name="height-request">320</property>
     <property name="title" translatable="yes">Statistics</property>
     <property name="width-request">300</property>
@@ -696,10 +697,10 @@
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"
-      handler="polyhymnia_track_details_window_mpd_database_updated"
+      handler="polyhymnia_track_details_dialog_mpd_database_updated"
       swapped="true" />
     <signal name="notify::initialized"
-      handler="polyhymnia_track_details_window_mpd_client_initialized"
+      handler="polyhymnia_track_details_dialog_mpd_client_initialized"
       swapped="true" />
   </object>
 </interface>

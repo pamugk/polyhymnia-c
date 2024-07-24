@@ -34,7 +34,7 @@ struct _PolyhymniaPlaylistPage
   GCancellable        *tracks_cancellable;
 
   /* Template widgets */
-  AdwMessageDialog    *delete_dialog;
+  AdwAlertDialog      *delete_dialog;
   AdwToolbarView      *root_toolbar_view;
   AdwBreakpointBin    *root_content;
 
@@ -67,7 +67,7 @@ polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylis
                                                                GtkButton              *user_data);
 
 static void
-polyhymnia_playlist_page_delete_dialog_completed (AdwMessageDialog       *dialog,
+polyhymnia_playlist_page_delete_dialog_completed (AdwAlertDialog         *dialog,
                                                   GAsyncResult           *result,
                                                   PolyhymniaPlaylistPage *self);
 
@@ -325,11 +325,11 @@ polyhymnia_playlist_page_add_playlist_to_queue_button_clicked (PolyhymniaPlaylis
 }
 
 static void
-polyhymnia_playlist_page_delete_dialog_completed (AdwMessageDialog       *dialog,
+polyhymnia_playlist_page_delete_dialog_completed (AdwAlertDialog         *dialog,
                                                   GAsyncResult           *result,
                                                   PolyhymniaPlaylistPage *self)
 {
-  const char *response = adw_message_dialog_choose_finish (dialog, result);
+  const char *response = adw_alert_dialog_choose_finish (dialog, result);
 
   if (g_strcmp0 (response, "delete") == 0)
   {
@@ -353,9 +353,9 @@ polyhymnia_playlist_page_delete_playlist_button_clicked (PolyhymniaPlaylistPage 
                                                          GtkButton              *user_data)
 {
   g_assert (POLYHYMNIA_IS_PLAYLIST_PAGE (self));
-  adw_message_dialog_choose (self->delete_dialog, NULL,
-                             (GAsyncReadyCallback) polyhymnia_playlist_page_delete_dialog_completed,
-                             self);
+  adw_alert_dialog_choose (self->delete_dialog, GTK_WIDGET (self), NULL,
+                           (GAsyncReadyCallback) polyhymnia_playlist_page_delete_dialog_completed,
+                           self);
 }
 
 static void

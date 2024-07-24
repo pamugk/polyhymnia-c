@@ -1,0 +1,3 @@
+option('genius_client_access_token', type: 'string')
+option('external_data_feature', type: 'feature', value: 'auto')
+option('lyrics_feature', type: 'feature', value: 'auto')

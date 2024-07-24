@@ -1,4 +1,5 @@
 
+#include "app-features.h"
 #include "config.h"
 
 #include "polyhymnia-window.h"
@@ -15,6 +16,10 @@
 #include "polyhymnia-queue-pane.h"
 #include "polyhymnia-search-page.h"
 #include "polyhymnia-tracks-page.h"
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+#include "polyhymnia-current-lyrics-pane.h"
+#endif
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
@@ -34,6 +39,7 @@ struct _PolyhymniaWindow
   GtkSearchBar         *search_bar;
   GtkSearchEntry       *search_entry;
   GtkListBox           *sidebar_box;
+  GtkStack             *sidebar_pane_stack;
   AdwNavigationView    *library_navigation_view;
   PolyhymniaPlayerBar  *player_bar;
 
@@ -61,6 +67,11 @@ G_DEFINE_FINAL_TYPE (PolyhymniaWindow, polyhymnia_window, ADW_TYPE_APPLICATION_W
 static void
 polyhymnia_window_album_deleted (PolyhymniaWindow    *self,
                                  PolyhymniaAlbumPage *album_page);
+
+static void
+polyhymnia_window_content_show_sidebar_changed (PolyhymniaWindow    *self,
+                                                GParamSpec          *pspec,
+                                                AdwOverlaySplitView *user_data);
 
 static void
 polyhymnia_window_mpd_client_initialized (PolyhymniaWindow    *self,
@@ -116,6 +127,10 @@ polyhymnia_window_search_stopped (PolyhymniaWindow *self,
                                   GtkSearchEntry   *user_data);
 
 static void
+polyhymnia_window_sidebar_pane_queue_toggled (PolyhymniaWindow *self,
+                                              GtkToggleButton  *user_data);
+
+static void
 polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
                                         GtkListBoxRow       *selected_row,
                                         GtkListBox          *sidebar);
@@ -124,6 +139,12 @@ static void
 polyhymnia_window_track_show_details (PolyhymniaWindow *self,
                                       const gchar      *track_uri,
                                       GObject          *user_data);
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+static void
+polyhymnia_window_sidebar_pane_lyrics_toggled (PolyhymniaWindow *self,
+                                               GtkToggleButton  *user_data);
+#endif
 
 /* Class stuff */
 static void
@@ -154,6 +175,7 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, search_entry);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, sidebar_box);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, sidebar_pane_stack);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, library_navigation_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, player_bar);
 
@@ -173,6 +195,8 @@ polyhymnia_window_class_init (PolyhymniaWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaWindow, settings);
 
+  gtk_widget_class_bind_template_callback (widget_class,
+                                           polyhymnia_window_content_show_sidebar_changed);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_window_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
@@ -216,10 +240,19 @@ polyhymnia_window_init (PolyhymniaWindow *self)
   gtk_widget_init_template (GTK_WIDGET (self));
   gtk_list_box_select_row (self->sidebar_box, self->last_modified_sidebar_row);
 
-  g_object_bind_property (polyhymnia_player_bar_get_queue_toggle_button (self->player_bar),
-                          "active",
-                          self->content, "show-sidebar",
-                          G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
+  g_signal_connect_swapped (polyhymnia_player_bar_get_queue_toggle_button (self->player_bar),
+                            "toggled",
+                            (GCallback) polyhymnia_window_sidebar_pane_queue_toggled,
+                            self);
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  gtk_stack_add_titled (self->sidebar_pane_stack,
+                        g_object_new (POLYHYMNIA_TYPE_CURRENT_LYRICS_PANE, NULL),
+                        "lyrics_page", _("Lyrics"));
+  g_signal_connect_swapped (polyhymnia_player_bar_get_lyrics_toggle_button (self->player_bar),
+                            "toggled",
+                            (GCallback) polyhymnia_window_sidebar_pane_lyrics_toggled,
+                            self);
+#endif
 
   g_settings_bind (self->settings, "window-width",
                     self, "default-width",
@@ -244,6 +277,26 @@ polyhymnia_window_album_deleted (PolyhymniaWindow    *self,
 {
   g_assert (POLYHYMNIA_IS_WINDOW (self));
   adw_navigation_view_pop_to_tag (self->library_navigation_view, "albums-list");
+}
+
+
+static void
+polyhymnia_window_content_show_sidebar_changed (PolyhymniaWindow    *self,
+                                                GParamSpec          *pspec,
+                                                AdwOverlaySplitView *user_data)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+  if (!adw_overlay_split_view_get_show_sidebar (user_data))
+  {
+    GtkWidget *queue_button = polyhymnia_player_bar_get_queue_toggle_button (self->player_bar);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (queue_button), FALSE);
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+    {
+      GtkWidget *lyrics_button = polyhymnia_player_bar_get_lyrics_toggle_button (self->player_bar);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (lyrics_button), FALSE);
+    }
+#endif
+  }
 }
 
 static void
@@ -434,17 +487,29 @@ polyhymnia_window_search_stopped (PolyhymniaWindow *self,
 }
 
 static void
-polyhymnia_window_track_show_details (PolyhymniaWindow *self,
-                                      const gchar      *track_uri,
-                                      GObject          *user_data)
+polyhymnia_window_sidebar_pane_queue_toggled (PolyhymniaWindow *self,
+                                              GtkToggleButton  *user_data)
 {
-  GtkApplication *app;
-
   g_assert (POLYHYMNIA_IS_WINDOW (self));
+  g_assert (GTK_IS_TOGGLE_BUTTON (user_data));
 
-  app = gtk_window_get_application (GTK_WINDOW (self));
-  g_action_group_activate_action (G_ACTION_GROUP (app), "track-details",
-                                  g_variant_new_string (track_uri));
+  if (gtk_toggle_button_get_active (user_data))
+  {
+    adw_overlay_split_view_set_show_sidebar (self->content, TRUE);
+    gtk_stack_set_visible_child_name (self->sidebar_pane_stack, "queue_page");
+  }
+  else
+  {
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+    GtkWidget *lyrics_button = polyhymnia_player_bar_get_lyrics_toggle_button (self->player_bar);
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (lyrics_button)))
+    {
+      adw_overlay_split_view_set_show_sidebar (self->content, FALSE);
+    }
+#else
+  adw_overlay_split_view_set_show_sidebar (self->content, FALSE);
+#endif
+  }
 }
 
 static void
@@ -496,3 +561,41 @@ polyhymnia_window_sidebar_row_selected (PolyhymniaWindow    *self,
   }
   gtk_search_bar_set_search_mode (self->search_bar, FALSE);
 }
+
+static void
+polyhymnia_window_track_show_details (PolyhymniaWindow *self,
+                                      const gchar      *track_uri,
+                                      GObject          *user_data)
+{
+  GtkApplication *app;
+
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  app = gtk_window_get_application (GTK_WINDOW (self));
+  g_action_group_activate_action (G_ACTION_GROUP (app), "track-details",
+                                  g_variant_new_string (track_uri));
+}
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+static void
+polyhymnia_window_sidebar_pane_lyrics_toggled (PolyhymniaWindow *self,
+                                               GtkToggleButton  *user_data)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+  g_assert (GTK_IS_TOGGLE_BUTTON (user_data));
+
+  if (gtk_toggle_button_get_active (user_data))
+  {
+    adw_overlay_split_view_set_show_sidebar (self->content, TRUE);
+    gtk_stack_set_visible_child_name (self->sidebar_pane_stack, "lyrics_page");
+  }
+  else
+  {
+    GtkWidget *queue_button = polyhymnia_player_bar_get_queue_toggle_button (self->player_bar);
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (queue_button)))
+    {
+      adw_overlay_split_view_set_show_sidebar (self->content, FALSE);
+    }
+  }
+}
+#endif

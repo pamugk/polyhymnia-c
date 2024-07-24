@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="PolyhymniaPreferencesWindow" parent="AdwPreferencesWindow">
+  <template class="PolyhymniaPreferencesDialog" parent="AdwPreferencesDialog">
     <child>
       <object class="AdwPreferencesPage">
         <property name="icon-name">preferences-system-symbolic</property>
@@ -12,20 +12,6 @@
               <object class="AdwSwitchRow" id="resume_playback_switch">
                 <property name="subtitle" translatable="yes">Resume media playback on application startup</property>
                 <property name="title" translatable="yes">Resume on Startup</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwComboRow">
-                <property name="subtitle" translatable="yes">Page opened on application startup</property>
-                <property name="title" translatable="yes">Start Page</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Library</item>
-                      <item translatable="yes">Radio</item>
-                    </items>
-                  </object>
-                </property>
               </object>
             </child>
             <property name="description" translatable="yes">Common application settings</property>
@@ -59,14 +45,11 @@
         </child>
       </object>
     </child>
-    <property name="destroy-with-parent">True</property>
-    <property name="icon-name">gtk-preferences</property>
-    <property name="modal">True</property>
   </template>
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="notify::initialized"
-      handler="polyhymnia_preferences_window_mpd_client_initialized"
+      handler="polyhymnia_preferences_dialog_mpd_client_initialized"
       swapped="true" />
   </object>
   <object class="GSettings" id="settings">

@@ -26,11 +26,12 @@
     <file preprocess="xml-stripblanks">ui/polyhymnia-search-page.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-tracks-page.ui</file>
 
+    <file preprocess="xml-stripblanks">ui/polyhymnia-current-lyrics-pane.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-player-bar.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-preferences-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-queue-pane.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-statistics-window.ui</file>
-    <file preprocess="xml-stripblanks">ui/polyhymnia-track-details-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-statistics-dialog.ui</file>
+    <file preprocess="xml-stripblanks">ui/polyhymnia-track-details-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/polyhymnia-window.ui</file>
 
     <file alias="gtk/help-overlay.ui" preprocess="xml-stripblanks">ui/gtk/help-overlay.ui</file>
@@ -49,6 +50,7 @@
     <file alias="down-large-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-large-symbolic.svg</file>
     <file alias="down-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/down-symbolic.svg</file>
     <file alias="edit-select-none-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/edit-select-none-symbolic.svg</file>
+    <file alias="globe-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/globe-symbolic.svg</file>
     <file alias="image-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/image-missing-symbolic.svg</file>
     <file alias="info-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/info-symbolic.svg</file>
     <file alias="item-missing-symbolic.svg" preprocess="xml-stripblanks">icons/hicolor/scalable/actions/item-missing-symbolic.svg</file>

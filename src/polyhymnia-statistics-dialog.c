@@ -1,7 +1,7 @@
 
 #include "config.h"
 
-#include "polyhymnia-statistics-window.h"
+#include "polyhymnia-statistics-dialog.h"
 
 #include "polyhymnia-format-utils.h"
 #include "polyhymnia-mpd-client-statistics.h"
@@ -9,9 +9,9 @@
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
 /* Type metadata */
-struct _PolyhymniaStatisticsWindow
+struct _PolyhymniaStatisticsDialog
 {
-  AdwWindow parent_instance;
+  AdwDialog parent_instance;
 
   /* Stored UI state */
   PolyhymniaStatistics *statistics;
@@ -35,97 +35,97 @@ struct _PolyhymniaStatisticsWindow
   PolyhymniaMpdClient *mpd_client;
 };
 
-G_DEFINE_FINAL_TYPE (PolyhymniaStatisticsWindow, polyhymnia_statistics_window, ADW_TYPE_WINDOW)
+G_DEFINE_FINAL_TYPE (PolyhymniaStatisticsDialog, polyhymnia_statistics_dialog, ADW_TYPE_DIALOG)
 
 /* Event handlers declaration */
 static void
-polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
+polyhymnia_statistics_dialog_get_statistics_callback (GObject *source_object,
                                                       GAsyncResult *result,
                                                       gpointer user_data);
 
 static void
-polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
+polyhymnia_statistics_dialog_mpd_client_initialized (PolyhymniaStatisticsDialog *self,
                                                      GParamSpec                 *pspec,
                                                      PolyhymniaMpdClient        *user_data);
 
 static void
-polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *self,
+polyhymnia_statistics_dialog_mpd_database_updated (PolyhymniaStatisticsDialog *self,
                                                    PolyhymniaMpdClient        *user_data);
 
 /* Class stuff */
 static void
-polyhymnia_statistics_window_dispose(GObject *gobject)
+polyhymnia_statistics_dialog_dispose(GObject *gobject)
 {
-  PolyhymniaStatisticsWindow *self = POLYHYMNIA_STATISTICS_WINDOW (gobject);
+  PolyhymniaStatisticsDialog *self = POLYHYMNIA_STATISTICS_DIALOG (gobject);
 
   g_cancellable_cancel (self->statistics_cancellable);
-  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_STATISTICS_WINDOW);
+  gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_STATISTICS_DIALOG);
   g_clear_object (&(self->statistics));
 
-  G_OBJECT_CLASS (polyhymnia_statistics_window_parent_class)->dispose (gobject);
+  G_OBJECT_CLASS (polyhymnia_statistics_dialog_parent_class)->dispose (gobject);
 }
 
 static void
-polyhymnia_statistics_window_class_init (PolyhymniaStatisticsWindowClass *klass)
+polyhymnia_statistics_dialog_class_init (PolyhymniaStatisticsDialogClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class->dispose = polyhymnia_statistics_window_dispose;
+  gobject_class->dispose = polyhymnia_statistics_dialog_dispose;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/com/github/pamugk/polyhymnia/ui/polyhymnia-statistics-window.ui");
+                                               "/com/github/pamugk/polyhymnia/ui/polyhymnia-statistics-dialog.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         content);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         error_status_page);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         root_container);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         spinner);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         artists_count_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         albums_count_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         tracks_count_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         mpd_uptime_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         total_playtime_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         total_played_label);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow,
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog,
                                         last_update_label);
 
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsWindow, mpd_client);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaStatisticsDialog, mpd_client);
 
   gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_statistics_window_mpd_client_initialized);
+                                           polyhymnia_statistics_dialog_mpd_client_initialized);
   gtk_widget_class_bind_template_callback (widget_class,
-                                           polyhymnia_statistics_window_mpd_database_updated);
+                                           polyhymnia_statistics_dialog_mpd_database_updated);
 }
 
 static void
-polyhymnia_statistics_window_init (PolyhymniaStatisticsWindow *self)
+polyhymnia_statistics_dialog_init (PolyhymniaStatisticsDialog *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  polyhymnia_statistics_window_mpd_client_initialized (self, NULL, self->mpd_client);
+  polyhymnia_statistics_dialog_mpd_client_initialized (self, NULL, self->mpd_client);
 }
 
 /* Event handlers implementation */
 static void
-polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
+polyhymnia_statistics_dialog_get_statistics_callback (GObject *source_object,
                                                       GAsyncResult *result,
                                                       gpointer user_data)
 {
   GError *error = NULL;
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   PolyhymniaStatistics *new_statistics;
-  PolyhymniaStatisticsWindow *self = user_data;
+  PolyhymniaStatisticsDialog *self = user_data;
 
   new_statistics = polyhymnia_mpd_client_get_statistics_finish (mpd_client, result, &error);
 
@@ -195,15 +195,15 @@ polyhymnia_statistics_window_get_statistics_callback (GObject *source_object,
 }
 
 static void
-polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow *self,
+polyhymnia_statistics_dialog_mpd_client_initialized (PolyhymniaStatisticsDialog *self,
                                                      GParamSpec                 *pspec,
                                                      PolyhymniaMpdClient        *user_data)
 {
-  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
+  g_assert (POLYHYMNIA_IS_STATISTICS_DIALOG (self));
 
   if (polyhymnia_mpd_client_is_initialized (user_data))
   {
-    polyhymnia_statistics_window_mpd_database_updated (self, user_data);
+    polyhymnia_statistics_dialog_mpd_database_updated (self, user_data);
   }
   else
   {
@@ -212,10 +212,10 @@ polyhymnia_statistics_window_mpd_client_initialized (PolyhymniaStatisticsWindow 
 }
 
 static void
-polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *self,
+polyhymnia_statistics_dialog_mpd_database_updated (PolyhymniaStatisticsDialog *self,
                                                    PolyhymniaMpdClient        *user_data)
 {
-  g_assert (POLYHYMNIA_IS_STATISTICS_WINDOW (self));
+  g_assert (POLYHYMNIA_IS_STATISTICS_DIALOG (self));
 
   if (self->statistics_cancellable != NULL)
   {
@@ -226,7 +226,7 @@ polyhymnia_statistics_window_mpd_database_updated (PolyhymniaStatisticsWindow *s
   self->statistics_cancellable = g_cancellable_new ();
   polyhymnia_mpd_client_get_statistics_async (self->mpd_client,
                                               self->statistics_cancellable,
-                                              polyhymnia_statistics_window_get_statistics_callback,
+                                              polyhymnia_statistics_dialog_get_statistics_callback,
                                               self);
   gtk_spinner_start (self->spinner);
   gtk_scrolled_window_set_child (self->root_container, GTK_WIDGET (self->spinner));
