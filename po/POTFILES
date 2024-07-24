@@ -27,6 +27,7 @@ src/polyhymnia-last-modified-page.c
 src/polyhymnia-queue-pane.c
 src/polyhymnia-playlist-page.c
 src/polyhymnia-playlists-page.c
+src/polyhymnia-preferences-dialog.c
 src/polyhymnia-search-page.c
 src/polyhymnia-statistics-dialog.c
 src/polyhymnia-track-details-dialog.c

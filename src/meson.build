@@ -72,7 +72,8 @@ configure_file(input : 'secrets.h.in', output: 'secrets.h',
   })
 configure_file(input: 'app-features.h.in', output: 'app-features.h',
   configuration: {
-    'POLYHYMNIA_FEATURE_LYRICS': lirycs_feature_enabled
+    'POLYHYMNIA_FEATURE_EXTERNAL_DATA': external_data_feature_enabled,
+    'POLYHYMNIA_FEATURE_LYRICS': lirycs_feature_enabled,
   })
 
 # App executable definition

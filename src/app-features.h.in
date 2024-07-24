@@ -1,4 +1,6 @@
 
 #pragma once
 
+#mesondefine POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
 #mesondefine POLYHYMNIA_FEATURE_LYRICS

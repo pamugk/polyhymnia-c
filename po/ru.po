@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-22 21:27+0500\n"
+"POT-Creation-Date: 2024-07-24 15:26+0500\n"
 "PO-Revision-Date: 2023-09-17 15:37+0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -74,17 +74,15 @@ msgid "Albums"
 msgstr "Альбомы"
 
 #: data/ui/polyhymnia-artists-page.ui:7 data/ui/polyhymnia-artists-page.ui:19
-#: data/ui/polyhymnia-track-details-dialog.ui:412
+#: data/ui/polyhymnia-track-details-dialog.ui:396
 #: data/ui/polyhymnia-window.ui:156
 msgid "Artists"
 msgstr "Артисты"
 
 #: data/ui/polyhymnia-current-lyrics-pane.ui:13
-#: data/ui/polyhymnia-player-bar.ui:168
-#: data/ui/polyhymnia-preferences-dialog.ui:62
-#: data/ui/polyhymnia-track-details-dialog.ui:287
-#: data/ui/polyhymnia-track-details-dialog.ui:669
-#: data/ui/polyhymnia-window.ui:270
+#: src/polyhymnia-preferences-dialog.c:135
+#: src/polyhymnia-track-details-dialog.c:337
+#: src/polyhymnia-track-details-dialog.c:344 src/polyhymnia-window.c:250
 msgid "Lyrics"
 msgstr "Текст песни"
 
@@ -117,11 +115,11 @@ msgid "Duration"
 msgstr "Продолжительность"
 
 #: data/ui/polyhymnia-player-bar.ui:153
-#: data/ui/polyhymnia-track-details-dialog.ui:656
+#: data/ui/polyhymnia-track-details-dialog.ui:624
 msgid "Details"
 msgstr "Подробности"
 
-#: data/ui/polyhymnia-player-bar.ui:179 data/ui/polyhymnia-queue-pane.ui:21
+#: data/ui/polyhymnia-player-bar.ui:167 data/ui/polyhymnia-queue-pane.ui:21
 #: data/ui/polyhymnia-window.ui:257
 msgid "Queue"
 msgstr "Очередь"
@@ -194,19 +192,6 @@ msgstr "Настройка обновления библиотеки"
 msgid "Scan"
 msgstr "Поиск"
 
-#: data/ui/polyhymnia-preferences-dialog.ui:52
-msgid "External Data"
-msgstr "Внешние данные"
-
-#: data/ui/polyhymnia-preferences-dialog.ui:57
-msgid "Look for lyrics on <a href=\"https://genius.com/\">Genius</a>"
-msgstr ""
-"Искать текст песни на платформе <a href=\"https://genius.com/\">Genius</a>"
-
-#: data/ui/polyhymnia-preferences-dialog.ui:61
-msgid "Lyrics search configuration"
-msgstr "Настройка поиска текста песни"
-
 #: data/ui/polyhymnia-queue-pane.ui:16
 msgid "Add to playlist"
 msgstr "Добавить в плейлист"
@@ -240,7 +225,7 @@ msgid "Search results"
 msgstr "Результаты поиска"
 
 #: data/ui/polyhymnia-statistics-dialog.ui:24
-#: data/ui/polyhymnia-track-details-dialog.ui:592
+#: data/ui/polyhymnia-track-details-dialog.ui:576
 msgid "Statistics"
 msgstr "Статистика"
 
@@ -321,57 +306,57 @@ msgstr "Место записи"
 msgid "Comment"
 msgstr "Комментарий"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:307
+#: data/ui/polyhymnia-track-details-dialog.ui:291
 msgid "Sample rate"
 msgstr "Частота дискретизации"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:330
+#: data/ui/polyhymnia-track-details-dialog.ui:314
 msgid "Audio bit depth"
 msgstr "Разрядность"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:353
+#: data/ui/polyhymnia-track-details-dialog.ui:337
 msgid "Channels"
 msgstr "Число каналов"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:392
+#: data/ui/polyhymnia-track-details-dialog.ui:376
 msgid "Audio Format"
 msgstr "Аудиоформат"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:433
+#: data/ui/polyhymnia-track-details-dialog.ui:417
 msgid "Performers"
 msgstr "Исполнители"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:454
+#: data/ui/polyhymnia-track-details-dialog.ui:438
 msgid "Composers"
 msgstr "Композиторы"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:475
+#: data/ui/polyhymnia-track-details-dialog.ui:459
 msgid "Conductors"
 msgstr "Дирижёры"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:496
+#: data/ui/polyhymnia-track-details-dialog.ui:480
 msgid "Ensemble"
 msgstr "Ансамбль"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:533
-#: data/ui/polyhymnia-track-details-dialog.ui:699
+#: data/ui/polyhymnia-track-details-dialog.ui:517
+#: data/ui/polyhymnia-track-details-dialog.ui:654
 msgid "Personnel"
 msgstr "Участники записи"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:551
+#: data/ui/polyhymnia-track-details-dialog.ui:535
 msgid "Label or publisher"
 msgstr "Лейбл или издатель"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:584
-#: data/ui/polyhymnia-track-details-dialog.ui:712
+#: data/ui/polyhymnia-track-details-dialog.ui:568
+#: data/ui/polyhymnia-track-details-dialog.ui:667
 msgid "Legal"
 msgstr "Правовая информация"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:682
+#: data/ui/polyhymnia-track-details-dialog.ui:637
 msgid "Audio format"
 msgstr "Аудиоформат"
 
-#: data/ui/polyhymnia-track-details-dialog.ui:734
+#: data/ui/polyhymnia-track-details-dialog.ui:689
 msgid "Failed to fetch track details"
 msgstr "Ошибка загрузки подробностей о песне"
 
@@ -411,15 +396,15 @@ msgstr "_Обновить"
 msgid "_Full Scan"
 msgstr "_Полностью обновить"
 
-#: data/ui/polyhymnia-window.ui:288
+#: data/ui/polyhymnia-window.ui:279
 msgid "Check your MPD setup and try again"
 msgstr "Проверьте настройки MPD и попробуйте ещё раз"
 
-#: data/ui/polyhymnia-window.ui:290
+#: data/ui/polyhymnia-window.ui:281
 msgid "No MPD connection"
 msgstr "Нет соединения с MPD"
 
-#: data/ui/polyhymnia-window.ui:295
+#: data/ui/polyhymnia-window.ui:286
 msgid "Try again"
 msgstr "Повторить попытку"
 
@@ -508,17 +493,17 @@ msgstr "Артистов не найдено"
 msgid "Search for artists failed"
 msgstr "Поиск артистов завершился с ошибкой"
 
-#: src/polyhymnia-current-lyrics-pane.c:151
+#: src/polyhymnia-current-lyrics-pane.c:158
 msgid "No current song"
 msgstr "Нет песни в списке воспроизведения"
 
-#: src/polyhymnia-current-lyrics-pane.c:255
-#: src/polyhymnia-track-details-dialog.c:678
+#: src/polyhymnia-current-lyrics-pane.c:273
+#: src/polyhymnia-track-details-dialog.c:738
 msgid "Failed to find song lyrics"
 msgstr "Ошибка поиска текста песни"
 
-#: src/polyhymnia-current-lyrics-pane.c:263
-#: src/polyhymnia-track-details-dialog.c:686
+#: src/polyhymnia-current-lyrics-pane.c:287
+#: src/polyhymnia-track-details-dialog.c:752
 msgid "No song lyrics found"
 msgstr "Текст песни не найден"
 
@@ -559,6 +544,19 @@ msgstr "Плейлистов не найдено"
 msgid "Search for playlists failed"
 msgstr "Поиск плейлистов завершился с ошибкой"
 
+#: src/polyhymnia-preferences-dialog.c:115
+msgid "Look for lyrics on <a href=\"https://genius.com/\">Genius</a>"
+msgstr ""
+"Искать текст песни на платформе <a href=\"https://genius.com/\">Genius</a>"
+
+#: src/polyhymnia-preferences-dialog.c:128
+msgid "External Data"
+msgstr "Внешние данные"
+
+#: src/polyhymnia-preferences-dialog.c:134
+msgid "Lyrics search configuration"
+msgstr "Настройка поиска текста песни"
+
 #: src/polyhymnia-search-page.c:285
 msgid "Search query must be at least 2-character long"
 msgstr "Поисковый запрос должен быть длиной как минимум 2 символа"
@@ -575,38 +573,38 @@ msgstr "Песен не найдено"
 msgid "Library not scanned yet"
 msgstr "Библиотека ещё не была обновлена"
 
-#: src/polyhymnia-track-details-dialog.c:399
+#: src/polyhymnia-track-details-dialog.c:438
 msgid "Unknown track"
 msgstr "Неизвестная песня"
 
-#: src/polyhymnia-track-details-dialog.c:401
+#: src/polyhymnia-track-details-dialog.c:440
 msgid "Unknown album"
 msgstr "Неизвестный альбом"
 
-#: src/polyhymnia-track-details-dialog.c:404
+#: src/polyhymnia-track-details-dialog.c:443
 msgid "Unknown artist"
 msgstr "Неизвестный артист"
 
-#: src/polyhymnia-track-details-dialog.c:468
-#: src/polyhymnia-track-details-dialog.c:479
-#: src/polyhymnia-track-details-dialog.c:490
+#: src/polyhymnia-track-details-dialog.c:514
+#: src/polyhymnia-track-details-dialog.c:525
+#: src/polyhymnia-track-details-dialog.c:536
 msgid "Unknown or unspecified"
 msgstr "Значение неизвестно или не указано"
 
-#: src/polyhymnia-track-details-dialog.c:472
+#: src/polyhymnia-track-details-dialog.c:518
 #, c-format
 msgid "%d Hz"
 msgstr "%d Гц"
 
-#: src/polyhymnia-track-details-dialog.c:483
+#: src/polyhymnia-track-details-dialog.c:529
 #, c-format
 msgid "%d bits per sample"
 msgstr "%d бит на сэмпл"
 
-#: src/polyhymnia-window.c:327
+#: src/polyhymnia-window.c:341
 msgid "Stored playlists have changed"
 msgstr "Хранимые плейлисты были изменены"
 
-#: src/polyhymnia-window.c:340
+#: src/polyhymnia-window.c:354
 msgid "Library has been updated"
 msgstr "Библиотека была обновлена"

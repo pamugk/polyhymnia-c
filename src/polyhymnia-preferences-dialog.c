@@ -1,9 +1,12 @@
 
+#include "app-features.h"
 #include "config.h"
 
 #include "polyhymnia-preferences-dialog.h"
 
 #include "polyhymnia-mpd-client-outputs.h"
+
+#define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 
 struct _PolyhymniaPreferencesDialog
 {
@@ -16,7 +19,9 @@ struct _PolyhymniaPreferencesDialog
 
   AdwSwitchRow        *scan_startup_switch;
 
+#ifdef POLYHYMNIA_FEATURE_LYRICS
   AdwSwitchRow        *lyrics_genius_switch;
+#endif
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
@@ -76,7 +81,6 @@ polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klas
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, audio_outputs_group);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, resume_playback_switch);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, scan_startup_switch);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, lyrics_genius_switch);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaPreferencesDialog, settings);
@@ -88,19 +92,58 @@ polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klas
 static void
 polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
 {
+  gboolean allow_external_data_configuration = FALSE;
+  gboolean allow_lyrics_configuration = FALSE;
+
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  polyhymnia_preferences_dialog_mpd_client_initialized (self, NULL,
-                                                        self->mpd_client);
   g_settings_bind (self->settings, "app-system-resume-playback",
                   self->resume_playback_switch, "active",
                   G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "app-library-scan-startup",
                   self->scan_startup_switch, "active",
                   G_SETTINGS_BIND_DEFAULT);
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+#ifdef POLYHYMNIA_FEATURE_LYRICS
+  allow_external_data_configuration = TRUE;
+  allow_lyrics_configuration = TRUE;
+
+  self->lyrics_genius_switch = ADW_SWITCH_ROW (adw_switch_row_new ());
+  adw_action_row_set_subtitle (ADW_ACTION_ROW (self->lyrics_genius_switch),
+                                  _("Look for lyrics on <a href=\"https://genius.com/\">Genius</a>"));
+  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->lyrics_genius_switch), "Genius");
+
   g_settings_bind (self->settings, "app-external-data-lyrics-genius",
                   self->lyrics_genius_switch, "active",
                   G_SETTINGS_BIND_DEFAULT);
+#endif
+
+  if (allow_external_data_configuration)
+  {
+    AdwPreferencesPage *external_data_page = ADW_PREFERENCES_PAGE (adw_preferences_page_new ());
+    adw_preferences_page_set_icon_name (external_data_page, "globe-symbolic");
+    adw_preferences_page_set_name (external_data_page, "external_data_page");
+    adw_preferences_page_set_title (external_data_page, _("External Data"));
+
+    if (allow_lyrics_configuration)
+    {
+      AdwPreferencesGroup *lyrics_group = ADW_PREFERENCES_GROUP (adw_preferences_group_new ());
+      adw_preferences_group_add (lyrics_group, GTK_WIDGET (self->lyrics_genius_switch));
+      adw_preferences_group_set_description (lyrics_group, _("Lyrics search configuration"));
+      adw_preferences_group_set_title (lyrics_group, _("Lyrics"));
+
+      adw_preferences_page_add (external_data_page, lyrics_group);
+    }
+
+    adw_preferences_dialog_add (ADW_PREFERENCES_DIALOG (self),
+                                external_data_page);
+  }
+#endif
+
+  polyhymnia_preferences_dialog_mpd_client_initialized (self, NULL,
+                                                        self->mpd_client);
 }
 
 /* Event handler implementations */
