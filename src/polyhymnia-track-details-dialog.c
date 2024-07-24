@@ -337,19 +337,20 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
                                                              _("Lyrics"),
                                                              "lyrics-page"));
 
-  self->lyrics_row = ADW_ACTION_ROW (adw_action_row_new ());
+  self->lyrics_row = ADW_ACTION_ROW (g_object_ref_sink (adw_action_row_new ()));
   gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (self->lyrics_row), TRUE);
   adw_action_row_add_suffix (self->lyrics_row, gtk_image_new_from_icon_name ("right-symbolic"));
   gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (self->lyrics_row), "navigation.push::lyrics-page");
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->lyrics_row), _("Lyrics"));
   adw_preferences_group_add (self->details_group, GTK_WIDGET (self->lyrics_row));
+  g_object_unref (self->lyrics_row);
 
-  self->lyrics_status_page = ADW_STATUS_PAGE (adw_status_page_new ());
-  self->lyrics_spinner = GTK_SPINNER (gtk_spinner_new ());
+  self->lyrics_status_page = ADW_STATUS_PAGE (g_object_ref_sink (adw_status_page_new ()));
+  self->lyrics_spinner = GTK_SPINNER (g_object_ref_sink (gtk_spinner_new ()));
   gtk_widget_set_halign (GTK_WIDGET (self->lyrics_spinner), GTK_ALIGN_CENTER);
   gtk_widget_set_size_request (GTK_WIDGET (self->lyrics_spinner), 32, 32);
   gtk_widget_set_valign (GTK_WIDGET (self->lyrics_spinner), GTK_ALIGN_CENTER);
-  self->lyrics_web_view = WEBKIT_WEB_VIEW (webkit_web_view_new ());
+  self->lyrics_web_view = WEBKIT_WEB_VIEW (g_object_ref_sink (webkit_web_view_new ()));
   g_signal_connect_swapped (self->lyrics_web_view, "decide-policy",
                             (GCallback) polyhymnia_track_details_dialog_lyrics_web_view_decide_policy,
                             self);
