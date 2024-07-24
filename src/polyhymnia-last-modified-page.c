@@ -186,7 +186,6 @@ polyhymnia_last_modified_page_get_last_modified_tracks_callback (GObject      *s
   GError    *error = NULL;
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   GtkWidget *new_child;
-  GtkWidget *previous_child;
   PolyhymniaLastModifiedPage *self = user_data;
   GPtrArray *tracks;
 
@@ -235,14 +234,9 @@ polyhymnia_last_modified_page_get_last_modified_tracks_callback (GObject      *s
     return;
   }
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 
   gtk_spinner_stop (self->spinner);
@@ -271,9 +265,7 @@ polyhymnia_last_modified_page_mpd_database_updated (PolyhymniaLastModifiedPage *
                                                     PolyhymniaMpdClient  *user_data)
 {
   GDateTime *last_modified_since;
-  GtkWidget *new_child;
   GDateTime *now;
-  GtkWidget *previous_child;
 
   g_assert (POLYHYMNIA_IS_LAST_MODIFIED_PAGE (self));
 
@@ -292,17 +284,11 @@ polyhymnia_last_modified_page_mpd_database_updated (PolyhymniaLastModifiedPage *
   g_date_time_unref (last_modified_since);
   g_date_time_unref (now);
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  new_child = GTK_WIDGET (self->spinner);
   gtk_spinner_start (self->spinner);
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != GTK_WIDGET (self->spinner))
   {
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->spinner));
   }
 }
 

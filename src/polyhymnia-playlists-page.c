@@ -122,7 +122,6 @@ polyhymnia_playlists_page_search_playlists_callback (GObject      *source_object
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   GtkWidget *new_child;
   GPtrArray *playlists;
-  GtkWidget *previous_child;
   PolyhymniaPlaylistsPage *self = user_data;
 
   playlists = polyhymnia_mpd_client_search_playlists_finish (mpd_client, result,
@@ -171,14 +170,9 @@ polyhymnia_playlists_page_search_playlists_callback (GObject      *source_object
     return;
   }
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 
   gtk_spinner_stop (self->spinner);
@@ -212,26 +206,17 @@ polyhymnia_playlists_page_mpd_playlists_changed (PolyhymniaPlaylistsPage *self,
 
   if (self->playlists_cancellable == NULL)
   {
-    GtkWidget *new_child;
-    GtkWidget *previous_child;
-
     self->playlists_cancellable = g_cancellable_new ();
     polyhymnia_mpd_client_search_playlists_async (mpd_client,
                                                   self->playlists_cancellable,
                                                   polyhymnia_playlists_page_search_playlists_callback,
                                                   self);
 
-    new_child = GTK_WIDGET (self->spinner);
-    previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
     gtk_spinner_start (self->spinner);
 
-    if (new_child != previous_child)
+    if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != GTK_WIDGET (self->spinner))
     {
-      adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-      if (previous_child != NULL)
-      {
-        gtk_widget_unparent (previous_child);
-      }
+      adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->spinner));
     }
   }
 }

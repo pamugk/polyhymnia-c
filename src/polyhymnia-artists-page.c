@@ -612,9 +612,6 @@ static void
 polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage *self,
                                               PolyhymniaMpdClient   *user_data)
 {
-  GtkWidget *previous_child;
-  GtkWidget *new_child;
-
   g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
 
   if (self->artists_cancellable != NULL)
@@ -631,17 +628,11 @@ polyhymnia_artists_page_mpd_database_updated (PolyhymniaArtistsPage *self,
 
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->artist_tracks_selection_model));
   gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->artists_selection_model));
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  new_child = GTK_WIDGET (self->artists_spinner);
   gtk_spinner_start (self->artists_spinner);
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != GTK_WIDGET (self->artists_spinner))
   {
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->artists_spinner));
   }
 }
 
@@ -654,7 +645,6 @@ polyhymnia_artists_page_search_artists_callback (GObject      *source_object,
   GError                *error = NULL;
   PolyhymniaMpdClient   *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   GtkWidget             *new_child;
-  GtkWidget             *previous_child;
   PolyhymniaArtistsPage *self = user_data;
 
   artists = polyhymnia_mpd_client_search_artists_finish (mpd_client, result, &error);
@@ -697,14 +687,9 @@ polyhymnia_artists_page_search_artists_callback (GObject      *source_object,
     return;
   }
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 
   gtk_spinner_stop (self->artists_spinner);

@@ -272,9 +272,6 @@ static void
 polyhymnia_search_page_fill (PolyhymniaSearchPage *self)
 {
   GtkWidget *new_child;
-  GtkWidget *previous_child;
-
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
 
   if (self->search_query == NULL
       // Simple trick to avoid O(N) string length measurement
@@ -330,13 +327,9 @@ polyhymnia_search_page_fill (PolyhymniaSearchPage *self)
     }
   }
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 }
 

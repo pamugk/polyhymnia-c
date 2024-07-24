@@ -200,9 +200,6 @@ static void
 polyhymnia_tracks_page_mpd_database_updated (PolyhymniaTracksPage *self,
                                              PolyhymniaMpdClient  *user_data)
 {
-  GtkWidget *previous_child;
-  GtkWidget *new_child;
-
   g_assert (POLYHYMNIA_IS_TRACKS_PAGE (self));
 
   if (self->tracks_cancellable != NULL)
@@ -216,17 +213,11 @@ polyhymnia_tracks_page_mpd_database_updated (PolyhymniaTracksPage *self,
                                              polyhymnia_tracks_page_search_tracks_callback,
                                              self);
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  new_child = GTK_WIDGET (self->spinner);
   gtk_spinner_start (self->spinner);
 
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != GTK_WIDGET (self->spinner))
   {
-    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
+    adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), GTK_WIDGET (self->spinner));
   }
 }
 
@@ -261,7 +252,6 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   GError    *error = NULL;
   PolyhymniaMpdClient *mpd_client = POLYHYMNIA_MPD_CLIENT (source_object);
   GtkWidget *new_child;
-  GtkWidget *previous_child;
   PolyhymniaTracksPage *self = user_data;
   GPtrArray *tracks;
   tracks = polyhymnia_mpd_client_search_tracks_finish (mpd_client, result, &error);
@@ -308,14 +298,9 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
     return;
   }
 
-  previous_child = adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self));
-  if (new_child != previous_child)
+  if (adw_navigation_page_get_child (ADW_NAVIGATION_PAGE (self)) != new_child)
   {
     adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), new_child);
-    if (previous_child != NULL)
-    {
-      gtk_widget_unparent (previous_child);
-    }
   }
 
   gtk_spinner_stop (self->spinner);
