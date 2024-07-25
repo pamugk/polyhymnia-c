@@ -19,8 +19,14 @@ struct _PolyhymniaPreferencesDialog
 
   AdwSwitchRow        *scan_startup_switch;
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+  AdwSwitchRow        *additional_info_lastfm_switch;
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
   AdwSwitchRow        *lyrics_genius_switch;
+#endif
+
 #endif
 
   /* Template objects */
@@ -62,19 +68,12 @@ polyhymnia_preferences_dialog_dispose(GObject *gobject)
 }
 
 static void
-polyhymnia_preferences_dialog_finalize(GObject *gobject)
-{
-  G_OBJECT_CLASS (polyhymnia_preferences_dialog_parent_class)->finalize (gobject);
-}
-
-static void
 polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gobject_class->dispose = polyhymnia_preferences_dialog_dispose;
-  gobject_class->finalize = polyhymnia_preferences_dialog_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/github/pamugk/polyhymnia/ui/polyhymnia-preferences-dialog.ui");
 
@@ -92,7 +91,6 @@ polyhymnia_preferences_dialog_class_init (PolyhymniaPreferencesDialogClass *klas
 static void
 polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
 {
-  gboolean allow_external_data_configuration = FALSE;
   gboolean allow_lyrics_configuration = FALSE;
 
   gtk_widget_init_template (GTK_WIDGET (self));
@@ -106,8 +104,16 @@ polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
 
 #ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
 
+  self->additional_info_lastfm_switch = ADW_SWITCH_ROW (adw_switch_row_new ());
+  adw_action_row_set_subtitle (ADW_ACTION_ROW (self->additional_info_lastfm_switch),
+                                  _("Look for additional info on <a href=\"https://www.last.fm/\">Last.fm</a>"));
+  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->additional_info_lastfm_switch), "Last.fm");
+
+  g_settings_bind (self->settings, "app-external-data-additional-info-lastfm",
+                  self->additional_info_lastfm_switch, "active",
+                  G_SETTINGS_BIND_DEFAULT);
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
-  allow_external_data_configuration = TRUE;
   allow_lyrics_configuration = TRUE;
 
   self->lyrics_genius_switch = ADW_SWITCH_ROW (adw_switch_row_new ());
@@ -120,12 +126,20 @@ polyhymnia_preferences_dialog_init (PolyhymniaPreferencesDialog *self)
                   G_SETTINGS_BIND_DEFAULT);
 #endif
 
-  if (allow_external_data_configuration)
   {
     AdwPreferencesPage *external_data_page = ADW_PREFERENCES_PAGE (adw_preferences_page_new ());
+    AdwPreferencesGroup *additional_info_group = ADW_PREFERENCES_GROUP (adw_preferences_group_new ());
+
+    adw_preferences_page_set_description (external_data_page, _("Configure additional info search about albums / artists / songs (like description, biography, lyrics and so on) on the Internet"));
     adw_preferences_page_set_icon_name (external_data_page, "globe-symbolic");
     adw_preferences_page_set_name (external_data_page, "external_data_page");
     adw_preferences_page_set_title (external_data_page, _("External Data"));
+
+    adw_preferences_group_add (additional_info_group, GTK_WIDGET (self->additional_info_lastfm_switch));
+    adw_preferences_group_set_description (additional_info_group, _("Additional info search configuration"));
+    adw_preferences_group_set_title (additional_info_group, _("Additional info"));
+
+    adw_preferences_page_add (external_data_page, additional_info_group);
 
     if (allow_lyrics_configuration)
     {

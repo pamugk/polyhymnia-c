@@ -99,14 +99,6 @@ polyhymnia_mpd_client_dispose (GObject *gobject)
 }
 
 static void
-polyhymnia_mpd_client_finalize (GObject *gobject)
-{
-  PolyhymniaMpdClient *self = POLYHYMNIA_MPD_CLIENT (gobject);
-
-  G_OBJECT_CLASS (polyhymnia_mpd_client_parent_class)->finalize (gobject);
-}
-
-static void
 polyhymnia_mpd_client_get_property (GObject     *object,
                                     unsigned int property_id,
                                     GValue      *value,
@@ -155,7 +147,6 @@ polyhymnia_mpd_client_class_init (PolyhymniaMpdClientClass *klass)
   gobject_class->constructed = polyhymnia_mpd_client_constructed;
   gobject_class->constructor = polyhymnia_mpd_client_constructor;
   gobject_class->dispose = polyhymnia_mpd_client_dispose;
-  gobject_class->finalize = polyhymnia_mpd_client_finalize;
   gobject_class->get_property = polyhymnia_mpd_client_get_property;
   gobject_class->set_property = polyhymnia_mpd_client_set_property;
 
@@ -889,6 +880,13 @@ polyhymnia_mpd_client_get_album_tracks (PolyhymniaMpdClient *self,
                                      "album-artist", album_artist,
                                      "artist", g_strcmp0 (album_artist, artist) == 0 ? NULL : artist,
                                      "date", date,
+                                     "musicbrainz-album-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ALBUMID, 0),
+                                     "musicbrainz-album-artist-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ALBUMARTISTID, 0),
+                                     "musicbrainz-artist-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ARTISTID, 0),
+                                     "musicbrainz-release-group-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_RELEASEGROUPID, 0),
+                                     "musicbrainz-release-track-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_RELEASETRACKID, 0),
+                                     "musicbrainz-track-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_TRACKID, 0),
+                                     "musicbrainz-work-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_WORKID, 0),
                                      "original-date", mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0),
                                      "duration", mpd_song_get_duration (track),
                                      NULL));
@@ -1045,18 +1043,25 @@ polyhymnia_mpd_client_get_artist_discography (PolyhymniaMpdClient *self,
 
       g_ptr_array_add (results,
                        g_object_new (POLYHYMNIA_TYPE_TRACK,
-                                    "uri", mpd_song_get_uri (track),
-                                    "title", title,
-                                    "album", mpd_song_get_tag (track, MPD_TAG_ALBUM, 0),
-                                    "album-sort", mpd_song_get_tag (track, MPD_TAG_ALBUM_SORT, 0),
-                                    "disc", (unsigned int) disc_number,
-                                    "album-position", mpd_song_get_tag (track, MPD_TAG_TRACK, 0),
-                                    "album-artist", album_artist,
-                                    "artist", g_strcmp0 (album_artist, track_artist) == 0 ? NULL : track_artist,
-                                    "date", date,
-                                    "original-date", mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0),
-                                    "duration", mpd_song_get_duration (track),
-                                    NULL));
+                                     "uri", mpd_song_get_uri (track),
+                                     "title", title,
+                                     "album", mpd_song_get_tag (track, MPD_TAG_ALBUM, 0),
+                                     "album-sort", mpd_song_get_tag (track, MPD_TAG_ALBUM_SORT, 0),
+                                     "disc", (unsigned int) disc_number,
+                                     "album-position", mpd_song_get_tag (track, MPD_TAG_TRACK, 0),
+                                     "album-artist", album_artist,
+                                     "artist", g_strcmp0 (album_artist, track_artist) == 0 ? NULL : track_artist,
+                                     "date", date,
+                                     "musicbrainz-album-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ALBUMID, 0),
+                                     "musicbrainz-album-artist-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ALBUMARTISTID, 0),
+                                     "musicbrainz-artist-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_ARTISTID, 0),
+                                     "musicbrainz-release-group-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_RELEASEGROUPID, 0),
+                                     "musicbrainz-release-track-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_RELEASETRACKID, 0),
+                                     "musicbrainz-track-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_TRACKID, 0),
+                                     "musicbrainz-work-id", mpd_song_get_tag (track, MPD_TAG_MUSICBRAINZ_WORKID, 0),
+                                     "original-date", mpd_song_get_tag (track, MPD_TAG_ORIGINAL_DATE, 0),
+                                     "duration", mpd_song_get_duration (track),
+                                     NULL));
 
       g_free (date_parsed);
     }
@@ -1801,6 +1806,13 @@ polyhymnia_mpd_client_get_song_details (PolyhymniaMpdClient *self,
                                 "location", mpd_song_get_tag (song, MPD_TAG_LOCATION, 0),
                                 "movement", mpd_song_get_tag (song, MPD_TAG_MOVEMENT, 0),
                                 "movement-number", mpd_song_get_tag (song, MPD_TAG_MOVEMENTNUMBER, 0),
+                                "musicbrainz-album-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_ALBUMID, 0),
+                                "musicbrainz-album-artist-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_ALBUMARTISTID, 0),
+                                "musicbrainz-artist-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_ARTISTID, 0),
+                                "musicbrainz-release-group-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_RELEASEGROUPID, 0),
+                                "musicbrainz-release-track-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_RELEASETRACKID, 0),
+                                "musicbrainz-track-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_TRACKID, 0),
+                                "musicbrainz-work-id", mpd_song_get_tag (song, MPD_TAG_MUSICBRAINZ_WORKID, 0),
                                 "original-date", formatted_original_date == NULL ? original_date : formatted_original_date,
                                 "performers", mpd_song_get_tag (song, MPD_TAG_PERFORMER, 0),
                                 "position", mpd_song_get_tag (song, MPD_TAG_TRACK, 0),

@@ -33,6 +33,27 @@ polyhymnia_track_get_duration_readable (const PolyhymniaTrack *self);
 guint
 polyhymnia_track_get_id (const PolyhymniaTrack *self);
 
+const char *
+polyhymnia_track_get_musicbrainz_album_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_album_artist_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_artist_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_release_group_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_release_track_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_track_id (const PolyhymniaTrack *self);
+
+const char *
+polyhymnia_track_get_musicbrainz_work_id (const PolyhymniaTrack *self);
+
 const gchar *
 polyhymnia_track_get_title (const PolyhymniaTrack *self);
 

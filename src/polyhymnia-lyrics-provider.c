@@ -29,7 +29,7 @@ G_DEFINE_FINAL_TYPE (PolyhymniaLyricsProvider, polyhymnia_lyrics_provider, G_TYP
 
 /* Private instance methods declaration */
 static void
-polyhymnia_lyris_provider_genius_get_song_callback (GObject      *source,
+polyhymnia_lyrics_provider_genius_get_song_callback (GObject      *source,
                                                     GAsyncResult *result,
                                                     void         *user_data);
 
@@ -75,14 +75,6 @@ polyhymnia_lyrics_provider_dispose (GObject *gobject)
 }
 
 static void
-polyhymnia_lyrics_provider_finalize (GObject *gobject)
-{
-  PolyhymniaLyricsProvider *self = POLYHYMNIA_LYRICS_PROVIDER (gobject);
-
-  G_OBJECT_CLASS (polyhymnia_lyrics_provider_parent_class)->finalize (gobject);
-}
-
-static void
 polyhymnia_lyrics_provider_class_init (PolyhymniaLyricsProviderClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -90,7 +82,6 @@ polyhymnia_lyrics_provider_class_init (PolyhymniaLyricsProviderClass *klass)
   gobject_class->constructed = polyhymnia_lyrics_provider_constructed;
   gobject_class->constructor = polyhymnia_lyrics_provider_constructor;
   gobject_class->dispose = polyhymnia_lyrics_provider_dispose;
-  gobject_class->finalize = polyhymnia_lyrics_provider_finalize;
 }
 
 static void
@@ -158,13 +149,13 @@ polyhymnia_lyrics_provider_search_lyrics_finish (PolyhymniaLyricsProvider *self,
                                                  GAsyncResult             *result,
                                                  GError                  **error)
 {
-  g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
   return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 /* Private instance methods implementation */
 static void
-polyhymnia_lyris_provider_genius_get_song_callback (GObject      *source,
+polyhymnia_lyrics_provider_genius_get_song_callback (GObject      *source,
                                                     GAsyncResult *result,
                                                     void         *user_data)
 {
@@ -391,7 +382,7 @@ polyhymnia_lyrics_provider_genius_search_callback (GObject      *source,
                                        "Authorization", "Bearer " POLYHYMNIA_GENIUS_CLIENT_ACCESS_TOKEN);
           soup_session_send_async (self->common_session, message,
                                    G_PRIORITY_DEFAULT, g_task_get_cancellable (task),
-                                   polyhymnia_lyris_provider_genius_get_song_callback,
+                                   polyhymnia_lyrics_provider_genius_get_song_callback,
                                    task);
 
           g_object_unref (message);

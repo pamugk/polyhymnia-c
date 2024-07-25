@@ -6,8 +6,6 @@
 
 G_BEGIN_DECLS
 
-#define POLYHYMNIA_TYPE_LYRICS_PROVIDER (polyhymnia_lyrics_provider_get_type())
-
 typedef struct
 {
   char *artist;
@@ -16,6 +14,8 @@ typedef struct
 
 void
 polyhymnia_search_lyrics_request_free (PolyhymniaSearchLyricsRequest *self);
+
+#define POLYHYMNIA_TYPE_LYRICS_PROVIDER (polyhymnia_lyrics_provider_get_type())
 
 G_DECLARE_FINAL_TYPE (PolyhymniaLyricsProvider, polyhymnia_lyrics_provider, POLYHYMNIA, LYRICS_PROVIDER, GObject)
 

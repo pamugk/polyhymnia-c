@@ -18,6 +18,13 @@ typedef enum
   PROP_LOCATION,
   PROP_MOVEMENT,
   PROP_MOVEMENT_NUMBER,
+  PROP_MUSICBRAINZ_ALBUM_ID,
+  PROP_MUSICBRAINZ_ALBUM_ARTIST_ID,
+  PROP_MUSICBRAINZ_ARTIST_ID,
+  PROP_MUSICBRAINZ_RELEASE_GROUP_ID,
+  PROP_MUSICBRAINZ_RELEASE_TRACK_ID,
+  PROP_MUSICBRAINZ_TRACK_ID,
+  PROP_MUSICBRAINZ_WORK_ID,
   PROP_ORIGINAL_DATE,
   PROP_PERFORMERS,
   PROP_POSITION,
@@ -47,6 +54,13 @@ struct _PolyhymniaTrackFullInfo
   char                  *location;
   char                  *movement;
   char                  *movement_number;
+  char                  *musicbrainz_album_id;
+  char                  *musicbrainz_album_artist_id;
+  char                  *musicbrainz_artist_id;
+  char                  *musicbrainz_release_group_id;
+  char                  *musicbrainz_release_track_id;
+  char                  *musicbrainz_track_id;
+  char                  *musicbrainz_work_id;
   char                  *original_date;
   char                  *performers;
   char                  *position;
@@ -80,6 +94,13 @@ polyhymnia_track_full_info_finalize (GObject *gobject)
   g_free (self->location);
   g_free (self->movement);
   g_free (self->movement_number);
+  g_free (self->musicbrainz_album_id);
+  g_free (self->musicbrainz_album_artist_id);
+  g_free (self->musicbrainz_artist_id);
+  g_free (self->musicbrainz_release_group_id);
+  g_free (self->musicbrainz_release_track_id);
+  g_free (self->musicbrainz_track_id);
+  g_free (self->musicbrainz_work_id);
   g_free (self->original_date);
   g_free (self->performers);
   g_free (self->position);
@@ -142,6 +163,27 @@ polyhymnia_track_full_info_get_property (GObject    *object,
       break;
     case PROP_MOVEMENT_NUMBER:
       g_value_set_string (value, self->movement_number);
+      break;
+    case PROP_MUSICBRAINZ_ALBUM_ID:
+      g_value_set_string (value, self->musicbrainz_album_id);
+      break;
+    case PROP_MUSICBRAINZ_ALBUM_ARTIST_ID:
+      g_value_set_string (value, self->musicbrainz_album_artist_id);
+      break;
+    case PROP_MUSICBRAINZ_ARTIST_ID:
+      g_value_set_string (value, self->musicbrainz_artist_id);
+      break;
+    case PROP_MUSICBRAINZ_RELEASE_GROUP_ID:
+      g_value_set_string (value, self->musicbrainz_release_group_id);
+      break;
+    case PROP_MUSICBRAINZ_RELEASE_TRACK_ID:
+      g_value_set_string (value, self->musicbrainz_release_track_id);
+      break;
+    case PROP_MUSICBRAINZ_TRACK_ID:
+      g_value_set_string (value, self->musicbrainz_track_id);
+      break;
+    case PROP_MUSICBRAINZ_WORK_ID:
+      g_value_set_string (value, self->musicbrainz_work_id);
       break;
     case PROP_ORIGINAL_DATE:
       g_value_set_string (value, self->original_date);
@@ -222,6 +264,27 @@ polyhymnia_track_full_info_set_property (GObject      *object,
       break;
     case PROP_MOVEMENT_NUMBER:
       g_set_str (&(self->movement_number), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_ALBUM_ID:
+      g_set_str (&(self->musicbrainz_album_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_ALBUM_ARTIST_ID:
+      g_set_str (&(self->musicbrainz_album_artist_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_ARTIST_ID:
+      g_set_str (&(self->musicbrainz_artist_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_RELEASE_GROUP_ID:
+      g_set_str (&(self->musicbrainz_release_group_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_RELEASE_TRACK_ID:
+      g_set_str (&(self->musicbrainz_release_track_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_TRACK_ID:
+      g_set_str (&(self->musicbrainz_track_id), g_value_get_string (value));
+      break;
+    case PROP_MUSICBRAINZ_WORK_ID:
+      g_set_str (&(self->musicbrainz_work_id), g_value_get_string (value));
       break;
     case PROP_ORIGINAL_DATE:
       g_set_str (&(self->original_date), g_value_get_string (value));
@@ -342,6 +405,48 @@ polyhymnia_track_full_info_class_init (PolyhymniaTrackFullInfoClass *klass)
     g_param_spec_string ("movement-number",
                          "Movement number",
                          "Movement number, e.g. “2” or “II”",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_ALBUM_ID] =
+    g_param_spec_string ("musicbrainz-album-id",
+                         "MusicBrainz album id",
+                         "The album id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_ALBUM_ARTIST_ID] =
+    g_param_spec_string ("musicbrainz-album-artist-id",
+                         "MusicBrainz album artist id",
+                         "The album artist id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_ARTIST_ID] =
+    g_param_spec_string ("musicbrainz-artist-id",
+                         "MusicBrainz artist id",
+                         "The artist id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_RELEASE_GROUP_ID] =
+    g_param_spec_string ("musicbrainz-release-group-id",
+                         "MusicBrainz release group id",
+                         "The release group id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_RELEASE_TRACK_ID] =
+    g_param_spec_string ("musicbrainz-release-track-id",
+                         "MusicBrainz release track id",
+                         "The release track id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_TRACK_ID] =
+    g_param_spec_string ("musicbrainz-track-id",
+                         "MusicBrainz track id",
+                         "The track id in the MusicBrainz database",
+                         NULL,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_MUSICBRAINZ_WORK_ID] =
+    g_param_spec_string ("musicbrainz-work-id",
+                         "MusicBrainz work id",
+                         "The work id in the MusicBrainz database",
                          NULL,
                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_properties[PROP_ORIGINAL_DATE] =
@@ -494,6 +599,48 @@ polyhymnia_track_full_info_get_movement_number (PolyhymniaTrackFullInfo *self)
 {
   g_return_val_if_fail (POLYHYMNIA_IS_TRACK_FULL_INFO (self), NULL);
   return self->movement_number;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_album_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_album_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_album_artist_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_album_artist_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_artist_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_artist_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_release_group_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_release_group_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_release_track_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_release_track_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_track_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_track_id;
+}
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_work_id (PolyhymniaTrackFullInfo *self)
+{
+  return self->musicbrainz_work_id;
 }
 
 const char *

@@ -48,6 +48,9 @@ json_glib = dependency('json-glib-1.0', version: '>= 1.2', required: external_da
 libsoup = dependency('libsoup-3.0', required: external_data_feature)
 external_data_feature_enabled = json_glib.found() and libsoup.found()
 if external_data_feature_enabled
+  polyhymnia_sources += [
+    'polyhymnia-additional-info-provider.c',
+  ]
   polyhymnia_deps += [
     json_glib,
     libsoup,
@@ -68,7 +71,8 @@ endif
 # Configuration headers generation
 configure_file(input : 'secrets.h.in', output: 'secrets.h',
   configuration: {
-    'genius_client_access_token': get_option('genius_client_access_token')
+    'genius_client_access_token': get_option('genius_client_access_token'),
+    'lastfm_api_key': get_option('lastfm_api_key'),
   })
 configure_file(input: 'app-features.h.in', output: 'app-features.h',
   configuration: {

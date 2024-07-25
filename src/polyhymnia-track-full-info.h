@@ -56,6 +56,27 @@ const char *
 polyhymnia_track_full_info_get_movement_number (PolyhymniaTrackFullInfo *self);
 
 const char *
+polyhymnia_track_full_info_get_musicbrainz_album_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_album_artist_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_artist_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_release_group_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_release_track_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_track_id (PolyhymniaTrackFullInfo *self);
+
+const char *
+polyhymnia_track_full_info_get_musicbrainz_work_id (PolyhymniaTrackFullInfo *self);
+
+const char *
 polyhymnia_track_full_info_get_original_date (PolyhymniaTrackFullInfo *self);
 
 const char *

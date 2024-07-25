@@ -2,6 +2,9 @@
 <schemalist gettext-domain="polyhymnia">
 	<schema id="com.github.pamugk.polyhymnia" path="/com/github/pamugk/polyhymnia/">
 	  <!-- Application preferences -->
+	  <key name="app-external-data-additional-info-lastfm" type="b">
+	    <default>true</default>
+	  </key>
 	  <key name="app-external-data-lyrics-genius" type="b">
 	    <default>true</default>
 	  </key>
