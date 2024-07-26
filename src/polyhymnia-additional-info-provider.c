@@ -300,7 +300,6 @@ polyhymnia_additional_info_provider_search_track_info_async (PolyhymniaAdditiona
       g_string_append_uri_escaped (uri_query, request->track_name,
                                    NULL, TRUE);
     }
-    g_debug ("URI query: %s", uri_query->str);
     message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
                                                   LASTFM_API_HOST,
                                                   g_string_free_and_steal (uri_query));

@@ -104,9 +104,11 @@ struct _PolyhymniaTrackDetailsDialog
   AdwActionRow                     *additional_info_row;
 
   AdwToolbarView                   *additional_info_page_content;
+  GtkScrolledWindow                *additional_info_page_scrolled_window;
   GtkSpinner                       *additional_info_spinner;
   AdwStatusPage                    *additional_info_status_page;
   GtkLabel                         *additional_info_label;
+  AdwClamp                         *additional_info_label_clamp;
 
   PolyhymniaAdditionalInfoProvider *additional_info_provider;
   GCancellable                     *additional_info_cancellable;
@@ -208,7 +210,7 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
 
   g_clear_object (&(self->additional_info_status_page));
   g_clear_object (&(self->additional_info_spinner));
-  g_clear_object (&(self->additional_info_label));
+  g_clear_object (&(self->additional_info_label_clamp));
   g_clear_object (&(self->additional_info_provider));
 
 #ifdef POLYHYMNIA_FEATURE_LYRICS
@@ -219,6 +221,7 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
 
   g_clear_object (&(self->lyrics_status_page));
   g_clear_object (&(self->lyrics_spinner));
+  webkit_web_view_stop_loading (self->lyrics_web_view);
   g_clear_object (&(self->lyrics_web_view));
   g_clear_object (&(self->lyrics_provider));
   g_clear_object (&(self->uri_launcher));
@@ -370,9 +373,26 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
 #ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  self->additional_info_page_scrolled_window = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ());
+  gtk_scrolled_window_set_policy (self->additional_info_page_scrolled_window,
+                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
   self->additional_info_page_content = ADW_TOOLBAR_VIEW (adw_toolbar_view_new ());
+  {
+    AdwBin   *lastfm_bin = ADW_BIN (adw_bin_new ());
+    GtkLabel *lastfm_label = GTK_LABEL (gtk_label_new (_("Powered by <a href=\"https://www.last.fm\">Last.fm</a>")));
+    gtk_label_set_use_markup (lastfm_label, TRUE);
+    gtk_label_set_xalign (lastfm_label, 0);
+    adw_bin_set_child (lastfm_bin, GTK_WIDGET (lastfm_label));
+    gtk_widget_add_css_class (GTK_WIDGET (lastfm_bin), "toolbar");
+
+    adw_toolbar_view_add_bottom_bar (self->additional_info_page_content,
+                                     GTK_WIDGET (lastfm_bin));
+  }
   adw_toolbar_view_add_top_bar (self->additional_info_page_content,
                                 adw_header_bar_new ());
+  adw_toolbar_view_set_content (self->additional_info_page_content,
+                                GTK_WIDGET (self->additional_info_page_scrolled_window));
   adw_navigation_view_add (self->root_navigation_view,
                            adw_navigation_page_new_with_tag (GTK_WIDGET (self->additional_info_page_content),
                                                              _("Additional Info"),
@@ -391,11 +411,18 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
   gtk_widget_set_halign (GTK_WIDGET (self->additional_info_spinner), GTK_ALIGN_CENTER);
   gtk_widget_set_size_request (GTK_WIDGET (self->additional_info_spinner), 32, 32);
   gtk_widget_set_valign (GTK_WIDGET (self->additional_info_spinner), GTK_ALIGN_CENTER);
-  self->additional_info_label = GTK_LABEL (g_object_ref_sink (gtk_label_new (NULL)));
+  self->additional_info_label = GTK_LABEL (gtk_label_new (NULL));
   gtk_label_set_use_markup (self->additional_info_label, TRUE);
   gtk_label_set_wrap (self->additional_info_label, TRUE);
   gtk_label_set_xalign (self->additional_info_label, 0);
   gtk_label_set_yalign (self->additional_info_label, 0);
+  self->additional_info_label_clamp = ADW_CLAMP (g_object_ref_sink (adw_clamp_new ()));
+  adw_clamp_set_child (self->additional_info_label_clamp,
+                       GTK_WIDGET (self->additional_info_label));
+  gtk_widget_set_margin_bottom (GTK_WIDGET (self->additional_info_label), 16);
+  gtk_widget_set_margin_end (GTK_WIDGET (self->additional_info_label), 12);
+  gtk_widget_set_margin_start (GTK_WIDGET (self->additional_info_label), 16);
+  gtk_widget_set_margin_top (GTK_WIDGET (self->additional_info_label), 12);
 
   self->additional_info_provider = g_object_new (POLYHYMNIA_TYPE_ADDITIONAL_INFO_PROVIDER, NULL);
 
@@ -557,12 +584,14 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
       additional_info_request.track_name = polyhymnia_track_full_info_get_title (details);
 
       self->additional_info_cancellable = g_cancellable_new ();
-      if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_spinner))
+      if (gtk_scrolled_window_get_child (self->additional_info_page_scrolled_window) != GTK_WIDGET (self->additional_info_spinner))
       {
-        adw_toolbar_view_set_content (self->additional_info_page_content,
-                                      GTK_WIDGET (g_object_ref (self->additional_info_spinner)));
+        gtk_scrolled_window_set_child (self->additional_info_page_scrolled_window,
+                                       GTK_WIDGET (g_object_ref (self->additional_info_spinner)));
       }
       gtk_spinner_start (self->lyrics_spinner);
+      adw_toolbar_view_set_reveal_bottom_bars (self->additional_info_page_content,
+                                               FALSE);
       polyhymnia_additional_info_provider_search_track_info_async (self->additional_info_provider,
                                                                    &additional_info_request,
                                                                    self->additional_info_cancellable,
@@ -722,10 +751,17 @@ polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDial
 
   if (self->song_details_cancellable == NULL)
   {
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+    g_cancellable_cancel (self->additional_info_cancellable);
+    g_clear_object (&(self->additional_info_cancellable));
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
     webkit_web_view_stop_loading (self->lyrics_web_view);
     g_cancellable_cancel (self->song_lyrics_cancellable);
     g_clear_object (&(self->song_lyrics_cancellable));
+#endif
+
 #endif
 
     self->song_details_cancellable = g_cancellable_new ();
@@ -749,7 +785,7 @@ polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *s
 {
   GError                            *error = NULL;
   PolyhymniaSearchTrackInfoResponse *response;
-  PolyhymniaTrackDetailsDialog      *self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
+  PolyhymniaTrackDetailsDialog      *self;
 
   response = polyhymnia_additional_info_provider_search_track_info_finish (POLYHYMNIA_ADDITIONAL_INFO_PROVIDER (source),
                                                                            result,
@@ -762,36 +798,32 @@ polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *s
     }
     else
     {
+      self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
       g_object_set (G_OBJECT (self->additional_info_status_page),
                     "description", _("Failed to find additional info"),
                     NULL);
-      if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_status_page))
-      {
-        adw_toolbar_view_set_content (self->additional_info_page_content,
-                                      GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
-      }
+      gtk_scrolled_window_set_child (self->additional_info_page_scrolled_window,
+                                     GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
     }
   }
   else if (response == NULL || response->description_full == NULL)
   {
+    self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
     g_object_set (G_OBJECT (self->additional_info_status_page),
                   "description", _("No additional info found"),
                   NULL);
-    if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_status_page))
-    {
-      adw_toolbar_view_set_content (self->additional_info_page_content,
-                                    GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
-    }
+    gtk_scrolled_window_set_child (self->additional_info_page_scrolled_window,
+                                   GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
   }
   else
   {
+    self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
     gtk_label_set_label (self->additional_info_label, response->description_full);
 
-    if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_label))
-    {
-      adw_toolbar_view_set_content (self->additional_info_page_content,
-                                    GTK_WIDGET (g_object_ref (self->additional_info_label)));
-    }
+    gtk_scrolled_window_set_child (self->additional_info_page_scrolled_window,
+                                   GTK_WIDGET (g_object_ref (self->additional_info_label_clamp)));
+    adw_toolbar_view_set_reveal_bottom_bars (self->additional_info_page_content,
+                                             TRUE);
   }
 
   gtk_spinner_stop (GTK_SPINNER (self->additional_info_spinner));
@@ -856,15 +888,12 @@ polyhymnia_track_details_dialog_lyrics_web_view_load_changed (PolyhymniaTrackDet
                                                               WebKitLoadEvent               load_event,
                                                               WebKitWebView                *user_data)
 {
-  g_assert (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
-
   if (load_event == WEBKIT_LOAD_FINISHED)
   {
-    if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_web_view))
-    {
-      adw_toolbar_view_set_content (self->lyrics_page_content,
-                                    GTK_WIDGET (g_object_ref (self->lyrics_web_view)));
-    }
+    g_return_if_fail (POLYHYMNIA_IS_TRACK_DETAILS_DIALOG (self));
+
+    adw_toolbar_view_set_content (self->lyrics_page_content,
+                                  GTK_WIDGET (g_object_ref (self->lyrics_web_view)));
   }
 }
 
@@ -875,7 +904,7 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
 {
   GError                       *error = NULL;
   char                         *lyrics;
-  PolyhymniaTrackDetailsDialog *self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
+  PolyhymniaTrackDetailsDialog *self;
 
   lyrics = polyhymnia_lyrics_provider_search_lyrics_finish (POLYHYMNIA_LYRICS_PROVIDER (source),
                                                             result,
@@ -888,32 +917,29 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
     }
     else
     {
+      self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
       g_object_set (G_OBJECT (self->lyrics_status_page),
                     "description", _("Failed to find song lyrics"),
                     NULL);
-      if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_status_page))
-      {
-        adw_toolbar_view_set_content (self->lyrics_page_content,
-                                      GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
-      }
+      adw_toolbar_view_set_content (self->lyrics_page_content,
+                                    GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
       gtk_spinner_stop (GTK_SPINNER (self->lyrics_spinner));
     }
   }
   else if (lyrics == NULL)
   {
+    self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
     g_object_set (G_OBJECT (self->lyrics_status_page),
                   "description", _("No song lyrics found"),
                   NULL);
-    if (adw_toolbar_view_get_content (self->lyrics_page_content) != GTK_WIDGET (self->lyrics_status_page))
-    {
-      adw_toolbar_view_set_content (self->lyrics_page_content,
-                                    GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
-    }
+    adw_toolbar_view_set_content (self->lyrics_page_content,
+                                  GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
     gtk_spinner_stop (GTK_SPINNER (self->lyrics_spinner));
   }
   else
   {
     GString *lyrics_string = g_string_new_take (lyrics);
+    self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
     // This is needed to bypass problems with script download
     g_string_replace (lyrics_string, "src='//", "src='https://", 0);
     // This is needed to follow dark theme (if enabled)
