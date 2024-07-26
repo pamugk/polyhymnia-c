@@ -8,7 +8,7 @@ G_BEGIN_DECLS
 
 typedef struct
 {
-  char *album_music_brainz_id;
+  char *album_musicbrainz_id;
   char *album_name;
   char *artist_name;
 } PolyhymniaSearchAlbumInfoRequest;
@@ -24,7 +24,7 @@ polyhymnia_search_album_info_response_free (PolyhymniaSearchAlbumInfoResponse *s
 
 typedef struct
 {
-  char *artist_music_brainz_id;
+  char *artist_musicbrainz_id;
   char *artist_name;
 } PolyhymniaSearchArtistInfoRequest;
 
@@ -39,9 +39,9 @@ polyhymnia_search_artist_info_response_free (PolyhymniaSearchArtistInfoResponse 
 
 typedef struct
 {
-  char *artist_name;
-  char *track_music_brainz_id;
-  char *track_name;
+  const char *artist_name;
+  const char *track_musicbrainz_id;
+  const char *track_name;
 } PolyhymniaSearchTrackInfoRequest;
 
 typedef struct
@@ -88,7 +88,7 @@ polyhymnia_additional_info_provider_search_track_info_async (PolyhymniaAdditiona
                                                              GAsyncReadyCallback                     callback,
                                                              void                                   *user_data);
 
-char *
+PolyhymniaSearchTrackInfoResponse *
 polyhymnia_additional_info_provider_search_track_info_finish (PolyhymniaAdditionalInfoProvider *self,
                                                               GAsyncResult                     *result,
                                                               GError                          **error);

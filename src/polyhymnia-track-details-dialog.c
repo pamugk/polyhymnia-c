@@ -7,9 +7,15 @@
 #include "polyhymnia-mpd-client-details.h"
 #include "polyhymnia-mpd-client-images.h"
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+#include "polyhymnia-additional-info-provider.h"
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
 #include <webkit/webkit.h>
 #include "polyhymnia-lyrics-provider.h"
+#endif
+
 #endif
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
@@ -26,86 +32,99 @@ struct _PolyhymniaTrackDetailsDialog
   AdwDialog parent_instance;
 
   /* Stored UI state */
-  GCancellable             *song_details_cancellable;
+  GCancellable                      *song_details_cancellable;
 
   /* Template widgets */
-  AdwNavigationView        *root_navigation_view;
+  AdwNavigationView                 *root_navigation_view;
 
-  AdwStatusPage            *error_status_page;
-  AdwClamp                 *main_content;
-  GtkScrolledWindow        *main_scrolled_window;
-  GtkSpinner               *spinner;
+  AdwStatusPage                     *error_status_page;
+  AdwClamp                          *main_content;
+  GtkScrolledWindow                 *main_scrolled_window;
+  GtkSpinner                        *spinner;
 
-  GtkImage                 *album_cover_image;
-  GtkLabel                 *track_title_label;
-  GtkLabel                 *album_title_label;
-  GtkLabel                 *album_artist_label;
+  GtkImage                          *album_cover_image;
+  GtkLabel                          *track_title_label;
+  GtkLabel                          *album_title_label;
+  GtkLabel                          *album_artist_label;
 
-  AdwPreferencesGroup      *details_group;
-  AdwActionRow             *details_row;
-  AdwActionRow             *audio_format_row;
+  AdwPreferencesGroup               *details_group;
+  AdwActionRow                      *details_row;
+  AdwActionRow                      *audio_format_row;
 
-  GtkBox                   *genre_row;
-  GtkLabel                 *genre_label;
-  GtkBox                   *disc_row;
-  GtkLabel                 *disc_label;
-  GtkBox                   *position_row;
-  GtkLabel                 *position_label;
-  GtkBox                   *date_row;
-  GtkLabel                 *date_label;
-  GtkBox                   *original_date_row;
-  GtkLabel                 *original_date_label;
-  GtkBox                   *work_row;
-  GtkLabel                 *work_label;
-  GtkBox                   *movement_row;
-  GtkLabel                 *movement_label;
-  GtkBox                   *movement_number_row;
-  GtkLabel                 *movement_number_label;
-  GtkBox                   *location_row;
-  GtkLabel                 *location_label;
-  GtkBox                   *comment_row;
-  GtkLabel                 *comment_label;
+  GtkBox                            *genre_row;
+  GtkLabel                          *genre_label;
+  GtkBox                            *disc_row;
+  GtkLabel                          *disc_label;
+  GtkBox                            *position_row;
+  GtkLabel                          *position_label;
+  GtkBox                            *date_row;
+  GtkLabel                          *date_label;
+  GtkBox                            *original_date_row;
+  GtkLabel                          *original_date_label;
+  GtkBox                            *work_row;
+  GtkLabel                          *work_label;
+  GtkBox                            *movement_row;
+  GtkLabel                          *movement_label;
+  GtkBox                            *movement_number_row;
+  GtkLabel                          *movement_number_label;
+  GtkBox                            *location_row;
+  GtkLabel                          *location_label;
+  GtkBox                            *comment_row;
+  GtkLabel                          *comment_label;
 
-  GtkLabel                 *sample_rate_label;
-  GtkLabel                 *bps_label;
-  GtkLabel                 *channels_label;
+  GtkLabel                          *sample_rate_label;
+  GtkLabel                          *bps_label;
+  GtkLabel                          *channels_label;
 
-  AdwPreferencesGroup      *legal_group;
-  AdwActionRow             *personnel_row;
-  AdwActionRow             *legal_row;
+  AdwPreferencesGroup               *legal_group;
+  AdwActionRow                      *personnel_row;
+  AdwActionRow                      *legal_row;
 
-  GtkBox                   *artists_row;
-  GtkLabel                 *artists_label;
-  GtkBox                   *performers_row;
-  GtkLabel                 *performers_label;
-  GtkBox                   *composers_row;
-  GtkLabel                 *composers_label;
-  GtkBox                   *conductors_row;
-  GtkLabel                 *conductors_label;
-  GtkBox                   *ensemble_row;
-  GtkLabel                 *ensemble_label;
+  GtkBox                            *artists_row;
+  GtkLabel                          *artists_label;
+  GtkBox                            *performers_row;
+  GtkLabel                          *performers_label;
+  GtkBox                            *composers_row;
+  GtkLabel                          *composers_label;
+  GtkBox                            *conductors_row;
+  GtkLabel                          *conductors_label;
+  GtkBox                            *ensemble_row;
+  GtkLabel                          *ensemble_label;
 
-  GtkLabel                 *publisher_label;
+  GtkLabel                          *publisher_label;
 
   /* Template objects */
-  PolyhymniaMpdClient      *mpd_client;
+  PolyhymniaMpdClient               *mpd_client;
 
   /* Instance properties */
   gchar *track_uri;
 
   /* Feature-specific fields */
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  AdwActionRow                     *additional_info_row;
+
+  AdwToolbarView                   *additional_info_page_content;
+  GtkSpinner                       *additional_info_spinner;
+  AdwStatusPage                    *additional_info_status_page;
+  GtkLabel                         *additional_info_label;
+
+  PolyhymniaAdditionalInfoProvider *additional_info_provider;
+  GCancellable                     *additional_info_cancellable;
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
-  AdwActionRow             *lyrics_row;
+  AdwActionRow                     *lyrics_row;
 
-  AdwToolbarView           *lyrics_page_content;
-  GtkSpinner               *lyrics_spinner;
-  AdwStatusPage            *lyrics_status_page;
-  WebKitWebView            *lyrics_web_view;
+  AdwToolbarView                   *lyrics_page_content;
+  GtkSpinner                       *lyrics_spinner;
+  AdwStatusPage                    *lyrics_status_page;
+  WebKitWebView                    *lyrics_web_view;
 
-  PolyhymniaLyricsProvider *lyrics_provider;
-  GCancellable             *song_lyrics_cancellable;
-  GtkUriLauncher           *uri_launcher;
-  GCancellable             *uri_launcher_cancellable;
+  PolyhymniaLyricsProvider         *lyrics_provider;
+  GCancellable                     *song_lyrics_cancellable;
+  GtkUriLauncher                   *uri_launcher;
+  GCancellable                     *uri_launcher_cancellable;
+#endif
+
 #endif
 };
 
@@ -127,6 +146,13 @@ polyhymnia_track_details_dialog_mpd_client_initialized (PolyhymniaTrackDetailsDi
 static void
 polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDialog *self,
                                                       PolyhymniaMpdClient          *user_data);
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+static void
+polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *source,
+                                                                 GAsyncResult *result,
+                                                                 gpointer      user_data);
 
 #ifdef POLYHYMNIA_FEATURE_LYRICS
 static gboolean
@@ -151,6 +177,8 @@ polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
                                                    gpointer      user_data);
 #endif
 
+#endif
+
 /* Private methods declaration */
 static void
 polyhymnia_track_details_dialog_fill_cover (PolyhymniaTrackDetailsDialog *self);
@@ -172,6 +200,17 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
   PolyhymniaTrackDetailsDialog *self = POLYHYMNIA_TRACK_DETAILS_DIALOG (gobject);
 
   g_cancellable_cancel (self->song_details_cancellable);
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+  g_cancellable_cancel (self->additional_info_cancellable);
+  g_clear_object (&(self->additional_info_cancellable));
+
+  g_clear_object (&(self->additional_info_status_page));
+  g_clear_object (&(self->additional_info_spinner));
+  g_clear_object (&(self->additional_info_label));
+  g_clear_object (&(self->additional_info_provider));
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
   g_cancellable_cancel (self->song_lyrics_cancellable);
   g_clear_object (&(self->song_lyrics_cancellable));
@@ -183,6 +222,8 @@ polyhymnia_track_details_dialog_dispose(GObject *gobject)
   g_clear_object (&(self->lyrics_web_view));
   g_clear_object (&(self->lyrics_provider));
   g_clear_object (&(self->uri_launcher));
+#endif
+
 #endif
   g_clear_pointer (&(self->track_uri), g_free);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_TRACK_DETAILS_DIALOG);
@@ -328,6 +369,36 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
 
   gtk_widget_init_template (GTK_WIDGET (self));
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  self->additional_info_page_content = ADW_TOOLBAR_VIEW (adw_toolbar_view_new ());
+  adw_toolbar_view_add_top_bar (self->additional_info_page_content,
+                                adw_header_bar_new ());
+  adw_navigation_view_add (self->root_navigation_view,
+                           adw_navigation_page_new_with_tag (GTK_WIDGET (self->additional_info_page_content),
+                                                             _("Additional Info"),
+                                                             "additional-info-page"));
+
+  self->additional_info_row = ADW_ACTION_ROW (g_object_ref_sink (adw_action_row_new ()));
+  gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (self->additional_info_row), TRUE);
+  adw_action_row_add_suffix (self->additional_info_row, gtk_image_new_from_icon_name ("right-symbolic"));
+  gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (self->additional_info_row), "navigation.push::additional-info-page");
+  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->additional_info_row), _("Additional Info"));
+  adw_preferences_group_add (self->details_group, GTK_WIDGET (self->additional_info_row));
+  g_object_unref (self->additional_info_row);
+
+  self->additional_info_status_page = ADW_STATUS_PAGE (g_object_ref_sink (adw_status_page_new ()));
+  self->additional_info_spinner = GTK_SPINNER (g_object_ref_sink (gtk_spinner_new ()));
+  gtk_widget_set_halign (GTK_WIDGET (self->additional_info_spinner), GTK_ALIGN_CENTER);
+  gtk_widget_set_size_request (GTK_WIDGET (self->additional_info_spinner), 32, 32);
+  gtk_widget_set_valign (GTK_WIDGET (self->additional_info_spinner), GTK_ALIGN_CENTER);
+  self->additional_info_label = GTK_LABEL (g_object_ref_sink (gtk_label_new (NULL)));
+  gtk_label_set_use_markup (self->additional_info_label, TRUE);
+  gtk_label_set_wrap (self->additional_info_label, TRUE);
+  gtk_label_set_xalign (self->additional_info_label, 0);
+  gtk_label_set_yalign (self->additional_info_label, 0);
+
+  self->additional_info_provider = g_object_new (POLYHYMNIA_TYPE_ADDITIONAL_INFO_PROVIDER, NULL);
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
   self->lyrics_page_content = ADW_TOOLBAR_VIEW (adw_toolbar_view_new ());
   adw_toolbar_view_add_top_bar (self->lyrics_page_content,
@@ -361,6 +432,8 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
   self->lyrics_provider = g_object_new (POLYHYMNIA_TYPE_LYRICS_PROVIDER, NULL);
   self->uri_launcher = gtk_uri_launcher_new (NULL);
   self->uri_launcher_cancellable = g_cancellable_new ();
+#endif
+
 #endif
 }
 
@@ -476,6 +549,27 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
                             || gtk_widget_get_visible (GTK_WIDGET (self->location_row))
                             || gtk_widget_get_visible (GTK_WIDGET (self->comment_row)));
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+    {
+      PolyhymniaSearchTrackInfoRequest additional_info_request;
+      additional_info_request.artist_name = polyhymnia_track_full_info_get_artists (details);
+      additional_info_request.track_musicbrainz_id = polyhymnia_track_full_info_get_musicbrainz_track_id (details);
+      additional_info_request.track_name = polyhymnia_track_full_info_get_title (details);
+
+      self->additional_info_cancellable = g_cancellable_new ();
+      if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_spinner))
+      {
+        adw_toolbar_view_set_content (self->additional_info_page_content,
+                                      GTK_WIDGET (g_object_ref (self->additional_info_spinner)));
+      }
+      gtk_spinner_start (self->lyrics_spinner);
+      polyhymnia_additional_info_provider_search_track_info_async (self->additional_info_provider,
+                                                                   &additional_info_request,
+                                                                   self->additional_info_cancellable,
+                                                                   polyhymnia_track_details_dialog_search_additional_info_callback,
+                                                                   self);
+    }
+
 #ifdef POLYHYMNIA_FEATURE_LYRICS
     {
       PolyhymniaSearchLyricsRequest *search_lyrics_request;
@@ -497,6 +591,8 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
                                                       polyhymnia_track_details_dialog_search_song_lyrics_callback,
                                                       self);
     }
+#endif
+
 #endif
 
     if (audio_format == NULL)
@@ -642,6 +738,66 @@ polyhymnia_track_details_dialog_mpd_database_updated (PolyhymniaTrackDetailsDial
     gtk_scrolled_window_set_child (self->main_scrolled_window,
                                    GTK_WIDGET (self->spinner));
   }
+}
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+
+static void
+polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *source,
+                                                                 GAsyncResult *result,
+                                                                 gpointer      user_data)
+{
+  GError                            *error = NULL;
+  PolyhymniaSearchTrackInfoResponse *response;
+  PolyhymniaTrackDetailsDialog      *self = POLYHYMNIA_TRACK_DETAILS_DIALOG (user_data);
+
+  response = polyhymnia_additional_info_provider_search_track_info_finish (POLYHYMNIA_ADDITIONAL_INFO_PROVIDER (source),
+                                                                           result,
+                                                                           &error);
+  if (error != NULL)
+  {
+    if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      return;
+    }
+    else
+    {
+      g_object_set (G_OBJECT (self->additional_info_status_page),
+                    "description", _("Failed to find additional info"),
+                    NULL);
+      if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_status_page))
+      {
+        adw_toolbar_view_set_content (self->additional_info_page_content,
+                                      GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
+      }
+    }
+  }
+  else if (response == NULL || response->description_full == NULL)
+  {
+    g_object_set (G_OBJECT (self->additional_info_status_page),
+                  "description", _("No additional info found"),
+                  NULL);
+    if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_status_page))
+    {
+      adw_toolbar_view_set_content (self->additional_info_page_content,
+                                    GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
+    }
+  }
+  else
+  {
+    gtk_label_set_label (self->additional_info_label, response->description_full);
+
+    if (adw_toolbar_view_get_content (self->additional_info_page_content) != GTK_WIDGET (self->additional_info_label))
+    {
+      adw_toolbar_view_set_content (self->additional_info_page_content,
+                                    GTK_WIDGET (g_object_ref (self->additional_info_label)));
+    }
+  }
+
+  gtk_spinner_stop (GTK_SPINNER (self->additional_info_spinner));
+
+  polyhymnia_search_track_info_response_free (response);
+  g_clear_object (&(self->additional_info_cancellable));
 }
 
 #ifdef POLYHYMNIA_FEATURE_LYRICS
@@ -790,6 +946,8 @@ polyhymnia_track_details_dialog_show_uri_callback (GObject      *source_object,
     g_error_free (error);
   }
 }
+#endif
+
 #endif
 
 /* Private methods implementation */

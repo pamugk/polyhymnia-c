@@ -11,23 +11,37 @@
 void
 polyhymnia_search_album_info_response_free (PolyhymniaSearchAlbumInfoResponse *self)
 {
-  g_return_if_fail (self != NULL);
+  if (self != NULL)
+  {
+    g_free (self->description_summary);
+    g_free (self->description_full);
 
-  g_free (self->description_summary);
-  g_free (self->description_full);
-
-  g_free (self);
+    g_free (self);
+  }
 }
 
 void
 polyhymnia_search_artist_info_response_free (PolyhymniaSearchArtistInfoResponse *self)
 {
-  g_return_if_fail (self != NULL);
+  if (self != NULL)
+  {
+    g_free (self->bio_summary);
+    g_free (self->bio_full);
 
-  g_free (self->bio_summary);
-  g_free (self->bio_full);
+    g_free (self);
+  }
+}
 
-  g_free (self);
+void
+polyhymnia_search_track_info_response_free (PolyhymniaSearchTrackInfoResponse *self)
+{
+  if (self != NULL)
+  {
+    g_free (self->description_summary);
+    g_free (self->description_full);
+
+    g_free (self);
+  }
 }
 
 /* Type metadata */
@@ -130,23 +144,23 @@ polyhymnia_additional_info_provider_search_album_info_async (PolyhymniaAdditiona
 
   if (g_settings_get_boolean (self->application_settings, "app-external-data-additional-info-lastfm")
       && ((request->album_name != NULL && request->artist_name != NULL)
-          || request->album_music_brainz_id != NULL))
+          || request->album_musicbrainz_id != NULL))
   {
     SoupMessage *message;
     GString     *uri_query = g_string_new ("api_key=" POLYHYMNIA_LASTFM_API_KEY "&method=album.getinfo&format=json");
 
-    if (request->album_music_brainz_id != NULL)
+    if (request->album_musicbrainz_id != NULL)
     {
-      g_string_append (uri_query, "mbid=");
-      g_string_append_uri_escaped (uri_query, request->album_music_brainz_id,
+      g_string_append (uri_query, "&mbid=");
+      g_string_append_uri_escaped (uri_query, request->album_musicbrainz_id,
                                    NULL, TRUE);
     }
     if (request->album_name != NULL)
     {
-      g_string_append (uri_query, "artist=");
+      g_string_append (uri_query, "&artist=");
       g_string_append_uri_escaped (uri_query, request->artist_name,
                                    NULL, TRUE);
-      g_string_append (uri_query, "album=");
+      g_string_append (uri_query, "&album=");
       g_string_append_uri_escaped (uri_query, request->album_name,
                                    NULL, TRUE);
     }
@@ -199,20 +213,20 @@ polyhymnia_additional_info_provider_search_artist_info_async (PolyhymniaAddition
   g_task_set_source_tag (task, polyhymnia_additional_info_provider_search_artist_info_async);
 
   if (g_settings_get_boolean (self->application_settings, "app-external-data-additional-info-lastfm")
-      && (request->artist_name != NULL || request->artist_music_brainz_id != NULL))
+      && (request->artist_name != NULL || request->artist_musicbrainz_id != NULL))
   {
     SoupMessage *message;
     GString     *uri_query = g_string_new ("api_key=" POLYHYMNIA_LASTFM_API_KEY "&method=artist.getinfo&format=json");
 
-    if (request->artist_music_brainz_id != NULL)
+    if (request->artist_musicbrainz_id != NULL)
     {
-      g_string_append (uri_query, "mbid=");
-      g_string_append_uri_escaped (uri_query, request->artist_music_brainz_id,
+      g_string_append (uri_query, "&mbid=");
+      g_string_append_uri_escaped (uri_query, request->artist_musicbrainz_id,
                                    NULL, TRUE);
     }
     if (request->artist_name != NULL)
     {
-      g_string_append (uri_query, "artist=");
+      g_string_append (uri_query, "&artist=");
       g_string_append_uri_escaped (uri_query, request->artist_name,
                                    NULL, TRUE);
     }
@@ -266,26 +280,27 @@ polyhymnia_additional_info_provider_search_track_info_async (PolyhymniaAdditiona
 
   if (g_settings_get_boolean (self->application_settings, "app-external-data-additional-info-lastfm")
       && ((request->track_name != NULL && request->artist_name != NULL)
-          || request->track_music_brainz_id != NULL))
+          || request->track_musicbrainz_id != NULL))
   {
     SoupMessage *message;
     GString     *uri_query = g_string_new ("api_key=" POLYHYMNIA_LASTFM_API_KEY "&method=track.getinfo&format=json");
 
-    if (request->track_music_brainz_id != NULL)
+    if (request->track_musicbrainz_id != NULL)
     {
-      g_string_append (uri_query, "mbid=");
-      g_string_append_uri_escaped (uri_query, request->track_music_brainz_id,
+      g_string_append (uri_query, "&mbid=");
+      g_string_append_uri_escaped (uri_query, request->track_musicbrainz_id,
                                    NULL, TRUE);
     }
     if (request->track_name != NULL)
     {
-      g_string_append (uri_query, "artist=");
+      g_string_append (uri_query, "&artist=");
       g_string_append_uri_escaped (uri_query, request->artist_name,
                                    NULL, TRUE);
-      g_string_append (uri_query, "track=");
+      g_string_append (uri_query, "&track=");
       g_string_append_uri_escaped (uri_query, request->track_name,
                                    NULL, TRUE);
     }
+    g_debug ("URI query: %s", uri_query->str);
     message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
                                                   LASTFM_API_HOST,
                                                   g_string_free_and_steal (uri_query));
@@ -308,7 +323,7 @@ polyhymnia_additional_info_provider_search_track_info_async (PolyhymniaAdditiona
   }
 }
 
-char *
+PolyhymniaSearchTrackInfoResponse *
 polyhymnia_additional_info_provider_search_track_info_finish (PolyhymniaAdditionalInfoProvider *self,
                                                               GAsyncResult                     *result,
                                                               GError                          **error)
