@@ -6,29 +6,26 @@
     <property name="child">
       <object class="AdwToolbarView" id="root_toolbar_view">
         <child type="top">
-          <object class="AdwHeaderBar">
-            <child type="end">
-              <object class="GtkButton">
-                <property name="icon-name">plus-symbolic</property>
-                <signal name="clicked"
-                  handler="polyhymnia_album_page_add_album_to_queue_button_clicked"
-                  swapped="true" />
-	      </object>
-            </child>
-            <child type="end">
-              <object class="GtkButton">
-                <property name="icon-name">play-large-symbolic</property>
-                  <signal name="clicked"
-                    handler="polyhymnia_album_page_play_album_button_clicked"
-                    swapped="true" />
-	      </object>
-            </child>
+          <object class="AdwHeaderBar" id="root_header_bar">
             <property name="show-end-title-buttons">false</property>
           </object>
         </child>
       </object>
     </property>
   </template>
+
+  <object class="GtkButton" id="playlist_add_button">
+    <property name="icon-name">plus-symbolic</property>
+      <signal name="clicked"
+        handler="polyhymnia_album_page_add_album_to_queue_button_clicked"
+        swapped="true" />
+  </object>
+  <object class="GtkButton" id="play_button">
+    <property name="icon-name">play-large-symbolic</property>
+      <signal name="clicked"
+        handler="polyhymnia_album_page_play_album_button_clicked"
+        swapped="true" />
+  </object>
 
   <object class="AdwBreakpointBin" id="root_content">
     <child>

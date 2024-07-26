@@ -8,9 +8,9 @@ G_BEGIN_DECLS
 
 typedef struct
 {
-  char *album_musicbrainz_id;
-  char *album_name;
-  char *artist_name;
+  const char *album_musicbrainz_id;
+  const char *album_name;
+  const char *artist_name;
 } PolyhymniaSearchAlbumInfoRequest;
 
 typedef struct
@@ -24,8 +24,8 @@ polyhymnia_search_album_info_response_free (PolyhymniaSearchAlbumInfoResponse *s
 
 typedef struct
 {
-  char *artist_musicbrainz_id;
-  char *artist_name;
+  const char *artist_musicbrainz_id;
+  const char *artist_name;
 } PolyhymniaSearchArtistInfoRequest;
 
 typedef struct

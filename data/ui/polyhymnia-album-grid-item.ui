@@ -26,34 +26,6 @@
             <property name="xalign">0</property>
           </object>
         </child>
-        <child>
-          <object class="GtkLabel">
-	    <binding name="label">
-	      <lookup name="artist" type="PolyhymniaAlbum">
-	        <lookup name="item">GtkListItem</lookup>
-	      </lookup>
-	    </binding>
-            <style>
-              <class name="caption-heading"/>
-            </style>
-            <property name="ellipsize">end</property>
-            <property name="xalign">0</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-	    <binding name="label">
-	      <lookup name="release-date" type="PolyhymniaAlbum">
-	        <lookup name="item">GtkListItem</lookup>
-	      </lookup>
-	    </binding>
-            <style>
-              <class name="caption"/>
-            </style>
-            <property name="ellipsize">end</property>
-            <property name="xalign">0</property>
-          </object>
-        </child>
         <style>
           <class name="card"/>
         </style>

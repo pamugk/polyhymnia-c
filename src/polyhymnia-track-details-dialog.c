@@ -419,10 +419,10 @@ polyhymnia_track_details_dialog_init (PolyhymniaTrackDetailsDialog *self)
   self->additional_info_label_clamp = ADW_CLAMP (g_object_ref_sink (adw_clamp_new ()));
   adw_clamp_set_child (self->additional_info_label_clamp,
                        GTK_WIDGET (self->additional_info_label));
-  gtk_widget_set_margin_bottom (GTK_WIDGET (self->additional_info_label), 16);
-  gtk_widget_set_margin_end (GTK_WIDGET (self->additional_info_label), 12);
-  gtk_widget_set_margin_start (GTK_WIDGET (self->additional_info_label), 16);
-  gtk_widget_set_margin_top (GTK_WIDGET (self->additional_info_label), 12);
+  gtk_widget_set_margin_bottom (GTK_WIDGET (self->additional_info_label_clamp), 16);
+  gtk_widget_set_margin_end (GTK_WIDGET (self->additional_info_label_clamp), 12);
+  gtk_widget_set_margin_start (GTK_WIDGET (self->additional_info_label_clamp), 16);
+  gtk_widget_set_margin_top (GTK_WIDGET (self->additional_info_label_clamp), 12);
 
   self->additional_info_provider = g_object_new (POLYHYMNIA_TYPE_ADDITIONAL_INFO_PROVIDER, NULL);
 
