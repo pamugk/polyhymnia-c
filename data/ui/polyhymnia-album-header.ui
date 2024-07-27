@@ -38,7 +38,7 @@
       </object>
     </child>
     <property name="layout-manager">
-      <object class="GtkConstraintLayout">
+      <object class="GtkConstraintLayout" id="root_layout_manager">
         <constraints>
           <constraint target="album_cover_image" target-attribute="bottom"
             relation="eq"

@@ -1,4 +1,6 @@
 
+#include "app-features.h"
+
 #include "polyhymnia-album-header.h"
 
 /* Type metadata */
@@ -14,6 +16,9 @@ typedef enum
 {
   SIGNAL_ENQUEUE = 1,
   SIGNAL_PLAY,
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  SIGNAL_REQUEST_INFO,
+#endif
   N_SIGNALS,
 } PolyhymniaAlbumHeaderSignal;
 
@@ -22,15 +27,21 @@ struct _PolyhymniaAlbumHeader
   GtkWidget  parent_instance;
 
   /* Template widgets */
-  GtkImage  *album_cover_image;
-  GtkLabel  *album_release_label;
-  GtkLabel  *album_title_label;
-  GtkButton *enqueue_album_button;
-  GtkButton *play_album_button;
+  GtkImage            *album_cover_image;
+  GtkLabel            *album_release_label;
+  GtkLabel            *album_title_label;
+  GtkButton           *enqueue_album_button;
+  GtkButton           *play_album_button;
+  GtkConstraintLayout *root_layout_manager;
 
   /* Instance properties */
   gchar *album_title;
   gchar *album_release;
+
+// Feature-specific properties
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  GtkButton *show_album_additional_info_button;
+#endif
 };
 
 G_DEFINE_FINAL_TYPE (PolyhymniaAlbumHeader, polyhymnia_album_header, GTK_TYPE_WIDGET)
@@ -48,6 +59,12 @@ static void
 polyhymnia_album_header_play_album_button_clicked (PolyhymniaAlbumHeader *self,
                                                    GtkButton        *user_data);
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+static void
+polyhymnia_album_header_show_album_additional_info_button_clicked (PolyhymniaAlbumHeader *self,
+                                                                   GtkButton        *user_data);
+#endif
+
 /* Class stuff */
 static void
 polyhymnia_album_header_dispose(GObject *gobject)
@@ -59,6 +76,9 @@ polyhymnia_album_header_dispose(GObject *gobject)
   gtk_widget_unparent (GTK_WIDGET (self->album_title_label));
   gtk_widget_unparent (GTK_WIDGET (self->enqueue_album_button));
   gtk_widget_unparent (GTK_WIDGET (self->play_album_button));
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  gtk_widget_unparent (GTK_WIDGET (self->show_album_additional_info_button));
+#endif
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ALBUM_HEADER);
   g_clear_pointer (&(self->album_release), g_free);
   g_clear_pointer (&(self->album_title), g_free);
@@ -180,17 +200,55 @@ polyhymnia_album_header_class_init (PolyhymniaAlbumHeaderClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumHeader, album_title_label);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumHeader, enqueue_album_button);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumHeader, play_album_button);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaAlbumHeader, root_layout_manager);
 
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_header_add_album_to_queue_button_clicked);
   gtk_widget_class_bind_template_callback (widget_class,
                                            polyhymnia_album_header_play_album_button_clicked);
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  obj_signals[SIGNAL_REQUEST_INFO] =
+     g_signal_newv ("info-requested", type,
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                    NULL, NULL, NULL, NULL,
+                    G_TYPE_NONE,
+                    0, NULL);
+#endif
 }
 
 static void
 polyhymnia_album_header_init (PolyhymniaAlbumHeader *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  self->show_album_additional_info_button = GTK_BUTTON (gtk_button_new_from_icon_name ("info-symbolic"));
+  g_signal_connect_swapped (self->show_album_additional_info_button, "clicked",
+                            (GCallback) polyhymnia_album_header_show_album_additional_info_button_clicked,
+                            self);
+
+  gtk_widget_insert_after (GTK_WIDGET (self->show_album_additional_info_button),
+                           GTK_WIDGET (self), NULL);
+  gtk_constraint_layout_add_constraint (self->root_layout_manager,
+                                        gtk_constraint_new (self->show_album_additional_info_button,
+                                                            GTK_CONSTRAINT_ATTRIBUTE_BOTTOM,
+                                                            GTK_CONSTRAINT_RELATION_EQ,
+                                                            NULL,
+                                                            GTK_CONSTRAINT_ATTRIBUTE_BOTTOM,
+                                                            1,
+                                                            -6,
+                                                            GTK_CONSTRAINT_STRENGTH_REQUIRED));
+  gtk_constraint_layout_add_constraint (self->root_layout_manager,
+                                        gtk_constraint_new (self->show_album_additional_info_button,
+                                                            GTK_CONSTRAINT_ATTRIBUTE_START,
+                                                            GTK_CONSTRAINT_RELATION_EQ,
+                                                            self->enqueue_album_button,
+                                                            GTK_CONSTRAINT_ATTRIBUTE_END,
+                                                            1,
+                                                            12,
+                                                            GTK_CONSTRAINT_STRENGTH_REQUIRED));
+#endif
 }
 
 /* Instance method implementations */
@@ -225,3 +283,14 @@ polyhymnia_album_header_play_album_button_clicked (PolyhymniaAlbumHeader *self,
     g_signal_emit (self, obj_signals[SIGNAL_PLAY], 0);
   }
 }
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+static void
+polyhymnia_album_header_show_album_additional_info_button_clicked (PolyhymniaAlbumHeader *self,
+                                                                   GtkButton        *user_data)
+{
+  g_assert (POLYHYMNIA_IS_ALBUM_HEADER (self));
+
+  g_signal_emit (self, obj_signals[SIGNAL_REQUEST_INFO], 0);
+}
+#endif

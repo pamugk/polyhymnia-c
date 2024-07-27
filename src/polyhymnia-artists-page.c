@@ -1,4 +1,5 @@
 
+#include "app-features.h"
 #include "config.h"
 
 #include "polyhymnia-artists-page.h"
@@ -133,6 +134,12 @@ static void
 polyhymnia_artists_page_track_activated (PolyhymniaArtistsPage *self,
                                          unsigned int           position,
                                          GtkColumnView         *user_data);
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+static void
+polyhymnia_artists_page_album_show_additional_info (PolyhymniaArtistsPage *self,
+                                                    PolyhymniaAlbumHeader *user_data);
+#endif
 
 /* Private function declaration */
 static void
@@ -385,6 +392,11 @@ polyhymnia_artists_page_album_header_setup (PolyhymniaArtistsPage    *self,
   g_signal_connect_swapped (album_header, "played",
                             G_CALLBACK (polyhymnia_artists_page_album_play),
                             self);
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+  g_signal_connect_swapped (album_header, "info-requested",
+                            G_CALLBACK (polyhymnia_artists_page_album_show_additional_info),
+                            self);
+#endif
 
   gtk_list_header_set_child (object, album_header);
 }
@@ -709,6 +721,19 @@ polyhymnia_artists_page_track_activated (PolyhymniaArtistsPage *self,
   g_signal_emit (self, obj_signals[SIGNAL_VIEW_TRACK_DETAILS], 0,
                  polyhymnia_track_get_uri (track));
 }
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+static void
+polyhymnia_artists_page_album_show_additional_info (PolyhymniaArtistsPage *self,
+                                                    PolyhymniaAlbumHeader *user_data)
+{
+  const gchar *album = polyhymnia_album_header_get_album_title (user_data);
+
+  g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
+
+
+}
+#endif
 
 /* Private function implementation */
 static void

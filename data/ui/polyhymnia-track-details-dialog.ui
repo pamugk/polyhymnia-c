@@ -2,7 +2,6 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
-  <requires lib="WebKit" version="6.0"/>
   <template class="PolyhymniaTrackDetailsDialog" parent="AdwDialog">
     <property name="child">
       <object class="AdwNavigationView" id="root_navigation_view">
