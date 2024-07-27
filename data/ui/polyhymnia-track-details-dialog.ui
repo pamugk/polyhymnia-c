@@ -572,7 +572,7 @@
     <property name="content-height">588</property>
     <property name="content-width">360</property>
     <property name="height-request">320</property>
-    <property name="title" translatable="yes">Statistics</property>
+    <property name="title" translatable="yes">Track Details</property>
     <property name="width-request">300</property>
   </template>
 

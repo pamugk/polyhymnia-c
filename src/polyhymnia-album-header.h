@@ -12,4 +12,7 @@ G_DECLARE_FINAL_TYPE (PolyhymniaAlbumHeader, polyhymnia_album_header, POLYHYMNIA
 const gchar *
 polyhymnia_album_header_get_album_title (PolyhymniaAlbumHeader *self);
 
+const gchar *
+polyhymnia_album_header_get_album_musicbrainz_id (PolyhymniaAlbumHeader *self);
+
 G_END_DECLS

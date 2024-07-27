@@ -50,6 +50,7 @@ external_data_feature_enabled = json_glib.found() and libsoup.found()
 if external_data_feature_enabled
   polyhymnia_sources += [
     'polyhymnia-additional-info-provider.c',
+    'polyhymnia-album-details-dialog.c',
   ]
   polyhymnia_deps += [
     json_glib,

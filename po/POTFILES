@@ -1,6 +1,7 @@
 data/com.github.pamugk.polyhymnia.desktop.in
 data/com.github.pamugk.polyhymnia.appdata.xml.in
 data/com.github.pamugk.polyhymnia.gschema.xml
+data/ui/polyhymnia-album-details-dialog.ui
 data/ui/polyhymnia-album-page.ui
 data/ui/polyhymnia-albums-page.ui
 data/ui/polyhymnia-artists-page.ui
@@ -17,6 +18,7 @@ data/ui/polyhymnia-track-details-dialog.ui
 data/ui/polyhymnia-tracks-page.ui
 data/ui/polyhymnia-window.ui
 src/main.c
+src/polyhymnia-album-additional-info-dialog.c
 src/polyhymnia-album-page.c
 src/polyhymnia-albums-page.c
 src/polyhymnia-application.c

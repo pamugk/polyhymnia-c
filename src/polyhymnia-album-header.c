@@ -9,6 +9,7 @@ typedef enum
   PROP_ALBUM_COVER = 1,
   PROP_ALBUM_TITLE,
   PROP_ALBUM_RELEASE,
+  PROP_ALBUM_MUSICBRAINZ_ID,
   N_PROPERTIES,
 } PolyhymniaAlbumHeaderProperty;
 
@@ -35,12 +36,13 @@ struct _PolyhymniaAlbumHeader
   GtkConstraintLayout *root_layout_manager;
 
   /* Instance properties */
-  gchar *album_title;
-  gchar *album_release;
+  gchar               *album_title;
+  gchar               *album_release;
+  gchar               *album_musicbrainz_id;
 
 // Feature-specific properties
 #ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
-  GtkButton *show_album_additional_info_button;
+  GtkButton           *show_album_additional_info_button;
 #endif
 };
 
@@ -82,6 +84,7 @@ polyhymnia_album_header_dispose(GObject *gobject)
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ALBUM_HEADER);
   g_clear_pointer (&(self->album_release), g_free);
   g_clear_pointer (&(self->album_title), g_free);
+  g_clear_pointer (&(self->album_musicbrainz_id), g_free);
 
   G_OBJECT_CLASS (polyhymnia_album_header_parent_class)->dispose (gobject);
 }
@@ -101,6 +104,9 @@ polyhymnia_album_header_get_property (GObject    *object,
       break;
     case PROP_ALBUM_RELEASE:
       g_value_set_string (value, self->album_release);
+      break;
+    case PROP_ALBUM_MUSICBRAINZ_ID:
+      g_value_set_string (value, self->album_musicbrainz_id);
       break;
 
     default:
@@ -138,6 +144,9 @@ polyhymnia_album_header_set_property (GObject      *object,
     case PROP_ALBUM_RELEASE:
       g_set_str (&(self->album_release), g_value_get_string (value));
       break;
+    case PROP_ALBUM_MUSICBRAINZ_ID:
+      g_set_str (&(self->album_musicbrainz_id), g_value_get_string (value));
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -172,6 +181,12 @@ polyhymnia_album_header_class_init (PolyhymniaAlbumHeaderClass *klass)
     g_param_spec_string ("album-release",
                          "Album release",
                          "Release date of a displayed album.",
+                         NULL,
+                         G_PARAM_READWRITE | G_PARAM_STATIC_NAME);
+  obj_properties[PROP_ALBUM_MUSICBRAINZ_ID] =
+    g_param_spec_string ("album-musicbrainz-id",
+                         "Album MusicBrainz id",
+                         "Album identifier in MusicBrainz database.",
                          NULL,
                          G_PARAM_READWRITE | G_PARAM_STATIC_NAME);
 
@@ -252,6 +267,13 @@ polyhymnia_album_header_init (PolyhymniaAlbumHeader *self)
 }
 
 /* Instance method implementations */
+const gchar *
+polyhymnia_album_header_get_album_musicbrainz_id (PolyhymniaAlbumHeader *self)
+{
+  g_return_val_if_fail (POLYHYMNIA_IS_ALBUM_HEADER (self), NULL);
+  return self->album_musicbrainz_id;
+}
+
 const gchar *
 polyhymnia_album_header_get_album_title (PolyhymniaAlbumHeader *self)
 {

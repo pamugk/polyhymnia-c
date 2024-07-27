@@ -4,6 +4,10 @@
 
 #include "polyhymnia-artists-page.h"
 
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+#include "polyhymnia-album-details-dialog.h"
+#endif
+
 #include "polyhymnia-album-header.h"
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-images.h"
@@ -370,6 +374,7 @@ polyhymnia_artists_page_album_header_bind (PolyhymniaArtistsPage    *self,
                   : g_hash_table_lookup (self->album_covers, album_title),
                 "album-release", polyhymnia_track_get_date (track),
                 "album-title", polyhymnia_track_get_album (track),
+                "album-musicbrainz-id", polyhymnia_track_get_musicbrainz_album_id (track),
                 NULL);
 }
 
@@ -420,6 +425,7 @@ polyhymnia_artists_page_album_header_unbind (PolyhymniaArtistsPage    *self,
                 "album-cover", NULL,
                 "album-release", NULL,
                 "album-title", NULL,
+                "album-musicbrainz-id", NULL,
                 NULL);
 }
 
@@ -728,10 +734,32 @@ polyhymnia_artists_page_album_show_additional_info (PolyhymniaArtistsPage *self,
                                                     PolyhymniaAlbumHeader *user_data)
 {
   const gchar *album = polyhymnia_album_header_get_album_title (user_data);
+  const gchar *album_musicbrainz_id = polyhymnia_album_header_get_album_musicbrainz_id (user_data);
+  GtkBitset   *selected_artists;
 
   g_assert (POLYHYMNIA_IS_ARTISTS_PAGE (self));
 
+  selected_artists = gtk_selection_model_get_selection (GTK_SELECTION_MODEL (self->artists_selection_model));
 
+  if (gtk_bitset_get_size (selected_artists) == 1)
+  {
+    PolyhymniaArtist *selected_artist;
+    unsigned int      selected_artist_index;
+    const gchar      *selected_artist_name;
+
+    selected_artist_index = gtk_bitset_get_nth (selected_artists, 0);
+    selected_artist = g_list_model_get_item (G_LIST_MODEL (self->artists_model),
+                                             selected_artist_index);
+    selected_artist_name = polyhymnia_artist_get_name (selected_artist);
+    adw_dialog_present (ADW_DIALOG (g_object_new (POLYHYMNIA_TYPE_ALBUM_DETAILS_DIALOG,
+                                                  "album-name", album,
+                                                  "album-artist-name", selected_artist_name,
+                                                  "album-musicbrainz-id", album_musicbrainz_id,
+                                                  NULL)),
+                        GTK_WIDGET (self));
+  }
+
+  gtk_bitset_unref (selected_artists);
 }
 #endif
 
