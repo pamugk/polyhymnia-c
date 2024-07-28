@@ -294,6 +294,7 @@ polyhymnia_tracks_page_search_tracks_callback (GObject *source_object,
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->tracks_cancellable));
     return;
   }

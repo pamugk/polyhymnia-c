@@ -366,12 +366,15 @@ polyhymnia_album_page_get_album_cover_callback (GObject      *source_object,
 
     g_clear_object (&(self->album_cover_cancellable));
   }
-  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  else
   {
-    g_warning ("Failed to get album cover: %s\n", error->message);
-    gtk_image_set_from_icon_name (self->cover_image, "cd-symbolic");
-
-    g_clear_object (&(self->album_cover_cancellable));
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_warning ("Failed to get album cover: %s\n", error->message);
+      gtk_image_set_from_icon_name (self->cover_image, "cd-symbolic");
+      g_clear_object (&(self->album_cover_cancellable));
+    }
+    g_error_free (error);
   }
 }
 
@@ -485,6 +488,7 @@ polyhymnia_album_page_get_album_tracks_callback (GObject      *source_object,
   }
   else if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
   {
+    g_error_free (error);
     return;
   }
   else
@@ -497,6 +501,7 @@ polyhymnia_album_page_get_album_tracks_callback (GObject      *source_object,
     adw_toolbar_view_set_content (self->root_toolbar_view,
                                   GTK_WIDGET (self->tracks_status_page));
     g_warning("Failed to find an album: %s", error->message);
+    g_error_free (error);
   }
 
   gtk_spinner_stop (self->spinner);
@@ -713,6 +718,7 @@ polyhymnia_album_page_search_additional_info_callback (GObject      *source,
     }
     g_clear_object (&(self->additional_info_cancellable));
   }
+  g_clear_error (&error);
 }
 #endif
 

@@ -447,16 +447,20 @@ polyhymnia_playlist_page_get_playlist_tracks_callback (GObject      *source_obje
     }
     g_ptr_array_unref (tracks);
   }
-  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  else
   {
-    g_list_store_remove_all (self->tracks_model);
-    g_object_set (G_OBJECT (self->tracks_status_page),
-                  "description", _("Failed to get a playlist"),
-                  "icon-name", NULL,
-                  NULL);
-    adw_toolbar_view_set_content (self->root_toolbar_view,
-                                  GTK_WIDGET (self->tracks_status_page));
-    g_warning ("Failed to find a playlist: %s", error->message);
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_list_store_remove_all (self->tracks_model);
+      g_object_set (G_OBJECT (self->tracks_status_page),
+                    "description", _("Failed to get a playlist"),
+                    "icon-name", NULL,
+                    NULL);
+      adw_toolbar_view_set_content (self->root_toolbar_view,
+                                    GTK_WIDGET (self->tracks_status_page));
+      g_warning ("Failed to find a playlist: %s", error->message);
+    }
+    g_error_free (error);
   }
 
   gtk_spinner_stop (self->spinner);

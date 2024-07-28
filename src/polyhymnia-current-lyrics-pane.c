@@ -279,6 +279,7 @@ polyhymnia_current_lyrics_pane_search_lyrics_callback (GObject      *source,
       }
       gtk_spinner_stop (self->spinner);
     }
+    g_error_free (error);
   }
   else if (lyrics == NULL)
   {

@@ -226,10 +226,12 @@ polyhymnia_last_modified_page_get_last_modified_tracks_callback (GObject      *s
     new_child = GTK_WIDGET (self->tracks_status_page);
     g_list_store_remove_all (self->tracks_model);
     g_warning("Search for tracks failed: %s\n", error->message);
+    g_error_free (error);
     error = NULL;
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->tracks_cancellable));
     return;
   }

@@ -227,6 +227,7 @@ polyhymnia_album_details_dialog_search_additional_info_callback (GObject      *s
       gtk_scrolled_window_set_child (self->main_scrolled_window,
                                      GTK_WIDGET (self->status_page));
     }
+    g_error_free (error);
   }
   else if (response == NULL || response->description_full == NULL)
   {

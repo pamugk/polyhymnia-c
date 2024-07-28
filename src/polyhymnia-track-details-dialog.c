@@ -716,6 +716,7 @@ polyhymnia_track_details_dialog_get_song_details_callback (GObject      *source_
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->song_details_cancellable));
     return;
   }
@@ -794,6 +795,7 @@ polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *s
   {
     if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     {
+      g_error_free (error);
       return;
     }
     else
@@ -804,6 +806,7 @@ polyhymnia_track_details_dialog_search_additional_info_callback (GObject      *s
                     NULL);
       gtk_scrolled_window_set_child (self->additional_info_page_scrolled_window,
                                      GTK_WIDGET (g_object_ref (self->additional_info_status_page)));
+      g_error_free (error);
     }
   }
   else if (response == NULL || response->description_full == NULL)
@@ -913,6 +916,7 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
   {
     if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     {
+      g_error_free (error);
       return;
     }
     else
@@ -924,6 +928,7 @@ polyhymnia_track_details_dialog_search_song_lyrics_callback (GObject      *sourc
       adw_toolbar_view_set_content (self->lyrics_page_content,
                                     GTK_WIDGET (g_object_ref (self->lyrics_status_page)));
       gtk_spinner_stop (GTK_SPINNER (self->lyrics_spinner));
+      g_error_free (error);
     }
   }
   else if (lyrics == NULL)

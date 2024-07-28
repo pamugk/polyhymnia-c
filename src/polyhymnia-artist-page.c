@@ -36,12 +36,14 @@ struct _PolyhymniaArtistPage
   /* Stored UI state */
   GHashTable          *album_covers;
   GCancellable        *album_covers_cancellable;
+  GCancellable        *artist_discography_cancellable;
 
   /* Template widgets */
   AdwToolbarView      *root_toolbar_view;
   GtkScrolledWindow   *content;
   GtkColumnView       *tracks_column_view;
-  AdwStatusPage       *status_page;
+  GtkSpinner          *tracks_spinner;
+  AdwStatusPage       *tracks_status_page;
 
   /* Template objects */
   PolyhymniaMpdClient *mpd_client;
@@ -100,6 +102,11 @@ static void
 polyhymnia_artist_page_get_albums_covers_callback (GObject      *source_object,
                                                    GAsyncResult *result,
                                                    void         *user_data);
+
+static void
+polyhymnia_artist_page_get_discography_callback (GObject      *source_object,
+                                                 GAsyncResult *result,
+                                                 void         *user_data);
 
 static void
 polyhymnia_artist_page_mpd_client_initialized (PolyhymniaArtistPage *self,
@@ -162,6 +169,9 @@ polyhymnia_artist_page_dispose(GObject *gobject)
   PolyhymniaArtistPage *self = POLYHYMNIA_ARTIST_PAGE (gobject);
 
   g_cancellable_cancel (self->album_covers_cancellable);
+  g_clear_object (&(self->album_covers_cancellable));
+  g_cancellable_cancel (self->artist_discography_cancellable);
+  g_clear_object (&(self->artist_discography_cancellable));
   g_clear_pointer (&(self->artist_name), g_free);
   adw_navigation_page_set_child (ADW_NAVIGATION_PAGE (self), NULL);
   gtk_widget_dispose_template (GTK_WIDGET (self), POLYHYMNIA_TYPE_ARTIST_PAGE);
@@ -257,7 +267,8 @@ polyhymnia_artist_page_class_init (PolyhymniaArtistPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, root_toolbar_view);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, content);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_column_view);
-  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, status_page);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_spinner);
+  gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_status_page);
 
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, mpd_client);
   gtk_widget_class_bind_template_child (widget_class, PolyhymniaArtistPage, tracks_selection_model);
@@ -440,13 +451,87 @@ polyhymnia_artist_page_get_albums_covers_callback (GObject      *source_object,
   album_covers = polyhymnia_artist_page_get_albums_covers_finish (self, result,
                                                                   &error);
 
+  if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    g_error_free (error);
+    return;
+  }
+
   if (error == NULL)
   {
     self->album_covers = album_covers;
     g_signal_emit (self, obj_signals[SIGNAL_ALBUMS_COVERS_READY], 0);
   }
+  else
+  {
+    g_debug ("An error occurred on album covers loading: %s", error->message);
+    g_error_free (error);
+  }
 
   g_clear_object (&(self->album_covers_cancellable));
+}
+
+static void
+polyhymnia_artist_page_get_discography_callback (GObject      *source_object,
+                                                 GAsyncResult *result,
+                                                 void         *user_data)
+{
+  GError               *error = NULL;
+  PolyhymniaArtistPage *self;
+  GPtrArray            *tracks;
+
+  tracks = polyhymnia_mpd_client_get_artist_discography_finish (POLYHYMNIA_MPD_CLIENT (source_object),
+                                                                result,
+                                                                &error);
+  if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  {
+    g_error_free (error);
+    return;
+  }
+
+  self = POLYHYMNIA_ARTIST_PAGE (user_data);
+  if (error != NULL)
+  {
+    g_list_store_remove_all (self->tracks_model);
+    g_object_set (G_OBJECT (self->tracks_status_page),
+                  "description", _("Failed to get an artist"),
+                  NULL);
+    gtk_scrolled_window_set_child (self->content,
+                                    GTK_WIDGET (self->tracks_status_page));
+    g_warning("Failed to find an artist: %s", error->message);
+    g_error_free (error);
+    error = NULL;
+  }
+  else
+  {
+    if (tracks->len == 0)
+    {
+      g_list_store_remove_all (self->tracks_model);
+      g_object_set (G_OBJECT (self->tracks_status_page),
+                    "description", _("Artist not found"),
+                    NULL);
+      gtk_scrolled_window_set_child (self->content,
+                                      GTK_WIDGET (self->tracks_status_page));
+      g_signal_emit (self, obj_signals[SIGNAL_DELETED], 0);
+    }
+    else
+    {
+      self->album_covers_cancellable = g_cancellable_new ();
+      polyhymnia_artist_page_get_albums_covers_async (self, tracks,
+                                                      self->album_covers_cancellable,
+                                                      polyhymnia_artist_page_get_albums_covers_callback,
+                                                      NULL);
+      g_list_store_splice (self->tracks_model, 0,
+                            g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
+                            tracks->pdata, tracks->len);
+      gtk_scrolled_window_set_child (self->content,
+                                     GTK_WIDGET (self->tracks_column_view));
+    }
+    g_ptr_array_unref (tracks);
+  }
+
+  gtk_spinner_stop (self->tracks_spinner);
+  g_clear_object (&(self->artist_discography_cancellable));
 }
 
 static void
@@ -462,9 +547,12 @@ polyhymnia_artist_page_mpd_client_initialized (PolyhymniaArtistPage *self,
   }
   else
   {
+    g_cancellable_cancel (self->album_covers_cancellable);
     g_clear_object (&(self->album_covers_cancellable));
-    g_list_store_remove_all (self->tracks_model);
+    g_cancellable_cancel (self->artist_discography_cancellable);
+    g_clear_object (&(self->artist_discography_cancellable));
     g_clear_pointer (&(self->album_covers), g_hash_table_unref);
+    g_list_store_remove_all (self->tracks_model);
   }
 }
 
@@ -472,54 +560,26 @@ static void
 polyhymnia_artist_page_mpd_database_updated (PolyhymniaArtistPage *self,
                                              PolyhymniaMpdClient  *user_data)
 {
-  GError    *error = NULL;
-  GPtrArray *tracks;
-
   g_assert (POLYHYMNIA_IS_ARTIST_PAGE (self));
 
-  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
   g_cancellable_cancel (self->album_covers_cancellable);
+  g_clear_object (&(self->album_covers_cancellable));
+  g_cancellable_cancel (self->artist_discography_cancellable);
+  g_clear_object (&(self->artist_discography_cancellable));
+  g_clear_pointer (&(self->album_covers), g_hash_table_unref);
 
-  tracks = polyhymnia_mpd_client_get_artist_discography (self->mpd_client,
-                                                         self->artist_name,
-                                                         &error);
-  if (error != NULL)
+  self->artist_discography_cancellable = g_cancellable_new ();
+  polyhymnia_mpd_client_get_artist_discography_async (self->mpd_client,
+                                                      self->artist_name,
+                                                      self->artist_discography_cancellable,
+                                                      polyhymnia_artist_page_get_discography_callback,
+                                                      self);
+
+  if (gtk_scrolled_window_get_child (self->content) != GTK_WIDGET (self->tracks_spinner))
   {
-    g_list_store_remove_all (self->tracks_model);
-    g_object_set (G_OBJECT (self->status_page),
-                  "description", _("Failed to get an artist"),
-                  NULL);
-    gtk_scrolled_window_set_child (self->content,
-                                    GTK_WIDGET (self->status_page));
-    g_warning("Failed to find an artist: %s", error->message);
-    g_error_free (error);
-    error = NULL;
+    gtk_scrolled_window_set_child (self->content, GTK_WIDGET (self->tracks_spinner));
   }
-  else if (tracks->len == 0)
-  {
-    g_ptr_array_free (tracks, TRUE);
-    g_list_store_remove_all (self->tracks_model);
-    g_object_set (G_OBJECT (self->status_page),
-                  "description", _("Artist not found"),
-                  NULL);
-    gtk_scrolled_window_set_child (self->content,
-                                    GTK_WIDGET (self->status_page));
-    g_signal_emit (self, obj_signals[SIGNAL_DELETED], 0);
-  }
-  else
-  {
-    self->album_covers_cancellable = g_cancellable_new ();
-    polyhymnia_artist_page_get_albums_covers_async (self, tracks,
-                                                    self->album_covers_cancellable,
-                                                    polyhymnia_artist_page_get_albums_covers_callback,
-                                                    NULL);
-    g_list_store_splice (self->tracks_model, 0,
-                          g_list_model_get_n_items (G_LIST_MODEL (self->tracks_model)),
-                          tracks->pdata, tracks->len);
-    g_ptr_array_free (tracks, TRUE);
-    gtk_scrolled_window_set_child (self->content,
-                                   GTK_WIDGET (self->tracks_column_view));
-  }
+  gtk_spinner_start (self->tracks_spinner);
 }
 
 static void
@@ -623,8 +683,9 @@ polyhymnia_artist_page_get_albums_covers_async_thread (GTask         *task,
                                                               g_object_unref);
   PolyhymniaArtistPage *self = source_object;
   GPtrArray            *tracks = task_data;
+  unsigned int          tracks_count = tracks->len;
 
-  for (unsigned int i = 0; i < tracks->len; i++)
+  for (unsigned int i = 0; i < tracks_count; i++)
   {
     const PolyhymniaTrack *track = g_ptr_array_index (tracks, i);
     const gchar *album = polyhymnia_track_get_album (track);

@@ -419,17 +419,21 @@ polyhymnia_queue_pane_get_queue_callback (GObject      *source_object,
     }
     g_ptr_array_unref (queue);
   }
-  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  else
   {
-    gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      gtk_selection_model_unselect_all (GTK_SELECTION_MODEL (self->queue_selection_model));
 
-    g_object_set (G_OBJECT (self->queue_status_page),
-                  "description", _("Failed to fetch queue"),
-                  NULL);
-    gtk_scrolled_window_set_child (self->queue_page_content,
-                                   GTK_WIDGET (self->queue_status_page));
-    g_warning("Queue fetch failed: %s\n", error->message);
-    g_list_store_remove_all (self->queue_model);
+      g_object_set (G_OBJECT (self->queue_status_page),
+                    "description", _("Failed to fetch queue"),
+                    NULL);
+      gtk_scrolled_window_set_child (self->queue_page_content,
+                                    GTK_WIDGET (self->queue_status_page));
+      g_warning("Queue fetch failed: %s\n", error->message);
+      g_list_store_remove_all (self->queue_model);
+    }
+    g_error_free (error);
   }
 
   gtk_spinner_stop (self->spinner);
@@ -640,11 +644,15 @@ polyhymnia_queue_pane_search_playlists_callback (GObject      *source_object,
     polyhymnia_queue_pane_new_playlist_title_changed (self,
                                                       GTK_EDITABLE (self->new_playlist_title_entry));
   }
-  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+  else
   {
-    g_hash_table_remove_all (self->known_playlists);
-    g_warning("Search for playlists failed: %s\n", error->message);
-    gtk_menu_button_popdown (self->new_playlist_button);
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_hash_table_remove_all (self->known_playlists);
+      g_warning("Search for playlists failed: %s\n", error->message);
+      gtk_menu_button_popdown (self->new_playlist_button);
+    }
+    g_error_free (error);
   }
 
   g_clear_object (&(self->queue_cancellable));

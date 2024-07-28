@@ -166,6 +166,7 @@ polyhymnia_playlists_page_search_playlists_callback (GObject      *source_object
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->playlists_cancellable));
     return;
   }

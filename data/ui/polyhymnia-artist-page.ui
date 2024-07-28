@@ -115,7 +115,13 @@
       handler="polyhymnia_artist_page_track_activated"
       swapped="true" />
   </object>
-  <object class="AdwStatusPage" id="status_page" />
+  <object class="GtkSpinner" id="tracks_spinner">
+    <property name="halign">center</property>
+    <property name="height-request">48</property>
+    <property name="valign">center</property>
+    <property name="width-request">48</property>
+  </object>
+  <object class="AdwStatusPage" id="tracks_status_page" />
 
   <object class="PolyhymniaMpdClient" id="mpd_client">
     <signal name="database-updated"

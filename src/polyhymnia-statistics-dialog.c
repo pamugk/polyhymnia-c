@@ -186,6 +186,7 @@ polyhymnia_statistics_dialog_get_statistics_callback (GObject *source_object,
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->statistics_cancellable));
     return;
   }

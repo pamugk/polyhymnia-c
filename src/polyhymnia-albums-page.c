@@ -219,9 +219,11 @@ polyhymnia_albums_page_search_albums_callback (GObject      *source_object,
     new_child = GTK_WIDGET (self->albums_status_page);
     g_warning("Search for albums failed: %s\n", error->message);
     g_list_store_remove_all (self->albums_model);
+    g_error_free (error);
   }
   else
   {
+    g_error_free (error);
     g_clear_object (&(self->albums_cancellable));
     return;
   }
