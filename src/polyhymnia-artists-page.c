@@ -4,13 +4,13 @@
 
 #include "polyhymnia-artists-page.h"
 
-#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
-#include "polyhymnia-album-details-dialog.h"
-#endif
-
 #include "polyhymnia-album-header.h"
 #include "polyhymnia-mpd-client-api.h"
 #include "polyhymnia-mpd-client-images.h"
+
+#ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
+#include "polyhymnia-album-details-dialog.h"
+#endif
 
 #define _(x) g_dgettext (GETTEXT_PACKAGE, x)
 

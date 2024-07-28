@@ -115,6 +115,11 @@ static void
 polyhymnia_album_page_play_album_button_clicked (PolyhymniaAlbumPage *self,
                                                  GtkButton           *user_data);
 
+static void
+polyhymnia_album_page_track_activated (PolyhymniaAlbumPage *self,
+                                       unsigned int         position,
+                                       GtkColumnView       *user_data);
+
 #ifdef POLYHYMNIA_FEATURE_EXTERNAL_DATA
 static void
 polyhymnia_album_page_additional_info_button_clicked (PolyhymniaAlbumPage *self,
@@ -129,11 +134,6 @@ polyhymnia_album_page_search_additional_info_callback (GObject      *source,
                                                        GAsyncResult *result,
                                                        gpointer      user_data);
 #endif
-
-static void
-polyhymnia_album_page_track_activated (PolyhymniaAlbumPage *self,
-                                       unsigned int         position,
-                                       GtkColumnView       *user_data);
 
 /* Private function declarations */
 static char *

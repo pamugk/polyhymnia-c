@@ -61,17 +61,6 @@
         <property name="expand">true</property>
         <property name="factory">
           <object class="GtkBuilderListItemFactory">
-            <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-album-column.ui</property>
-          </object>
-        </property>
-      	<property name="resizable">false</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkColumnViewColumn">
-        <property name="expand">true</property>
-        <property name="factory">
-          <object class="GtkBuilderListItemFactory">
             <property name="resource">/com/github/pamugk/polyhymnia/ui/polyhymnia-track-artist-column.ui</property>
           </object>
         </property>
@@ -89,11 +78,42 @@
       	<property name="resizable">false</property>
       </object>
     </child>
+    <property name="header-factory">
+      <object class="GtkSignalListItemFactory">
+        <signal name="setup"
+          handler="polyhymnia_artist_page_album_header_setup"
+          swapped="true" />
+        <signal name="bind"
+          handler="polyhymnia_artist_page_album_header_bind"
+          swapped="true" />
+        <signal name="unbind"
+          handler="polyhymnia_artist_page_album_header_unbind"
+          swapped="true" />
+        <signal name="teardown"
+          handler="polyhymnia_artist_page_album_header_teardown"
+          swapped="true" />
+      </object>
+    </property>
     <property name="model">
-      <object class="GtkNoSelection" id="tracks_selection_model"/>
+      <object class="GtkNoSelection" id="tracks_selection_model">
+        <property name="model">
+          <object class="GtkSortListModel" id="tracks_sort_model">
+            <property name="section-sorter">
+              <object class="GtkStringSorter">
+                <property name="expression">
+                  <lookup name="album-sort" type="PolyhymniaTrack" />
+              	</property>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
     </property>
     <property name="show-column-separators">false</property>
     <property name="show-row-separators">true</property>
+    <signal name="activate"
+      handler="polyhymnia_artist_page_track_activated"
+      swapped="true" />
   </object>
   <object class="AdwStatusPage" id="status_page" />
 

@@ -69,6 +69,10 @@ polyhymnia_window_album_deleted (PolyhymniaWindow    *self,
                                  PolyhymniaAlbumPage *album_page);
 
 static void
+polyhymnia_window_artist_deleted (PolyhymniaWindow     *self,
+                                  PolyhymniaArtistPage *artist_page);
+
+static void
 polyhymnia_window_content_show_sidebar_changed (PolyhymniaWindow    *self,
                                                 GParamSpec          *pspec,
                                                 AdwOverlaySplitView *user_data);
@@ -279,6 +283,13 @@ polyhymnia_window_album_deleted (PolyhymniaWindow    *self,
   adw_navigation_view_pop_to_tag (self->library_navigation_view, "albums-list");
 }
 
+static void
+polyhymnia_window_artist_deleted (PolyhymniaWindow     *self,
+                                  PolyhymniaArtistPage *artist_page)
+{
+  g_assert (POLYHYMNIA_IS_WINDOW (self));
+  adw_navigation_view_pop_to_tag (self->library_navigation_view, "artists-list");
+}
 
 static void
 polyhymnia_window_content_show_sidebar_changed (PolyhymniaWindow    *self,
@@ -379,7 +390,21 @@ polyhymnia_window_navigate_artist (PolyhymniaWindow      *self,
                                    const gchar           *artist_name,
                                    PolyhymniaArtistsPage *user_data)
 {
+  PolyhymniaArtistPage *artist_page;
+
   g_assert (POLYHYMNIA_IS_WINDOW (self));
+
+  artist_page = g_object_new (POLYHYMNIA_TYPE_ARTIST_PAGE,
+                              "artist-name", artist_name,
+                              NULL);
+  g_signal_connect_swapped (artist_page, "deleted",
+                            (GCallback) polyhymnia_window_artist_deleted,
+                            self);
+  g_signal_connect_swapped (artist_page, "view-track-details",
+                            (GCallback) polyhymnia_window_track_show_details,
+                            self);
+  adw_navigation_view_push (self->library_navigation_view,
+                            ADW_NAVIGATION_PAGE (artist_page));
 }
 
 static void
