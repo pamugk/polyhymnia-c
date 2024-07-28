@@ -6,33 +6,28 @@
     <property name="child">
       <object class="AdwToolbarView" id="root_toolbar_view">
         <child type="top">
-          <object class="AdwHeaderBar">
-            <child type="end">
-              <object class="GtkButton">
-                <property name="icon-name">plus-symbolic</property>
-                <signal name="clicked"
-                  handler="polyhymnia_artist_page_add_artist_to_queue_button_clicked"
-                  swapped="true" />
-	      </object>
-            </child>
-            <child type="end">
-              <object class="GtkButton">
-                <property name="icon-name">play-large-symbolic</property>
-                  <signal name="clicked"
-                    handler="polyhymnia_artist_page_play_artist_button_clicked"
-                    swapped="true" />
-	      </object>
-            </child>
+          <object class="AdwHeaderBar" id="root_header_bar">
             <property name="show-end-title-buttons">false</property>
           </object>
         </child>
-        <property name="content">
-          <object class="GtkScrolledWindow" id="content" />
-        </property>
       </object>
     </property>
   </template>
 
+  <object class="GtkButton" id="enqueue_button">
+    <property name="icon-name">plus-symbolic</property>
+    <signal name="clicked"
+      handler="polyhymnia_artist_page_add_artist_to_queue_button_clicked"
+      swapped="true" />
+  </object>
+  <object class="GtkButton" id="play_button">
+    <property name="icon-name">play-large-symbolic</property>
+    <signal name="clicked"
+      handler="polyhymnia_artist_page_play_artist_button_clicked"
+      swapped="true" />
+  </object>
+
+  <object class="GtkScrolledWindow" id="tracks_content" />
   <object class="GtkColumnView" id="tracks_column_view">
     <child>
       <object class="GtkColumnViewColumn">

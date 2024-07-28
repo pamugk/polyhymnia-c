@@ -33,6 +33,15 @@ polyhymnia_search_artist_info_response_free (PolyhymniaSearchArtistInfoResponse 
 }
 
 void
+polyhymnia_similar_artist_clear (PolyhymniaSimilarArtist *self)
+{
+    g_free (self->name);
+    g_free (self->music_brainz_id);
+    g_free (self->url);
+    g_free (self->image);
+}
+
+void
 polyhymnia_search_track_info_response_free (PolyhymniaSearchTrackInfoResponse *self)
 {
   if (self != NULL)
@@ -65,6 +74,11 @@ static void
 polyhymnia_additional_info_provider_lastfm_get_artist_callback (GObject      *source,
                                                                 GAsyncResult *result,
                                                                 void         *user_data);
+
+static void
+polyhymnia_additional_info_provider_lastfm_get_artist_similar_callback (GObject      *source,
+                                                                        GAsyncResult *result,
+                                                                        void         *user_data);
 
 static void
 polyhymnia_additional_info_provider_lastfm_get_track_callback (GObject      *source,
@@ -256,6 +270,72 @@ PolyhymniaSearchArtistInfoResponse *
 polyhymnia_additional_info_provider_search_artist_info_finish (PolyhymniaAdditionalInfoProvider *self,
                                                                GAsyncResult                     *result,
                                                                GError                          **error)
+{
+  g_return_val_if_fail (g_task_is_valid (result, self), NULL);
+  return g_task_propagate_pointer (G_TASK (result), error);
+}
+
+void
+polyhymnia_additional_info_provider_search_artist_similar_async (PolyhymniaAdditionalInfoProvider        *self,
+                                                                 const PolyhymniaSearchArtistInfoRequest *request,
+                                                                 GCancellable                            *cancellable,
+                                                                 GAsyncReadyCallback                      callback,
+                                                                 void                                    *user_data)
+{
+  gboolean started_search = FALSE;
+  GTask   *task;
+
+  g_assert (POLYHYMNIA_IS_ADDITIONAL_INFO_PROVIDER (self));
+  g_assert_nonnull (request);
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_return_on_cancel (task, TRUE);
+  g_task_set_source_tag (task, polyhymnia_additional_info_provider_search_artist_similar_async);
+
+  if (g_settings_get_boolean (self->application_settings, "app-external-data-additional-info-lastfm")
+      && (request->artist_name != NULL || request->artist_musicbrainz_id != NULL))
+  {
+    SoupMessage *message;
+    GString     *uri_query = g_string_new ("api_key=" POLYHYMNIA_LASTFM_API_KEY "&method=artist.getsimilar&format=json&limit=10");
+
+    if (request->artist_musicbrainz_id != NULL)
+    {
+      g_string_append (uri_query, "&mbid=");
+      g_string_append_uri_escaped (uri_query, request->artist_musicbrainz_id,
+                                   NULL, TRUE);
+    }
+    if (request->artist_name != NULL)
+    {
+      g_string_append (uri_query, "&artist=");
+      g_string_append_uri_escaped (uri_query, request->artist_name,
+                                   NULL, TRUE);
+    }
+    message = soup_message_new_from_encoded_form (SOUP_METHOD_GET,
+                                                  LASTFM_API_HOST,
+                                                  g_string_free_and_steal (uri_query));
+    soup_message_headers_append (soup_message_get_request_headers (message),
+                                 "User-Agent", "Polyhymnia");
+
+    started_search = TRUE;
+    soup_session_send_async (self->common_session, message,
+                             G_PRIORITY_DEFAULT, g_task_get_cancellable (task),
+                             polyhymnia_additional_info_provider_lastfm_get_artist_similar_callback,
+                             g_object_ref (task));
+
+    g_object_unref (message);
+    g_object_unref (task);
+  }
+
+  if (!started_search)
+  {
+    g_task_return_pointer (task, NULL, NULL);
+  }
+}
+
+GArray *
+polyhymnia_additional_info_provider_search_artist_similar_finish (PolyhymniaAdditionalInfoProvider *self,
+                                                                  GAsyncResult                     *result,
+                                                                  GError                          **error)
 {
   g_return_val_if_fail (g_task_is_valid (result, self), NULL);
   return g_task_propagate_pointer (G_TASK (result), error);
@@ -482,6 +562,136 @@ polyhymnia_additional_info_provider_lastfm_get_artist_callback (GObject      *so
 
         g_task_return_pointer (task, response,
                                (GDestroyNotify) polyhymnia_search_artist_info_response_free);
+      }
+
+      g_object_unref (response_reader);
+    }
+
+    g_object_unref (input_stream);
+    g_object_unref (response_parser);
+  }
+}
+
+static void
+polyhymnia_additional_info_provider_lastfm_get_artist_similar_callback (GObject      *source,
+                                                                        GAsyncResult *result,
+                                                                        void         *user_data)
+{
+  GError       *error = NULL;
+  GInputStream *input_stream;
+
+  input_stream = soup_session_send_finish (SOUP_SESSION (source), result, &error);
+  if (error != NULL)
+  {
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    {
+      g_warning ("Failed to get artist similar on Last.fm: %s", error->message);
+    }
+    g_task_return_error (G_TASK (user_data), error);
+  }
+  else
+  {
+    JsonParser       *response_parser = json_parser_new_immutable ();
+    GTask            *task = G_TASK (user_data);
+
+    json_parser_load_from_stream (response_parser, input_stream,
+                                  g_task_get_cancellable (task), &error);
+    if (error != NULL)
+    {
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+      {
+        g_warning ("Failed to parse Last.fm response for artist similar: %s", error->message);
+      }
+      g_task_return_error (task, error);
+    }
+    else
+    {
+      JsonReader *response_reader = json_reader_new (json_parser_get_root (response_parser));
+
+      json_reader_read_member (response_reader, "message");
+      if (json_reader_get_error (response_reader) == NULL)
+      {
+        g_warning ("Failed to get artist similar on Last.fm. Reason: %s",
+                   json_reader_get_string_value (response_reader));
+        json_reader_end_member (response_reader);
+        g_task_return_pointer (task, NULL, NULL);
+      }
+      else
+      {
+        GArray *response = NULL;
+
+        json_reader_end_member (response_reader);
+
+        json_reader_read_member (response_reader, "similarartists");
+
+        json_reader_read_member (response_reader, "artist");
+        if (json_reader_get_error (response_reader) == NULL)
+        {
+          int similar_count = json_reader_count_elements (response_reader);
+          response = g_array_sized_new (FALSE, FALSE,
+                                        sizeof (PolyhymniaSimilarArtist),
+                                        similar_count);
+          g_array_set_clear_func (response, (GDestroyNotify) polyhymnia_similar_artist_clear);
+          for (int i = 0; i < similar_count; i++)
+          {
+            PolyhymniaSimilarArtist similar_artist;
+
+            json_reader_read_element (response_reader, i);
+
+            json_reader_read_member (response_reader, "name");
+            similar_artist.name = g_strdup (json_reader_get_string_value (response_reader));
+            json_reader_end_member (response_reader);
+            json_reader_read_member (response_reader, "mbid");
+            similar_artist.music_brainz_id = g_strdup (json_reader_get_string_value (response_reader));
+            json_reader_end_member (response_reader);
+            json_reader_read_member (response_reader, "url");
+            similar_artist.url = g_strdup (json_reader_get_string_value (response_reader));
+            json_reader_end_member (response_reader);
+            json_reader_read_member (response_reader, "image");
+            if (json_reader_get_error (response_reader) == NULL)
+            {
+              char *image_uri = NULL;
+              int image_count = json_reader_count_elements (response_reader);
+              for (int j = 0; j < image_count && image_uri == NULL; j++)
+              {
+                json_reader_read_element (response_reader, j);
+
+                json_reader_read_member (response_reader, "size");
+                if (g_strcmp0 ("large", json_reader_get_string_value (response_reader)) == 0
+                    || g_strcmp0 ("", json_reader_get_string_value (response_reader)) == 0)
+                {
+                  json_reader_end_member (response_reader);
+
+                  json_reader_read_member (response_reader, "#text");
+                  image_uri = g_strdup (json_reader_get_string_value (response_reader));
+                  json_reader_end_member (response_reader);
+                }
+                else
+                {
+                  json_reader_end_member (response_reader);
+                }
+
+                json_reader_end_element (response_reader);
+              }
+              similar_artist.image = image_uri;
+            }
+            else
+            {
+              similar_artist.image = NULL;
+            }
+            json_reader_end_member (response_reader);
+
+            json_reader_end_element (response_reader);
+
+            g_array_append_val (response, similar_artist);
+          }
+        }
+        json_reader_end_member (response_reader);
+
+        json_reader_end_member (response_reader);
+
+        g_task_return_pointer (task, response,
+                               (GDestroyNotify) g_array_unref);
       }
 
       g_object_unref (response_reader);

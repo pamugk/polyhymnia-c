@@ -34,8 +34,19 @@ typedef struct
   char *bio_summary;
 } PolyhymniaSearchArtistInfoResponse;
 
+typedef struct
+{
+  char *name;
+  char *music_brainz_id;
+  char *url;
+  char *image;
+} PolyhymniaSimilarArtist;
+
 void
 polyhymnia_search_artist_info_response_free (PolyhymniaSearchArtistInfoResponse *self);
+
+void
+polyhymnia_similar_artist_clear (PolyhymniaSimilarArtist *self);
 
 typedef struct
 {
@@ -80,6 +91,18 @@ PolyhymniaSearchArtistInfoResponse *
 polyhymnia_additional_info_provider_search_artist_info_finish (PolyhymniaAdditionalInfoProvider *self,
                                                                GAsyncResult                     *result,
                                                                GError                          **error);
+
+void
+polyhymnia_additional_info_provider_search_artist_similar_async (PolyhymniaAdditionalInfoProvider        *self,
+                                                                 const PolyhymniaSearchArtistInfoRequest *request,
+                                                                 GCancellable                            *cancellable,
+                                                                 GAsyncReadyCallback                      callback,
+                                                                 void                                    *user_data);
+
+GArray *
+polyhymnia_additional_info_provider_search_artist_similar_finish (PolyhymniaAdditionalInfoProvider *self,
+                                                                  GAsyncResult                     *result,
+                                                                  GError                          **error);
 
 void
 polyhymnia_additional_info_provider_search_track_info_async (PolyhymniaAdditionalInfoProvider       *self,

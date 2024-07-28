@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: polyhymnia\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-24 15:26+0500\n"
+"POT-Creation-Date: 2024-07-28 22:35+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,20 +67,33 @@ msgstr ""
 msgid "Initial release"
 msgstr ""
 
+#: data/ui/polyhymnia-album-details-dialog.ui:23
+#: src/polyhymnia-album-page.c:641 src/polyhymnia-artist-page.c:788
+#: src/polyhymnia-track-details-dialog.c:383
+msgid "Powered by <a href=\"https://www.last.fm\">Last.fm</a>"
+msgstr ""
+
+#: data/ui/polyhymnia-album-details-dialog.ui:37
+#: src/polyhymnia-album-page.c:648 src/polyhymnia-artist-page.c:795
+#: src/polyhymnia-track-details-dialog.c:398
+#: src/polyhymnia-track-details-dialog.c:405
+msgid "Additional Info"
+msgstr ""
+
 #: data/ui/polyhymnia-albums-page.ui:7 data/ui/polyhymnia-window.ui:166
 msgid "Albums"
 msgstr ""
 
 #: data/ui/polyhymnia-artists-page.ui:7 data/ui/polyhymnia-artists-page.ui:19
-#: data/ui/polyhymnia-track-details-dialog.ui:396
+#: data/ui/polyhymnia-track-details-dialog.ui:395
 #: data/ui/polyhymnia-window.ui:156
 msgid "Artists"
 msgstr ""
 
 #: data/ui/polyhymnia-current-lyrics-pane.ui:13
-#: src/polyhymnia-preferences-dialog.c:135
-#: src/polyhymnia-track-details-dialog.c:337
-#: src/polyhymnia-track-details-dialog.c:344 src/polyhymnia-window.c:250
+#: src/polyhymnia-preferences-dialog.c:149
+#: src/polyhymnia-track-details-dialog.c:435
+#: src/polyhymnia-track-details-dialog.c:442 src/polyhymnia-window.c:254
 msgid "Lyrics"
 msgstr ""
 
@@ -113,7 +126,7 @@ msgid "Duration"
 msgstr ""
 
 #: data/ui/polyhymnia-player-bar.ui:153
-#: data/ui/polyhymnia-track-details-dialog.ui:624
+#: data/ui/polyhymnia-track-details-dialog.ui:623
 msgid "Details"
 msgstr ""
 
@@ -223,7 +236,6 @@ msgid "Search results"
 msgstr ""
 
 #: data/ui/polyhymnia-statistics-dialog.ui:24
-#: data/ui/polyhymnia-track-details-dialog.ui:576
 msgid "Statistics"
 msgstr ""
 
@@ -259,102 +271,103 @@ msgstr ""
 msgid "Failed to fetch statistics"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:27
-#: data/ui/polyhymnia-track-details-dialog.ui:271
+#: data/ui/polyhymnia-track-details-dialog.ui:26
+#: data/ui/polyhymnia-track-details-dialog.ui:270
+#: data/ui/polyhymnia-track-details-dialog.ui:575
 msgid "Track Details"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:47
+#: data/ui/polyhymnia-track-details-dialog.ui:46
 msgid "Genre"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:68
+#: data/ui/polyhymnia-track-details-dialog.ui:67
 msgid "Disc"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:88
+#: data/ui/polyhymnia-track-details-dialog.ui:87
 msgid "Position"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:108
+#: data/ui/polyhymnia-track-details-dialog.ui:107
 msgid "Release date"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:129
+#: data/ui/polyhymnia-track-details-dialog.ui:128
 msgid "Original release date"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:150
+#: data/ui/polyhymnia-track-details-dialog.ui:149
 msgid "Work"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:171
+#: data/ui/polyhymnia-track-details-dialog.ui:170
 msgid "Movement"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:192
+#: data/ui/polyhymnia-track-details-dialog.ui:191
 msgid "Movement number"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:213
+#: data/ui/polyhymnia-track-details-dialog.ui:212
 msgid "Recording location"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:234
+#: data/ui/polyhymnia-track-details-dialog.ui:233
 msgid "Comment"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:291
+#: data/ui/polyhymnia-track-details-dialog.ui:290
 msgid "Sample rate"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:314
+#: data/ui/polyhymnia-track-details-dialog.ui:313
 msgid "Audio bit depth"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:337
+#: data/ui/polyhymnia-track-details-dialog.ui:336
 msgid "Channels"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:376
+#: data/ui/polyhymnia-track-details-dialog.ui:375
 msgid "Audio Format"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:417
+#: data/ui/polyhymnia-track-details-dialog.ui:416
 msgid "Performers"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:438
+#: data/ui/polyhymnia-track-details-dialog.ui:437
 msgid "Composers"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:459
+#: data/ui/polyhymnia-track-details-dialog.ui:458
 msgid "Conductors"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:480
+#: data/ui/polyhymnia-track-details-dialog.ui:479
 msgid "Ensemble"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:517
-#: data/ui/polyhymnia-track-details-dialog.ui:654
+#: data/ui/polyhymnia-track-details-dialog.ui:516
+#: data/ui/polyhymnia-track-details-dialog.ui:653
 msgid "Personnel"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:535
+#: data/ui/polyhymnia-track-details-dialog.ui:534
 msgid "Label or publisher"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:568
-#: data/ui/polyhymnia-track-details-dialog.ui:667
+#: data/ui/polyhymnia-track-details-dialog.ui:567
+#: data/ui/polyhymnia-track-details-dialog.ui:666
 msgid "Legal"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:637
+#: data/ui/polyhymnia-track-details-dialog.ui:636
 msgid "Audio format"
 msgstr ""
 
-#: data/ui/polyhymnia-track-details-dialog.ui:689
+#: data/ui/polyhymnia-track-details-dialog.ui:688
 msgid "Failed to fetch track details"
 msgstr ""
 
@@ -406,51 +419,61 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: src/polyhymnia-album-page.c:334
+#: src/polyhymnia-album-details-dialog.c:225
+#: src/polyhymnia-track-details-dialog.c:805
+msgid "Failed to find additional info"
+msgstr ""
+
+#: src/polyhymnia-album-details-dialog.c:236
+#: src/polyhymnia-track-details-dialog.c:816
+msgid "No additional info found"
+msgstr ""
+
+#: src/polyhymnia-album-page.c:400
 msgid "Album not found"
 msgstr ""
 
-#: src/polyhymnia-album-page.c:348 src/polyhymnia-playlist-page.c:413
+#: src/polyhymnia-album-page.c:414 src/polyhymnia-playlist-page.c:413
 #, c-format
 msgid "%d song"
 msgid_plural "%d songs"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/polyhymnia-album-page.c:364 src/polyhymnia-playlist-page.c:424
+#: src/polyhymnia-album-page.c:430 src/polyhymnia-playlist-page.c:424
 #, c-format
 msgid "%d h. %d min."
 msgstr ""
 
-#: src/polyhymnia-album-page.c:369 src/polyhymnia-playlist-page.c:429
+#: src/polyhymnia-album-page.c:435 src/polyhymnia-playlist-page.c:429
 #, c-format
 msgid "%d min."
 msgstr ""
 
-#: src/polyhymnia-album-page.c:411
+#: src/polyhymnia-album-page.c:499
 msgid "Failed to get an album"
 msgstr ""
 
-#: src/polyhymnia-album-page.c:529
+#: src/polyhymnia-album-page.c:737
 msgid "Disc —"
 msgstr ""
 
-#: src/polyhymnia-album-page.c:530
+#: src/polyhymnia-album-page.c:738
 #, c-format
 msgid "Disc %d"
 msgstr ""
 
-#: src/polyhymnia-albums-page.c:208 src/polyhymnia-artists-page.c:546
-#: src/polyhymnia-artists-page.c:666 src/polyhymnia-playlists-page.c:135
-#: src/polyhymnia-search-page.c:316 src/polyhymnia-tracks-page.c:275
+#: src/polyhymnia-albums-page.c:196 src/polyhymnia-artists-page.c:587
+#: src/polyhymnia-artists-page.c:709 src/polyhymnia-playlists-page.c:134
+#: src/polyhymnia-search-page.c:313 src/polyhymnia-tracks-page.c:265
 msgid "If something is missing, try launching library scanning"
 msgstr ""
 
-#: src/polyhymnia-albums-page.c:210
+#: src/polyhymnia-albums-page.c:198
 msgid "No albums found"
 msgstr ""
 
-#: src/polyhymnia-albums-page.c:229
+#: src/polyhymnia-albums-page.c:217
 msgid "Search for albums failed"
 msgstr ""
 
@@ -458,62 +481,78 @@ msgstr ""
 msgid "Simple MPD-based music player."
 msgstr ""
 
-#: src/polyhymnia-artist-page.c:258
+#: src/polyhymnia-artist-page.c:382
+msgid "Stored Songs"
+msgstr ""
+
+#: src/polyhymnia-artist-page.c:384
+msgid "Similar Artists"
+msgstr ""
+
+#: src/polyhymnia-artist-page.c:594
 msgid "Failed to get an artist"
 msgstr ""
 
-#: src/polyhymnia-artist-page.c:271
+#: src/polyhymnia-artist-page.c:608
 msgid "Artist not found"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:465
+#: src/polyhymnia-artist-page.c:910
+msgid "Failed to find similar artists"
+msgstr ""
+
+#: src/polyhymnia-artist-page.c:942
+msgid "No similar artists found"
+msgstr ""
+
+#: src/polyhymnia-artists-page.c:488
 msgid "Discography of an artist will be displayed here"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:467
+#: src/polyhymnia-artists-page.c:490
 msgid "No artist selected"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:548
+#: src/polyhymnia-artists-page.c:589
 msgid "No artist albums found"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:575
+#: src/polyhymnia-artists-page.c:616
 msgid "Search for artist discography failed"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:668
+#: src/polyhymnia-artists-page.c:711
 msgid "No artists found"
 msgstr ""
 
-#: src/polyhymnia-artists-page.c:688
+#: src/polyhymnia-artists-page.c:731
 msgid "Search for artists failed"
 msgstr ""
 
-#: src/polyhymnia-current-lyrics-pane.c:158
+#: src/polyhymnia-current-lyrics-pane.c:153
 msgid "No current song"
 msgstr ""
 
 #: src/polyhymnia-current-lyrics-pane.c:273
-#: src/polyhymnia-track-details-dialog.c:738
+#: src/polyhymnia-track-details-dialog.c:926
 msgid "Failed to find song lyrics"
 msgstr ""
 
 #: src/polyhymnia-current-lyrics-pane.c:287
-#: src/polyhymnia-track-details-dialog.c:752
+#: src/polyhymnia-track-details-dialog.c:938
 msgid "No song lyrics found"
 msgstr ""
 
-#: src/polyhymnia-last-modified-page.c:203
+#: src/polyhymnia-last-modified-page.c:202
 msgid "Songs modified in a last week will be displayed here"
 msgstr ""
 
-#: src/polyhymnia-last-modified-page.c:205
+#: src/polyhymnia-last-modified-page.c:204
 msgid "No recently modified songs"
 msgstr ""
 
-#: src/polyhymnia-last-modified-page.c:225 src/polyhymnia-search-page.c:304
-#: src/polyhymnia-tracks-page.c:297
+#: src/polyhymnia-last-modified-page.c:224 src/polyhymnia-search-page.c:301
+#: src/polyhymnia-tracks-page.c:287
 msgid "Search for songs failed"
 msgstr ""
 
@@ -521,7 +560,7 @@ msgstr ""
 msgid "Queue is empty"
 msgstr ""
 
-#: src/polyhymnia-queue-pane.c:427
+#: src/polyhymnia-queue-pane.c:429
 msgid "Failed to fetch queue"
 msgstr ""
 
@@ -529,39 +568,58 @@ msgstr ""
 msgid "Playlist is empty"
 msgstr ""
 
-#: src/polyhymnia-playlist-page.c:454
+#: src/polyhymnia-playlist-page.c:456
 msgid "Failed to get a playlist"
 msgstr ""
 
-#: src/polyhymnia-playlists-page.c:137
+#: src/polyhymnia-playlists-page.c:136
 msgid "No playlists found"
 msgstr ""
 
-#: src/polyhymnia-playlists-page.c:158
+#: src/polyhymnia-playlists-page.c:157
 msgid "Search for playlists failed"
 msgstr ""
 
-#: src/polyhymnia-preferences-dialog.c:115
+#: src/polyhymnia-preferences-dialog.c:109
+msgid ""
+"Look for additional info on <a href=\"https://www.last.fm/\">Last.fm</a>"
+msgstr ""
+
+#: src/polyhymnia-preferences-dialog.c:121
 msgid "Look for lyrics on <a href=\"https://genius.com/\">Genius</a>"
 msgstr ""
 
-#: src/polyhymnia-preferences-dialog.c:128
+#: src/polyhymnia-preferences-dialog.c:133
+msgid ""
+"Configure additional info search about albums / artists / songs (like "
+"description, biography, lyrics and so on) on the Internet"
+msgstr ""
+
+#: src/polyhymnia-preferences-dialog.c:136
 msgid "External Data"
 msgstr ""
 
-#: src/polyhymnia-preferences-dialog.c:134
+#: src/polyhymnia-preferences-dialog.c:139
+msgid "Additional info search configuration"
+msgstr ""
+
+#: src/polyhymnia-preferences-dialog.c:140
+msgid "Additional info"
+msgstr ""
+
+#: src/polyhymnia-preferences-dialog.c:148
 msgid "Lyrics search configuration"
 msgstr ""
 
-#: src/polyhymnia-search-page.c:285
+#: src/polyhymnia-search-page.c:282
 msgid "Search query must be at least 2-character long"
 msgstr ""
 
-#: src/polyhymnia-search-page.c:287
+#: src/polyhymnia-search-page.c:284
 msgid "Search query is not long enough"
 msgstr ""
 
-#: src/polyhymnia-search-page.c:318 src/polyhymnia-tracks-page.c:277
+#: src/polyhymnia-search-page.c:315 src/polyhymnia-tracks-page.c:267
 msgid "No songs found"
 msgstr ""
 
@@ -569,38 +627,38 @@ msgstr ""
 msgid "Library not scanned yet"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:438
+#: src/polyhymnia-track-details-dialog.c:538
 msgid "Unknown track"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:440
+#: src/polyhymnia-track-details-dialog.c:540
 msgid "Unknown album"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:443
+#: src/polyhymnia-track-details-dialog.c:543
 msgid "Unknown artist"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:514
-#: src/polyhymnia-track-details-dialog.c:525
-#: src/polyhymnia-track-details-dialog.c:536
+#: src/polyhymnia-track-details-dialog.c:638
+#: src/polyhymnia-track-details-dialog.c:649
+#: src/polyhymnia-track-details-dialog.c:660
 msgid "Unknown or unspecified"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:518
+#: src/polyhymnia-track-details-dialog.c:642
 #, c-format
 msgid "%d Hz"
 msgstr ""
 
-#: src/polyhymnia-track-details-dialog.c:529
+#: src/polyhymnia-track-details-dialog.c:653
 #, c-format
 msgid "%d bits per sample"
 msgstr ""
 
-#: src/polyhymnia-window.c:341
+#: src/polyhymnia-window.c:348
 msgid "Stored playlists have changed"
 msgstr ""
 
-#: src/polyhymnia-window.c:354
+#: src/polyhymnia-window.c:361
 msgid "Library has been updated"
 msgstr ""
